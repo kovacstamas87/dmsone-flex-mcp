@@ -1,0 +1,9 @@
+node_modules/
+dist/
+build/
+.env
+*.log
+
+# Build artifact – GitHub Release-hez készül (npm run bundle), nem verziózzuk.
+# Ha mégis közvetlenül a repóba szeretnéd tenni letöltéshez, töröld ezt a sort.
+*.mcpb

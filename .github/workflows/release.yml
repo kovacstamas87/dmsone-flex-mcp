@@ -1,0 +1,27 @@
+name: Release
+
+# Tag pusholásakor (pl. v0.1.0) lefordítja és előállítja a .mcpb csomagot,
+# majd csatolja egy GitHub Release-hez.
+on:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+      - run: npm ci
+      - run: npm run bundle
+      - name: Create release with .mcpb asset
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dmsone-flex-*.mcpb
+          generate_release_notes: true

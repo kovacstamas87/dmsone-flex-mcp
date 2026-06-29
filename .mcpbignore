@@ -1,0 +1,15 @@
+# Csak akkor releváns, ha valaki közvetlenül a repó gyökeréből csomagol.
+# (A "npm run bundle" egy tiszta staging mappából csomagol, ott ez nem kell.)
+src/
+*.ts
+!*.d.ts
+tsconfig.json
+.github/
+.git/
+build/
+*.mcpb
+.env
+.env.*
+*.log
+*.map
+CHANGELOG.md

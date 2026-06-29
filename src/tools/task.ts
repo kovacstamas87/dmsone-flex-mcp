@@ -1,0 +1,168 @@
+import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { z } from "zod";
+import type { FlexClient } from "../client.js";
+import { formatDateTime, toolError, toolJson } from "../format.js";
+
+/**
+ * Task resource — simple DMS tasks (not full workflow processes).
+ * Endpoints: /dms/task/start, /dms/comments/task/{id}, /dms/task/{id}/accept,
+ * /dms/task/{id}/complete, /dms/news.
+ */
+export function registerTaskTools(server: McpServer, client: FlexClient): void {
+  server.registerTool(
+    "flex_task_create",
+    {
+      title: "Feladat létrehozása",
+      description: `Új DMS feladatot hoz létre a Flex rendszerben (POST /dms/task/start).
+
+Mikor használd: amikor egy egyszerű feladatot kell kiosztani egy felhasználónak (nem teljes munkafolyamatot — arra a flex_workflow_start való).
+
+Bemenet:
+  - taskTitle (string, kötelező): a feladat címe
+  - taskDescription (string): leírás
+  - taskPartner (string): partner megnevezése, üresen null lesz
+  - taskPriority (number): prioritás (alapértelmezett 2)
+  - taskScheduledStart (string): tervezett kezdés ISO 8601 időbélyeg
+  - taskDeadline (string): határidő ISO 8601 időbélyeg
+  - needsApprovalFromCreator (boolean): kell-e a létrehozó jóváhagyása
+  - executorType ("4_elso_elfogado" | "4_mindenki"): ki hajthatja végre
+  - performerUserId (number): a végrehajtó felhasználó ID-ja (flex_user_get_by_username adja vissza)
+  - performerOrgId (number): a végrehajtó szervezeti egység ID-ja
+
+Visszatérés: { success, result: { id, referenceNumber } }`,
+      inputSchema: {
+        taskTitle: z.string().min(1).describe("A feladat címe (kötelező)"),
+        taskDescription: z.string().optional().describe("A feladat leírása"),
+        taskPartner: z.string().optional().describe("Partner; üresen null értéket küld"),
+        taskPriority: z.number().int().default(2).describe("Prioritás (alapértelmezett 2)"),
+        taskScheduledStart: z.string().optional().describe("Tervezett kezdés ISO 8601 formátumban"),
+        taskDeadline: z.string().optional().describe("Határidő ISO 8601 formátumban"),
+        needsApprovalFromCreator: z.boolean().default(false).describe("Kell-e a létrehozó jóváhagyása"),
+        executorType: z
+          .enum(["4_elso_elfogado", "4_mindenki"])
+          .default("4_elso_elfogado")
+          .describe("Végrehajtó típusa: első elfogadó vagy mindenki"),
+        performerUserId: z.number().int().optional().describe("Végrehajtó felhasználó ID-ja"),
+        performerOrgId: z.number().int().optional().describe("Végrehajtó szervezeti egység ID-ja"),
+      },
+      annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: true },
+    },
+    async (args) => {
+      try {
+        const users =
+          args.performerUserId !== undefined
+            ? [{ userId: args.performerUserId, orgId: args.performerOrgId ?? 1 }]
+            : [];
+        const body = {
+          taskTitle: args.taskTitle,
+          taskDescription: args.taskDescription ?? "",
+          taskPartner: args.taskPartner || null,
+          taskPriority: args.taskPriority,
+          taskScheduledStart: formatDateTime(args.taskScheduledStart),
+          taskDeadline: formatDateTime(args.taskDeadline),
+          needsApprovalFromCreator: args.needsApprovalFromCreator,
+          executorType: args.executorType,
+          files: [],
+          taskPerformers: { users },
+          relatedDocIds: [],
+          relatedFolderIds: [],
+        };
+        return toolJson(await client.request("POST", "/dms/task/start", { body }));
+      } catch (error) {
+        return toolError(error);
+      }
+    },
+  );
+
+  server.registerTool(
+    "flex_task_comment",
+    {
+      title: "Megjegyzés feladathoz",
+      description: `Megjegyzést fűz egy meglévő feladathoz (POST /dms/comments/task/{taskId}).
+
+Bemenet:
+  - taskId (string, kötelező): a feladat azonosítója
+  - comment (string, kötelező): a megjegyzés szövege
+
+Visszatérés: { success, result }`,
+      inputSchema: {
+        taskId: z.string().min(1).describe("A feladat azonosítója"),
+        comment: z.string().min(1).describe("A megjegyzés szövege"),
+      },
+      annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: true },
+    },
+    async (args) => {
+      try {
+        return toolJson(
+          await client.request("POST", `/dms/comments/task/${encodeURIComponent(args.taskId)}`, {
+            body: { comment: args.comment },
+          }),
+        );
+      } catch (error) {
+        return toolError(error);
+      }
+    },
+  );
+
+  const acceptComplete = (operation: "accept" | "complete", title: string, verb: string) =>
+    server.registerTool(
+      `flex_task_${operation}`,
+      {
+        title,
+        description: `${verb} egy feladatot (POST /dms/task/{taskId}/${operation}).
+
+Bemenet:
+  - taskId (string, kötelező): a feladat azonosítója
+  - comment (string): opcionális megjegyzés
+
+Visszatérés: { success, result: boolean }`,
+        inputSchema: {
+          taskId: z.string().min(1).describe("A feladat azonosítója"),
+          comment: z.string().optional().describe("Opcionális megjegyzés"),
+        },
+        annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: true, openWorldHint: true },
+      },
+      async (args) => {
+        try {
+          const body = args.comment ? { comment: args.comment } : {};
+          return toolJson(
+            await client.request("POST", `/dms/task/${encodeURIComponent(args.taskId)}/${operation}`, { body }),
+          );
+        } catch (error) {
+          return toolError(error);
+        }
+      },
+    );
+
+  acceptComplete("accept", "Feladat elfogadása", "Elfogad");
+  acceptComplete("complete", "Feladat lezárása", "Lezár");
+
+  server.registerTool(
+    "flex_task_list",
+    {
+      title: "Feladatok listázása",
+      description: `Listázza a bejelentkezett felhasználó feladatait állapot szerint (GET /dms/news).
+
+Bemenet:
+  - status ("in-progress" | "completed" | "pending" | "all"): szűrő (alapértelmezett "in-progress").
+    Az "all" esetén nem küld status szűrőt, így a lezárt feladatok is megjelennek.
+
+Visszatérés: { success, result } a feladatok adataival (subject, taskName, deadline, id, referenceNumber, stb.)`,
+      inputSchema: {
+        status: z
+          .enum(["in-progress", "completed", "pending", "all"])
+          .default("in-progress")
+          .describe("Feladatok szűrése állapot szerint"),
+      },
+      annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true },
+    },
+    async (args) => {
+      try {
+        const params = args.status !== "all" ? { status: args.status } : undefined;
+        return toolJson(await client.request("GET", "/dms/news", { params }));
+      } catch (error) {
+        return toolError(error);
+      }
+    },
+  );
+}

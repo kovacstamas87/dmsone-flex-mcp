@@ -1,0 +1,100 @@
+{
+  "manifest_version": "0.2",
+  "name": "dmsone-flex-mcp-server",
+  "display_name": "DMS One Flex",
+  "version": "0.1.0",
+  "description": "DMS One Flex feladatok, munkafolyamatok és felhasználók kezelése a Flex REST API-n keresztül.",
+  "long_description": "Lokálisan futó MCP szerver a DMS One Flex rendszerhez. Feladatok létrehozása/lezárása, munkafolyamatok indítása sablon-specifikus mezőkkel, munkafolyamat-feladatok kezelése, csatolmányok és felhasználó-keresés. Minden hívás a megadott token tulajdonosának (vagy station tokennél az impersonált felhasználónak) a nevében fut.",
+  "author": {
+    "name": "DMS One"
+  },
+  "server": {
+    "type": "node",
+    "entry_point": "dist/index.js",
+    "mcp_config": {
+      "command": "node",
+      "args": ["${__dirname}/dist/index.js"],
+      "env": {
+        "FLEX_TOKEN": "${user_config.flex_token}",
+        "FLEX_BASE_URL": "${user_config.flex_base_url}",
+        "FLEX_AUTH_METHOD": "${user_config.flex_auth_method}",
+        "FLEX_IMPERSONATED_EMAIL": "${user_config.flex_impersonated_email}",
+        "FLEX_IGNORE_SSL": "${user_config.flex_ignore_ssl}",
+        "FLEX_DOWNLOAD_DIR": "${user_config.flex_download_dir}"
+      }
+    }
+  },
+  "user_config": {
+    "flex_token": {
+      "type": "string",
+      "title": "Flex token",
+      "description": "Personal Access Token (a Flex felületen a neved menüjében hozható létre) vagy Station Token.",
+      "sensitive": true,
+      "required": true
+    },
+    "flex_base_url": {
+      "type": "string",
+      "title": "Flex API URL",
+      "description": "A Flex API alap URL-je.",
+      "default": "https://flex.dmsone.hu/api",
+      "required": false
+    },
+    "flex_auth_method": {
+      "type": "string",
+      "title": "Hitelesítési mód (pat vagy station)",
+      "description": "\"pat\" személyes tokenhez, \"station\" gépi tokenhez (impersonationnel).",
+      "default": "pat",
+      "required": false
+    },
+    "flex_impersonated_email": {
+      "type": "string",
+      "title": "Impersonált felhasználó email (csak station)",
+      "description": "Station token esetén kinek a nevében járjon el a hívás. PAT esetén hagyd üresen.",
+      "default": "",
+      "required": false
+    },
+    "flex_ignore_ssl": {
+      "type": "boolean",
+      "title": "SSL hibák figyelmen kívül hagyása",
+      "description": "Csak fejlesztéshez/önaláírt tanúsítványhoz. Élesben hagyd kikapcsolva.",
+      "default": false,
+      "required": false
+    },
+    "flex_download_dir": {
+      "type": "directory",
+      "title": "Letöltési könyvtár",
+      "description": "Hova mentse a letöltött csatolmányokat. Üresen az ideiglenes könyvtárba kerül.",
+      "default": "",
+      "required": false
+    }
+  },
+  "tools": [
+    { "name": "flex_task_create", "description": "Új DMS feladat létrehozása" },
+    { "name": "flex_task_comment", "description": "Megjegyzés feladathoz" },
+    { "name": "flex_task_accept", "description": "Feladat elfogadása" },
+    { "name": "flex_task_complete", "description": "Feladat lezárása" },
+    { "name": "flex_task_list", "description": "Feladatok listázása állapot szerint" },
+    { "name": "flex_user_get_by_username", "description": "Felhasználó keresése név alapján" },
+    { "name": "flex_workflow_list_templates", "description": "Munkafolyamat sablonok listázása" },
+    { "name": "flex_workflow_get_template_details", "description": "Sablon kitöltendő mezőinek lekérése" },
+    { "name": "flex_workflow_start", "description": "Munkafolyamat indítása custom mezőkkel" },
+    { "name": "flex_workflow_get_my_tasks", "description": "Saját munkafolyamat-feladatok" },
+    { "name": "flex_workflow_get_task_details", "description": "Munkafolyamat-feladat részletei" },
+    { "name": "flex_workflow_complete_task", "description": "Munkafolyamat-feladat lezárása eredménnyel" },
+    { "name": "flex_workflow_get_task_comments", "description": "Feladat megjegyzései" },
+    { "name": "flex_workflow_add_task_comment", "description": "Megjegyzés munkafolyamat-feladathoz" },
+    { "name": "flex_workflow_get_task_attachments", "description": "Feladat csatolmányai" },
+    { "name": "flex_workflow_get_task_related_attachments", "description": "Kapcsolódó csatolmányok" },
+    { "name": "flex_workflow_download_attachment", "description": "Csatolmány letöltése lemezre" },
+    { "name": "flex_search_linked_items", "description": "Kapcsolt elem keresése azonosító alapján" },
+    { "name": "flex_diag", "description": "Kapcsolat- és token-ellenőrzés" }
+  ],
+  "keywords": ["dms-one", "flex", "workflow", "document-management"],
+  "license": "MIT",
+  "compatibility": {
+    "platforms": ["darwin", "win32", "linux"],
+    "runtimes": {
+      "node": ">=18.0.0"
+    }
+  }
+}
