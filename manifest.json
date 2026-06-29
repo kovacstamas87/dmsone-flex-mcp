@@ -8,6 +8,7 @@
   "author": {
     "name": "DMS One"
   },
+  "icon": "icon.png",
   "server": {
     "type": "node",
     "entry_point": "dist/index.js",

@@ -15,7 +15,7 @@
     "start": "node dist/index.js",
     "dev": "tsx watch src/index.ts",
     "clean": "rm -rf dist build",
-    "bundle": "npm run build && rm -rf build && mkdir -p build/pkg && cp -R dist manifest.json package.json README.md INSTALL-WINDOWS.md INSTALL-MACOS.md .env.example build/pkg/ && (cd build/pkg && npm install --omit=dev --no-audit --no-fund) && npx -y @anthropic-ai/mcpb pack build/pkg \"dmsone-flex-$npm_package_version.mcpb\""
+    "bundle": "npm run build && rm -rf build && mkdir -p build/pkg && cp -R dist manifest.json icon.png package.json README.md INSTALL-WINDOWS.md INSTALL-MACOS.md .env.example build/pkg/ && (cd build/pkg && npm install --omit=dev --no-audit --no-fund) && npx -y @anthropic-ai/mcpb pack build/pkg \"dmsone-flex-$npm_package_version.mcpb\""
   },
   "engines": {
     "node": ">=18"
