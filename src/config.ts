@@ -19,6 +19,13 @@ export interface FlexConfig {
   downloadDir?: string;
   /** IANA zónanév; a Flex felé menő dátumok falióra-ideje ebben a zónában értendő. */
   timeZone: string;
+  /**
+   * A csatolmány-letöltés felső határa **bájtban**. A `client.download()`
+   * memóriába olvassa a választ (a Flex nem ad `Range`-t), ezért korlát nélkül
+   * egy nagy melléklet a szerver folyamatát viszi el — a Claude Desktop
+   * alfolyamataként ez a beszélgetés közepén jelentkező összeomlás.
+   */
+  maxDownloadBytes: number;
 }
 
 /**
@@ -28,8 +35,35 @@ export interface FlexConfig {
  */
 export const DEFAULT_TIME_ZONE = "Europe/Budapest";
 
+/**
+ * A letöltés alapértelmezett felső határa megabájtban. 50 MB: a DMS One-ban
+ * kezelt tipikus melléklet (szkennelt PDF, Office-dokumentum) ezen jóval belül
+ * van, egy ekkora buffer viszont még nem meríti ki a Node alapértelmezett
+ * heapjét. Aki nagyobbat tölt, a FLEX_MAX_DOWNLOAD_MB-vel emelheti.
+ */
+export const DEFAULT_MAX_DOWNLOAD_MB = 50;
+
 function truthy(value: string | undefined): boolean {
   return /^(1|true|yes|on)$/i.test((value ?? "").trim());
+}
+
+/**
+ * Elírt vagy értelmetlen (nulla, negatív, nem szám) érték esetén az
+ * alapértelmezettre esünk vissza, hangosan — a csendes 0 azt jelentené, hogy
+ * *minden* letöltés hibára fut, és a felhasználó nem tudná, miért.
+ */
+function resolveMaxDownloadBytes(value: string | undefined): number {
+  const raw = (value ?? "").trim();
+  if (raw === "") return DEFAULT_MAX_DOWNLOAD_MB * 1024 * 1024;
+  const mb = Number(raw);
+  if (!Number.isFinite(mb) || mb <= 0) {
+    console.error(
+      `FIGYELEM: a FLEX_MAX_DOWNLOAD_MB értéke ("${raw}") nem érvényes pozitív szám — ` +
+        `a szerver a(z) ${DEFAULT_MAX_DOWNLOAD_MB} MB-os alapértelmezést használja.`,
+    );
+    return DEFAULT_MAX_DOWNLOAD_MB * 1024 * 1024;
+  }
+  return Math.floor(mb * 1024 * 1024);
 }
 
 /**
@@ -115,6 +149,16 @@ export function loadConfig(): FlexConfig {
   const downloadDirRaw = (process.env.FLEX_DOWNLOAD_DIR || "").trim();
   const downloadDir = downloadDirRaw ? resolve(downloadDirRaw) : undefined;
   const timeZone = resolveTimeZone(process.env.FLEX_TIMEZONE);
+  const maxDownloadBytes = resolveMaxDownloadBytes(process.env.FLEX_MAX_DOWNLOAD_MB);
 
-  return { baseUrl, authMethod, token, impersonatedEmail, ignoreSsl, downloadDir, timeZone };
+  return {
+    baseUrl,
+    authMethod,
+    token,
+    impersonatedEmail,
+    ignoreSsl,
+    downloadDir,
+    timeZone,
+    maxDownloadBytes,
+  };
 }

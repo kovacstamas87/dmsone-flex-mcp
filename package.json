@@ -22,7 +22,7 @@
     "clean": "rm -rf dist build",
     "sync-manifest": "npm run build && node scripts/sync-manifest.mjs",
     "version": "node scripts/sync-manifest.mjs && git add manifest.json",
-    "bundle": "npm run build && node scripts/sync-manifest.mjs && rm -rf build && mkdir -p build/pkg && cp -R dist manifest.json icon.png package.json README.md INSTALL-WINDOWS.md INSTALL-MACOS.md .env.example build/pkg/ && (cd build/pkg && npm install --omit=dev --no-audit --no-fund) && npx -y @anthropic-ai/mcpb pack build/pkg \"dmsone-flex-$npm_package_version.mcpb\""
+    "bundle": "npm run build && node scripts/sync-manifest.mjs && node scripts/bundle.mjs"
   },
   "engines": {
     "node": ">=20"
@@ -44,6 +44,7 @@
   "devDependencies": {
     "@eslint/js": "^10.0.1",
     "@types/node": "^22.20.1",
+    "esbuild": "^0.28.2",
     "eslint": "^10.9.1",
     "eslint-config-prettier": "^10.1.8",
     "globals": "^17.12.0",

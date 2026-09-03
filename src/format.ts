@@ -91,6 +91,16 @@ export function formatError(error: unknown): string {
     if (error.code === "ECONNABORTED") {
       return "Hiba: a kérés időtúllépés miatt megszakadt. Próbáld újra.";
     }
+    // Tartalék: a letöltési méretkorlátot a `client.download()` alakítja
+    // `DownloadTooLargeError`-rá (az ismeri a beállított MB-értéket). Ide csak
+    // az kerül, ami mégis nyers axios-hibaként jut el idáig — az angol,
+    // bájtszámot közlő szöveg helyett magyar üzenetet adunk.
+    if (/maxContentLength/i.test(error.message)) {
+      return (
+        "Hiba: a válasz meghaladta a beállított letöltési méretkorlátot. " +
+        "Emeld a FLEX_MAX_DOWNLOAD_MB értékét, vagy töltsd le a fájlt a Flex felületéről."
+      );
+    }
     if (status === undefined) {
       return (
         `Hiba: nem sikerült elérni a Flex API-t (${error.code ?? "ismeretlen hálózati hiba"}). ` +

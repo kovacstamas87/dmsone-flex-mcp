@@ -11,6 +11,7 @@ const base: FlexConfig = {
   ignoreSsl: false,
   downloadDir: undefined,
   timeZone: DEFAULT_TIME_ZONE,
+  maxDownloadBytes: 50 * 1024 * 1024,
 };
 
 describe("validateConfig", () => {

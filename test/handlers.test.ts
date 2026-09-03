@@ -59,6 +59,7 @@ const BASE_CONFIG: FlexConfig = {
   token: "test-token",
   ignoreSsl: false,
   timeZone: "Europe/Budapest",
+  maxDownloadBytes: 50 * 1024 * 1024,
 };
 
 /** Egy `register*Tools`-t egy in-memory szerver-kliens párra köt, és a klienst adja vissza. */

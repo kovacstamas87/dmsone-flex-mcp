@@ -22,6 +22,33 @@ export interface DownloadResult {
  * helyette (rögzített válasz / dobott hiba), élő HTTP-hívás vagy HTTP-mock
  * (pl. `nock`) nélkül. Ez gyorsabb, és nem függ egy külső mock-könyvtár API-jától.
  */
+/**
+ * A letöltési méretkorlát túllépése. Külön típus, hogy a hívó (és a teszt)
+ * meg tudja különböztetni a hálózati hibáktól; a `message` már a felhasználónak
+ * szánt magyar szöveg, ezt adja tovább a `formatError` `Error`-ága.
+ */
+export class DownloadTooLargeError extends Error {
+  constructor(readonly limitBytes: number) {
+    const limitMb = Math.round((limitBytes / (1024 * 1024)) * 10) / 10;
+    super(
+      `A csatolmány nagyobb a megengedett ${limitMb} MB-nál, ezért a letöltés megszakadt. ` +
+        `Emeld a FLEX_MAX_DOWNLOAD_MB értékét (a Claude Desktop bővítmény-beállításaiban vagy ` +
+        `a .env fájlban), vagy töltsd le a fájlt a Flex felületéről.`,
+    );
+    this.name = "DownloadTooLargeError";
+  }
+}
+
+/**
+ * Az axios a `maxContentLength` túllépését `ERR_BAD_RESPONSE` kóddal és
+ * angol, bájtszámot közlő szöveggel jelzi — státuszkód nélkül. A kódra egyedül
+ * nem támaszkodhatunk (más válasz-hibák is ezt kapják), ezért a szöveget is
+ * ellenőrizzük.
+ */
+function isMaxContentLengthError(error: unknown): boolean {
+  return axios.isAxiosError(error) && /maxContentLength/i.test(error.message);
+}
+
 export interface FlexHttp {
   request<T = unknown>(method: "GET" | "POST", url: string, opts?: RequestOptions): Promise<T>;
   download(url: string): Promise<DownloadResult>;
@@ -68,9 +95,30 @@ export class FlexClient implements FlexHttp {
     return res.data;
   }
 
-  /** Download a binary attachment and surface its filename from the headers. */
+  /**
+   * Download a binary attachment and surface its filename from the headers.
+   *
+   * A méretkorlát (`config.maxDownloadBytes`) az axios `maxContentLength`-je: a
+   * `Content-Length` fejlécet előre ellenőrzi, és a folyam közben is elvágja, ha
+   * a fejléc hiányzott vagy hazudott. Miért kell: a válasz teljes egészében
+   * memóriába kerül (a Flex nem ad részleges letöltést), így korlát nélkül egy
+   * nagy melléklet a szerverfolyamatot viszi el. A túllépés magyar, cselekvésre
+   * fordítható hibává alakul — az axios saját szövege bájtszámot közöl, és nem
+   * mondja meg, mit lehet tenni.
+   */
   async download(url: string): Promise<DownloadResult> {
-    const res = await this.http.request({ method: "GET", url, responseType: "arraybuffer" });
+    let res;
+    try {
+      res = await this.http.request({
+        method: "GET",
+        url,
+        responseType: "arraybuffer",
+        maxContentLength: this.config.maxDownloadBytes,
+      });
+    } catch (error) {
+      if (isMaxContentLengthError(error)) throw new DownloadTooLargeError(this.config.maxDownloadBytes);
+      throw error;
+    }
     const disposition = (res.headers["content-disposition"] as string | undefined) ?? undefined;
     let fileName: string | undefined;
     if (disposition) {

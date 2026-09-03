@@ -28,6 +28,8 @@ A `tsconfig.json` `include`-ja `src/**/*` marad, ezért a `test/` **nem** kerül
 | `fixtures/task-list.json` | A `/dms/news` élő, read-only mintája (21 elem), **anonimizálva** | WF9 |
 | `fixtures/wf-tasks.json` | A `/dms/wfTasks/my` alakja (25 elem) a lapozás széleihez | WF9 |
 | `handlers.test.ts` | A `register*Tools` handlerei egy fake `FlexHttp` kliensen (lásd `src/client.ts`), a valódi MCP-protokollon át (`InMemoryTransport` + `Client.callTool`, nem a `registerTool` belső callback-je): `flex_task_list` (summary/full/limit), `flex_workflow_get_my_tasks`, `flex_workflow_get_template_details` (`includeRaw` mindkét ága), `flex_workflow_download_attachment` (sandbox-lánc: mentés, könyvtár fölé mutató `savePath` elutasítása, ütközésnél `-1` utótag) fake bufferrel | WF12 |
+| `client.test.ts` | `src/client.ts` letöltési méretkorlátja **valódi HTTP-n** (helyi `node:http` szerver): a korlát alatti fájl átmegy, `Content-Length`-szel és **`Content-Length` nélkül, chunkolva** is elesik (`DownloadTooLargeError`), a hiba a tool-válaszban magyarul jelenik meg; plusz a `formatError` nyers-axios tartaléka és a `FLEX_MAX_DOWNLOAD_MB` feloldása (üres, törtszám, nulla/negatív/nem szám → alapértelmezés) | WF13 |
+| `manifest.test.ts` | A `manifest.json` **ember által írt** része: `manifest_version` 0.3, minden `mcp_config.env` hivatkozás létező `user_config` kulcsra mutat, a metaadat-URL-ek a valódi repóra, a verzió a `package.json`-nal egyezik | WF13 |
 
 ## Rögzített szabályok
 
@@ -68,6 +70,10 @@ A `tsconfig.json` `include`-ja `src/**/*` marad, ezért a `test/` **nem** kerül
   `structuredContent`-et validálja, azt pedig a `toolJson` állítja elő — a redakcióval és a
   méretkorláttal együtt. A nyers objektum validálása zöld lenne akkor is, ha a csonkolás-ág
   élesben elszállasztja a hívást.
+- **A `.mcpb` tartalmát nem teszt őrzi, hanem a `scripts/bundle.mjs` maga**: a csomagolás után
+  `unzip -l`-lel ellenőrzi, hogy nincs `node_modules` bejegyzés, és hibával elesik, ha van. Miért
+  nem `*.test.ts`: a bundle előállítása másodpercekig tart, és a `npm test` így hálózat- és
+  build-mentes marad; a szerződés ott a leghasznosabb, ahol keletkezik.
 - **A `handlers.test.ts` fake klienst ad át, nem HTTP-t mockol.** A `register*Tools` a `FlexHttp`
   interfészen (`src/client.ts`) keresztül lát klienst — egy `{ request, download }` alakú objektum,
   amit egy `nock`-szerű könyvtár helyett egy plain objektum is kielégít: rögzített választ ad vagy
@@ -79,6 +85,10 @@ A `tsconfig.json` `include`-ja `src/**/*` marad, ezért a `test/` **nem** kerül
   élesben — csak a folyamat nem hagyja el a Node-példányt, ahogy a `tools-list.test.ts` teszi.
 - **Nincs Flex-hívás a tesztekben.** A tesztek tiszta függvényeket fednek le; élő ellenőrzés a
   kiadási munkafolyamatban (WF7) történik, Inspectorral vagy újratelepített `.mcpb`-vel.
+  Kivétel-nélküli szabály, nem tiltás a HTTP-re: a `client.test.ts` **saját** `node:http` szervert
+  indít localhoston. Miért ott mégis: a méretkorlát az axios `maxContentLength`-je, tehát azt kell
+  látni, hogy az adapter valóban elvágja a választ — egy fake `FlexHttp` ezt megkerülné, mert ott a
+  `download()` implementációja nem is fut le. Flexet ez sem hív.
   A `tools-list.test.ts` ugyan elindítja a szervert, de a `tools/list` nem hív Flexet — ezért
   elég a dummy token, és hálózat nélkül is fut.
 - **A `tools-list.test.ts` a protokollon át néz, nem a forrásban.** Miért: az annotációk azért

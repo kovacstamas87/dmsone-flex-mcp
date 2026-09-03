@@ -1,13 +1,21 @@
 {
-  "manifest_version": "0.2",
+  "manifest_version": "0.3",
   "name": "dmsone-flex-mcp-server",
   "display_name": "DMS One Flex",
   "version": "0.1.1",
   "description": "DMS One Flex feladatok, munkafolyamatok és felhasználók kezelése a Flex REST API-n keresztül.",
   "long_description": "Lokálisan futó MCP szerver a DMS One Flex rendszerhez. Feladatok létrehozása/lezárása, munkafolyamatok indítása sablon-specifikus mezőkkel, munkafolyamat-feladatok kezelése, csatolmányok és felhasználó-keresés. Minden hívás a megadott token tulajdonosának (vagy station tokennél az impersonált felhasználónak) a nevében fut.",
   "author": {
-    "name": "DMS One"
+    "name": "DMS One",
+    "url": "https://github.com/kovacstamas87/dmsone-flex-mcp"
   },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kovacstamas87/dmsone-flex-mcp.git"
+  },
+  "homepage": "https://github.com/kovacstamas87/dmsone-flex-mcp",
+  "documentation": "https://github.com/kovacstamas87/dmsone-flex-mcp/blob/main/INSTALL-WINDOWS.md",
+  "support": "https://github.com/kovacstamas87/dmsone-flex-mcp/issues",
   "icon": "icon.png",
   "server": {
     "type": "node",
@@ -24,7 +32,8 @@
         "FLEX_IMPERSONATED_EMAIL": "${user_config.flex_impersonated_email}",
         "FLEX_IGNORE_SSL": "${user_config.flex_ignore_ssl}",
         "FLEX_DOWNLOAD_DIR": "${user_config.flex_download_dir}",
-        "FLEX_TIMEZONE": "${user_config.flex_timezone}"
+        "FLEX_TIMEZONE": "${user_config.flex_timezone}",
+        "FLEX_MAX_DOWNLOAD_MB": "${user_config.flex_max_download_mb}"
       }
     }
   },
@@ -76,6 +85,14 @@
       "title": "Letöltési könyvtár",
       "description": "Hova mentse a letöltött csatolmányokat. Üresen az ideiglenes könyvtár dmsone-flex almappájába kerül. A letöltés csak ebbe a könyvtárba (vagy alkönyvtárába) írhat.",
       "default": "",
+      "required": false
+    },
+    "flex_max_download_mb": {
+      "type": "number",
+      "title": "Letöltési méretkorlát (MB)",
+      "description": "Ennél nagyobb csatolmányt a szerver nem tölt le, hanem hibát ad. A letöltés teljes egészében memóriába kerül, ezért a korlát védi a szerverfolyamatot a nagy mellékletektől.",
+      "default": 50,
+      "min": 1,
       "required": false
     }
   },

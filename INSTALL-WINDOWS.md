@@ -27,8 +27,10 @@ A bővítmény a saját Flex hozzáféréseddel dolgozik, ehhez egy token kell.
 ## A) Egykattintásos telepítés (.mcpb) — AJÁNLOTT
 
 ### 1. lépés – A telepítőfájl beszerzése
-Szerezd be a `dmsone-flex-0.1.0.mcpb` fájlt (a csapattól / belső megosztásból),
-és mentsd egy könnyen elérhető helyre, pl. `Letöltések`.
+Töltsd le a legfrissebb `dmsone-flex-<verzió>.mcpb` fájlt a **Releases** oldalról:
+https://github.com/kovacstamas87/dmsone-flex-mcp/releases/latest
+(a *Assets* alatt van), és mentsd egy könnyen elérhető helyre, pl. `Letöltések`.
+Ha nem érsz hozzá, kérd el a csapattól.
 
 ### 2. lépés – Claude Desktop megnyitása
 Indítsd el a **Claude Desktop** alkalmazást. Ha nincs telepítve, töltsd le innen:
@@ -39,7 +41,7 @@ Bal alul kattints a **neved / profil ikon** → **Settings** (Beállítások) �
 a bal oldali menüben **Extensions** (Bővítmények).
 
 ### 4. lépés – A bővítmény behúzása
-- Húzd rá a `dmsone-flex-0.1.0.mcpb` fájlt az Extensions ablakra,
+- Húzd rá a letöltött `.mcpb` fájlt az Extensions ablakra,
   **vagy** kattints az **Install Extension / Advanced settings** gombra és
   tallózd be a fájlt.
 - A Claude Desktop megmutatja a bővítmény adatait (DMS One Flex, 19 eszköz).
@@ -59,6 +61,9 @@ Megjelenik egy űrlap. Töltsd ki:
 - **Letöltési könyvtár** – hova kerüljenek a letöltött csatolmányok (üresen az
   ideiglenes mappa `dmsone-flex` almappájába). A letöltés csak ebbe a mappába vagy
   alkönyvtárába írhat, meglévő fájlt nem ír felül.
+- **Letöltési méretkorlát (MB)** – alapból `50`. Ennél nagyobb csatolmányt a
+  bővítmény nem tölt le, hanem hibát ad (a fájl teljes egészében a memóriába
+  kerül). Csak akkor emeld, ha tényleg nagyobb mellékleteket kell letöltened.
 
 ### 6. lépés – Engedélyezés
 Kattints a **Save / Enable** (Mentés / Engedélyezés) gombra. A bővítmény

@@ -7,14 +7,15 @@ a közösségi `n8n-nodes-dmsone-flex` node.
 
 **Állapot (2026-09-03):** **v0.1.1** kiadva (P0: WF1–WF7), a `../flex-mcp-p1-p2-megvalositasi-terv.md`
 **P1 üteme fut**: a **WF9** (payload-kontroll), a **WF10** (`outputSchema`, tömör leírások,
-generált `manifest.tools`), a **WF11** (Task/WfTask `idKind`, `orgId` alapértelmezés kivezetése) és a
-**WF12** (minőség-infrastruktúra) kész — a két listázó lapoz és összefoglalót ad, a `toolJson` a
-`structuredContent`-et is csonkolja, öt eszköz `outputSchema`-t ad, az összleírás 11 936-ról 4 500
-alá fogyott, a `flex_task_list` minden eleme explicit `idKind`-ot (`taskId`/`wfTaskId`) is ad, a
-`performerOrgId`/`responsibleOrgId`-nak nincs többé néma `1` alapértelmezése, és a szerver most már
-eslint + prettier + typecheck alatt fut, CI-mátrixszal (Node 20/22, `npm audit`) és
-handler-tesztekkel egy fake `FlexHttp` kliensen. Build és teszt zöld (141 teszt). A következő a
-**WF13** (esbuild bundle, manifest 0.3, méretkorlát).
+generált `manifest.tools`), a **WF11** (Task/WfTask `idKind`, `orgId` alapértelmezés kivezetése), a
+**WF12** (minőség-infrastruktúra) és a **WF13** (egyfájlos bundle, manifest 0.3, letöltési
+méretkorlát) kész — a két listázó lapoz és összefoglalót ad, a `toolJson` a `structuredContent`-et is
+csonkolja, öt eszköz `outputSchema`-t ad, az összleírás 11 936-ról 4 500 alá fogyott, a
+`flex_task_list` minden eleme explicit `idKind`-ot (`taskId`/`wfTaskId`) is ad, a
+`performerOrgId`/`responsibleOrgId`-nak nincs többé néma `1` alapértelmezése, a szerver eslint +
+prettier + typecheck alatt fut CI-mátrixszal (Node 20/22, `npm audit`) és handler-tesztekkel egy fake
+`FlexHttp` kliensen, a `.mcpb` pedig 3,79 MB-ról **212 kB**-ra fogyott, `node_modules` nélkül. Build
+és teszt zöld (153 teszt). A következő a **WF14** (eval kérdéssor és két mérés).
 Nyitva maradt a Flex-oldali P0-2 elküldése, a P0-6 Flex-válasz és az opcionális élő/írás-tesztek —
 lásd lent.
 
@@ -23,16 +24,17 @@ lásd lent.
 | Fájl / mappa | Mi ez | Állapot |
 |---|---|---|
 | [`src/`](src/) | A szerver forráskódja — lásd [`src/CLAUDE.md`](src/CLAUDE.md) | WF10 után (`paths.ts` új WF3-ban, `validateConfig` új WF5-ben, `projection.ts` új WF9-ben, `schema.ts` új WF10-ben) |
-| [`test/`](test/) | `node:test` alapú tesztek, `tsx`-szel futtatva (`npm test`) — lásd [`test/CLAUDE.md`](test/CLAUDE.md) | WF1–WF5, WF9–WF12-ben bővítve (141 teszt); a `test/fixtures/` élő, **anonimizált** minta |
+| [`test/`](test/) | `node:test` alapú tesztek, `tsx`-szel futtatva (`npm test`) — lásd [`test/CLAUDE.md`](test/CLAUDE.md) | WF1–WF5, WF9–WF13-ban bővítve (153 teszt); a `test/fixtures/` élő, **anonimizált** minta |
+| [`scripts/bundle.mjs`](scripts/bundle.mjs) | A `.mcpb` előállítása **esbuild egyfájlos bundle-ből**: `dist/index.js` → `build/pkg/dist/index.js`, minimális `package.json`, majd `@anthropic-ai/mcpb pack`. Ellenőrzi, hogy a csomagban nincs `node_modules`, és kiírja a méretet | **új WF13-ban** |
 | [`scripts/sync-manifest.mjs`](scripts/sync-manifest.mjs) | A `manifest.json`-t a kódhoz igazítja, idempotens: a `version` a `package.json`-ból, a `tools[]` a **lefordított** `dist/index.js` `tools/list` válaszából. `dist/` hiányában a `tools`-t érintetlenül hagyja és figyelmeztet | **új WF1-ben**; WF10: `tools[]`-generálás |
-| `manifest.json` | `.mcpb` csomag metaadata — a `version` **és WF10-től a `tools[]` is generált**, ne szerkeszd kézzel (a `sync-manifest.mjs` írja) | WF1-ben szinkron-forrás lett; WF3: `flex_download_dir` leírása a sandboxot mondja; WF4: új `flex_timezone` konfig-mező; WF10: generált `tools[]` |
+| `manifest.json` | `.mcpb` csomag metaadata — a `version` **és WF10-től a `tools[]` is generált**, ne szerkeszd kézzel (a `sync-manifest.mjs` írja) | WF1-ben szinkron-forrás lett; WF3: `flex_download_dir` leírása a sandboxot mondja; WF4: új `flex_timezone` konfig-mező; WF10: generált `tools[]`; **WF13: `manifest_version` 0.3**, `repository`/`homepage`/`documentation`/`support`/`author.url`, új `flex_max_download_mb` mező |
 | `package.json` / `package-lock.json` | Függőségek, scriptek (`build`, `test`, `bundle`, `sync-manifest`, `version` lifecycle; **WF12-től** `lint`, `lint:fix`, `format:check`, `typecheck`) | WF1-ben frissítve; WF10: új `sync-manifest` script; WF12: minőség-scriptek |
 | `eslint.config.js`, `.prettierrc`, `.prettierignore` | Flat eslint-config (`typescript-eslint` recommended) és Prettier-beállítás (`printWidth: 110`) — a doksi (`*.md`, `manifest.json`) szándékosan kimarad a Prettier hatóköréből | **új WF12-ben** |
 | `.github/dependabot.yml` | Heti `npm` és `github-actions` függőségfrissítés-figyelés | **új WF12-ben** |
-| `INSTALL-WINDOWS.md`, `INSTALL-MACOS.md` | Végfelhasználói telepítési útmutatók | WF1-ben Node 20+ -ra igazítva; WF3: letöltési könyvtár leírása; WF4: „Időzóna" mező a konfig-űrlapon; WF5: SSL-tiltás a publikus URL-en |
-| `README.md` | Fejlesztői doksi | WF3: `FLEX_DOWNLOAD_DIR`, WF4: `FLEX_TIMEZONE`, WF5: SSL-tiltás megjegyzése a konfig-táblában |
+| `INSTALL-WINDOWS.md`, `INSTALL-MACOS.md` | Végfelhasználói telepítési útmutatók | WF1-ben Node 20+ -ra igazítva; WF3: letöltési könyvtár leírása; WF4: „Időzóna" mező a konfig-űrlapon; WF5: SSL-tiltás a publikus URL-en; WF13: letöltés a **Releases** oldalról (nincs hardcode-olt verzió), új „Letöltési méretkorlát” mező a konfig-űrlapon |
+| `README.md` | Fejlesztői doksi | WF3: `FLEX_DOWNLOAD_DIR`, WF4: `FLEX_TIMEZONE`, WF5: SSL-tiltás; WF13: `FLEX_MAX_DOWNLOAD_MB`, és a „Kiadás készítése” fejezet az `npm version`-re javítva |
 | `CHANGELOG.md` | Kiadási napló | **WF6-ban megírva** a `[0.1.1]` bejegyzés (Security/Fixed/Changed, P0-hivatkozásokkal) |
-| `.env.example` | Env változók mintája (`FLEX_TOKEN`, `FLEX_BASE_URL`, …) | WF3: `FLEX_DOWNLOAD_DIR` megjegyzés (abszolút út, sandbox); WF4: `FLEX_TIMEZONE` |
+| `.env.example` | Env változók mintája (`FLEX_TOKEN`, `FLEX_BASE_URL`, …) | WF3: `FLEX_DOWNLOAD_DIR` megjegyzés (abszolút út, sandbox); WF4: `FLEX_TIMEZONE`; WF13: `FLEX_MAX_DOWNLOAD_MB` |
 | `dist/`, `build/`, `*.mcpb`, `node_modules/` | **Build-artefaktum** — ne szerkeszd, `npm run build` / `npm run bundle` állítja elő | generált |
 
 ## Hol van az igazság forrása
@@ -45,6 +47,7 @@ lásd lent.
 | Egy eszköz **válaszának alakja** | `src/schema.ts` `outputSchema`-ja, ahol a választ a szerver építi (öt eszköz); a passthrough eszközöknél a Flex válasza az egyetlen forrás — ezért ott nincs séma |
 | Szerver kódja | `src/` — lásd [`src/CLAUDE.md`](src/CLAUDE.md) |
 | Tesztek | `test/*.test.ts`, futtatás: `npm test` (`node --import tsx --test`) |
+| A `.mcpb` **tartalma** | `scripts/bundle.mjs` `COPIED` listája + az esbuild bundle; a `build/pkg/` staging mappa minden futásnál nulláról készül |
 | CI | `.github/workflows/ci.yml` — Node 20/22 mátrix: `npm ci`, `lint`, `format:check`, `build`, `test`, `npm audit --audit-level=moderate` |
 | Egy tool tesztelhető válasza fake klienssel | `test/handlers.test.ts` — a `FlexHttp` interfész (`src/client.ts`) mögé tett fake, lásd „Kulcsdöntések" |
 
@@ -72,26 +75,24 @@ lásd lent.
   `format.ts` `toolJson`/`formatError`-én át). Miért nem csak a `/diag`-nál: a szűrés így nem
   kerülhető meg egy később hozzáadott eszközzel, és a hibatörzsek is átmennek rajta. Részletek:
   [`src/CLAUDE.md`](src/CLAUDE.md).
-- **A `flex_diag` a `/diag` válaszából csak a `method`/`uri`/`qs` mezőt adja vissza.** Miért:
-  a Flex `/diag` visszatükrözi a kérés fejléceit (Bearer token) és a backend környezeti változóit
-  (`APP_KEY`) — ezekre a diagnosztikának nincs szüksége, ezért fel sem vesszük a válaszba; a
-  redakció csak a második védvonal. A backend-oldali javítás (P0-2) a Flex csapatnál nyitott.
+- **A `flex_diag` a `/diag` válaszából csak a `method`/`uri`/`qs` mezőt adja vissza.** Miért: a
+  `/diag` visszatükrözi a kérés fejléceit (Bearer token) és a backend env-változóit (`APP_KEY`) —
+  ezekre nincs szükség, ezért fel sem vesszük; a redakció csak a második védvonal. A backend-oldali
+  javítás (P0-2) a Flex csapatnál nyitott.
 - **A csatolmány-letöltés csak a letöltési könyvtár alá írhat** (`FLEX_DOWNLOAD_DIR`, vagy az OS
   temp `dmsone-flex` almappája), és **meglévő fájlt sosem ír felül** (`-1`, `-2`… utótag + `wx`
   flag). Miért: a `savePath` a modelltől, a fájlnév a Flex szervertől jön — mindkettő nem
   megbízható, és korábban mindkettő szó szerint került az útvonalba (P0-3). Az útvonal-döntések
-  egy helyen, tiszta függvényekben vannak (`src/paths.ts`), hogy platformtól függetlenül
-  tesztelhetők legyenek; a symlink-eset ellen a szülőkönyvtár `realpath`-ja is ellenőrzött.
-  Részletek: [`src/CLAUDE.md`](src/CLAUDE.md).
+  egy helyen, tiszta függvényekben vannak (`src/paths.ts`); a symlink-eset ellen a szülőkönyvtár
+  `realpath`-ja is ellenőrzött. Részletek: [`src/CLAUDE.md`](src/CLAUDE.md).
 - **Az annotációk azt mondják, amit az eszköz tesz** (P0-4): a letöltés `readOnlyHint: false`
   (fájlt ír) és `idempotentHint: false` (ütközésnél új név); a munkafolyamat-indítás, a
   munkafolyamat-feladat lezárása és a Task-lezárás `destructiveHint: true` (innen nem
   visszavonható). A Task-elfogadás marad nem destruktív. Miért számít: a Claude Desktop ezekből
   dönt a megerősítés-kérésről. A `test/tools-list.test.ts` a protokollon át őrzi őket.
-- **`@modelcontextprotocol/sdk` `^1.30.0`, `axios` `^1.20.0`** — a `npm audit fix` (nem `--force`)
-  a maradék tranzitív sebezhetőségeket (SDK belső `hono`/`ip-address`/`qs` — ezeket csak a
-  streamable-HTTP transzporthoz hozza be a csomag, mi stdio-t használunk, de a lockfile-ban benne
-  vannak) is megoldotta lockfile-on belüli, nem-breaking frissítéssel. `npm audit` jelenleg tiszta.
+- **`@modelcontextprotocol/sdk` `^1.30.0`, `axios` `^1.20.0`**, `npm audit` tiszta. Az SDK belső
+  `hono`/`ip-address`/`qs` függősége csak a streamable-HTTP transzporthoz kell (mi stdio-t
+  használunk), de a lockfile-ban benne van — ezért a Dependabot és a CI-audit figyeli.
 - **A Flex dátummezői falióra-idők, nem időpillanatok.** A `formatDateTime` ezért offset nélküli
   bemenetet változatlanul hagy, és csak offsettel megadott értéket számol át a `FLEX_TIMEZONE`
   zónájára (alap `Europe/Budapest`). Miért fontos: a korábbi `toISOString()` mindig UTC-re
@@ -128,17 +129,40 @@ lásd lent.
   átment volna (P0-8); a PAT+impersonáció kombináció pedig érvényes konfignak tűnt, miközben az
   impersonáció ilyenkor hatástalan (P0-9).
 - **`register*Tools` a `FlexHttp` interfészt kapja, nem a konkrét `FlexClient`-et** (WF12,
-  `src/client.ts`). A `FlexClient` (axios-alapú) implementálja; `index.ts` továbbra is ezt
-  példányosítja élesben. Miért kell a szint: a handler-tesztek (`test/handlers.test.ts`) így egy
+  `src/client.ts`). Miért kell a szint: a handler-tesztek (`test/handlers.test.ts`) így egy
   egyszerű, memóriában dolgozó fake-et adhatnak át — rögzített válasz vagy dobott hiba —, HTTP-mock
-  könyvtár (pl. `nock`) és hálózat nélkül. A típusrendszer kényszeríti ki, hogy a fake a valódi
-  felületet (`request`/`download`) implementálja.
+  könyvtár (pl. `nock`) és hálózat nélkül, a valódi felületet (`request`/`download`) típusból
+  kikényszerítve.
 - **Eslint (flat config, `typescript-eslint` recommended) + Prettier + `tsc --noEmit`, külön
   scriptekkel** (WF12: `lint`, `lint:fix`, `format:check`, `typecheck`). Az `eslint-config-prettier`
   kikapcsolja az ütköző stílus-szabályokat, hogy a két eszköz ne versengjen ugyanazon a soron. A
   Prettier hatóköre (`.prettierignore`) szándékosan **csak a kód** (`.ts`/`.js`/`.mjs`) — a kézzel
   gondozott doksi (`*.md`) és a generált `manifest.json` kimarad, mert azok újraformázása a WF-en
   kívüli, felesleges diffet adna.
+- **A `.mcpb` egyfájlos esbuild-bundle-ből készül, `node_modules` nélkül** (P1-10, WF13). A
+  korábbi `npm install --omit=dev` a staging mappában 3,79 MB-os csomagot adott, amiben minden
+  tranzitív függőség teljes tartalma (doksi, teszt, source map) a felhasználó gépére került; az
+  esbuild csak a tényleg elért kódot fordítja egyetlen `dist/index.js`-be → **212 kB**, 0 futásidejű
+  függőség (`npm audit` a csomagra 0, mert nincs mit auditálni). A bundle továbbra is tiszta
+  JavaScript, natív bináris nélkül, tehát platformfüggetlen. Két buktató, amit a szkript kezel:
+  (1) a `banner` odaadja a CJS-ként írt függőségek által várt `require`/`__filename`/`__dirname`-t,
+  amik ESM-ben nem léteznek; (2) a staging mappába **minimális `package.json`** kerül `"type":
+  "module"`-lal és `dependencies` nélkül — enélkül a Node CommonJS-ként próbálná betölteni az ESM
+  bundle-t, és az `index.ts` `createRequire`-es verzióolvasása sem találna forrást. A szkript
+  ellenőrzi is, hogy a kész `.mcpb`-ben nincs `node_modules` bejegyzés, és hibával elesik, ha van.
+- **A csatolmány-letöltésnek felső mérethatára van** (`FLEX_MAX_DOWNLOAD_MB`, alap 50 MB; B11,
+  WF13). Miért kell: a `client.download()` a választ teljes egészében memóriába olvassa (a Flex nem
+  ad részleges letöltést), és a szerver a Claude Desktop alfolyamata — korlát nélkül egy nagy
+  melléklet a beszélgetés közepén viszi el a folyamatot. A korlát az axios `maxContentLength`-je,
+  ezért a `Content-Length` fejlécet előre és a folyamot közben is ellenőrzi: hiányzó vagy hazudó
+  fejléc nem kerüli meg. A túllépés **hiba, nem csonkolás** — egy félig letöltött fájl rosszabb
+  lenne, mint a hibaüzenet —, és magyar, cselekvésre fordítható szöveget ad
+  (`DownloadTooLargeError`), nem az axios angol bájtszámát. Egy elírt vagy nulla/negatív
+  `FLEX_MAX_DOWNLOAD_MB` az alapértelmezésre esik vissza, hangosan: a csendes 0 azt jelentené, hogy
+  *minden* letöltés hibára fut.
+- **A verziót az `npm version` emeli, egy helyen** (WF13, README „Kiadás készítése"). Korábban a
+  README kézi, kétszeres verzióemelést írt (`package.json` **és** `manifest.json`) — ez pontosan az
+  az elsodródás, amit a `version` npm-hook (`sync-manifest.mjs` + `git add manifest.json`) kizár.
 - **A CI Node 20/22 mátrixon fut, és `npm audit`-ot is végez** (WF12). Miért két verzió: az
   `engines` `>=20`-at ír elő, a mátrix ezt a határt és a következő LTS-t is lefedi egyetlen
   workflow-fájlból. Az `npm audit --audit-level=moderate` a függőség-frissítések (Dependabot) mellé
@@ -150,27 +174,23 @@ lásd lent.
   szerverben, MCP-oldalon nincs mit javítani — a hívás helyes, a hibaüzenet a felhasználóhoz eljut.
   Részletek, reprodukció és a kérés: [`../flex-diag-hibajelentes.md`](../flex-diag-hibajelentes.md)
   2. és 3. pontja.
-  1. **`status: "all"` → HTTP 500.** Ilyenkor a szerver (a referencia n8n node-dal egyezően)
-     szándékosan nem küld `status` paramétert, a Flex viszont elhasal rajta:
-     `getWorkflowTaskSql(): Argument #2 ($statusFilter) must be of type string, null given`.
-     A tool leírása ezért **kimondja**, hogy ez ma hibára fut — a leírás-őszinteség szabálya
-     a szerveroldali hibára is vonatkozik, mert a modellnek ebből kell döntenie.
-  2. **A `pending` és a `completed` bájtra azonos választ ad** (50 elem, benne 15 darab `FA_U`
-     státuszú, azaz nyitott feladat). Nem tudjuk, mi a szándékolt viselkedés — a jelentés
-     rákérdez. A leírás ezt is megemlíti.
+  1. **`status: "all"` → HTTP 500** (a szerver a referencia n8n node-dal egyezően nem küld `status`
+     paramétert, a Flex ezen elhasal). 2. **A `pending` és a `completed` bájtra azonos választ ad**,
+     benne nyitott (`FA_U`) feladatokkal. Mindkettőt **kimondja a `flex_task_list` leírása** — a
+     leírás-őszinteség szabálya a szerveroldali hibára is vonatkozik, mert a modellnek ebből kell
+     döntenie.
 - **P0-2**: a `/diag` végpont backend-oldali szűrése — a jelentés szövege kész
   (`../flex-diag-hibajelentes.md`), elküldése a Flex csapatnak a felhasználó lépése.
 - **P0-6 Flex-oldali fele**: mi jelöli a kötelezőséget a startDetails válaszában (a `visibility:
   MT_K` az?) — ugyanabban a jelentésben (`../flex-diag-hibajelentes.md`) felvetve. Amíg nincs
   válasz, a `validation: "none"` a 66-os sablonnál a helyes, őszinte állapot.
-- **A dátumjavítás írás-tesztje**: flex-dev környezetben, egy tesztfeladattal, a felhasználó
-  kifejezett jóváhagyásával — alapból kimarad. A `datetime.test.ts` a konverziót Flex nélkül fedi
-  le; ami hiányzik, az annak igazolása, hogy a Flex **tényleg** faliórát tárol.
-- **Élő sandbox-próba** (opcionális): `savePath: "../x"` → hiba; `savePath: "proba/a.pdf"` → a
-  letöltési könyvtár alatt. A WF3 tesztjei ezt fájlrendszer-szinten már lefedik, Flex nélkül.
-- **Élő read-only ellenőrzés a felhasználó tokenjével**: a friss `.mcpb` (`dmsone-flex-0.1.1.mcpb`)
-  Claude Desktopba telepítése és egy `flex_diag` / `flex_workflow_get_template_details 66` hívás —
-  a felhasználó választása, mikor teszi meg. A régi `dmsone-flex-0.1.0.mcpb` szándékosan megmaradt.
+- **A dátumjavítás írás-tesztje** (flex-dev, tesztfeladat, kifejezett jóváhagyással) és az **élő
+  sandbox-próba** — alapból kimaradnak. A `datetime.test.ts` és a WF3 tesztjei a konverziót és az
+  útvonal-korlátot Flex nélkül lefedik; ami hiányzik, az annak igazolása, hogy a Flex **tényleg**
+  faliórát tárol.
+- **Élő read-only ellenőrzés a felhasználó tokenjével**: a friss `.mcpb` Claude Desktopba
+  telepítése és egy `flex_diag` hívás — a felhasználó választása, mikor teszi meg. (A csomagolt
+  szerver `initialize` + `tools/list` + `tools/call` válaszát a WF13 Flex nélkül ellenőrizte.)
 
 ## Kapcsolódó
 

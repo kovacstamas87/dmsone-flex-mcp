@@ -70,32 +70,46 @@ hibaelhárítás):
 Röviden (mindkét platformon): Claude Desktop → **Settings → Extensions** → húzd be
 a `.mcpb` fájlt → add meg a **Flex tokened** az űrlapon → **Enable**.
 
-### Csomag (.mcpb) újraépítése — fejlesztőknek (macOS/Linux)
+### Csomag (.mcpb) újraépítése — fejlesztőknek
 
 ```bash
 cd "DMS MCP/Flex"
 npm run bundle
 ```
 
-Ez lefordít, a `manifest.json` `version` és `tools` mezőit a lefordított szerverből
-szinkronizálja (`npm run sync-manifest`), staging mappába másol csak production
-függőségekkel, majd előállítja a `dmsone-flex-<verzió>.mcpb` fájlt a hivatalos
-`@anthropic-ai/mcpb` csomagolóval. A `manifest.json` `tools` tömbjét **ne szerkeszd
-kézzel** — a következő szinkron felülírja.
-(A csomag tiszta JavaScript, nincs benne platform-specifikus natív bináris, ezért
-egyszer kell előállítani, és minden platformon működik.)
+A lépések: `tsc` fordítás → a `manifest.json` `version` és `tools` mezőinek
+szinkronizálása a lefordított szerverből (`scripts/sync-manifest.mjs`) →
+**egyfájlos bundle** esbuilddel (`scripts/bundle.mjs`) → csomagolás a hivatalos
+`@anthropic-ai/mcpb` eszközzel.
+
+A csomagban **nincs `node_modules`**: az esbuild a tényleg elért függőség-kódot
+egyetlen `dist/index.js`-be fordítja. Ezért a `.mcpb` ~200 kB (korábban 3,7 MB),
+és nem visz a felhasználó gépére tranzitív függőségeket. A bundle tiszta
+JavaScript, natív bináris nélkül, tehát ugyanaz a fájl telepíthető Windowson,
+macOS-en és Linuxon.
+
+A `manifest.json` `tools` tömbjét **ne szerkeszd kézzel** — a következő szinkron
+felülírja.
 
 ### Kiadás készítése (maintainereknek)
 
-1. Emeld a verziót **mindkét** helyen: `package.json` és `manifest.json`.
-2. Frissítsd a `CHANGELOG.md`-t.
-3. Commitold, majd pushold a verzió-taget:
+1. Frissítsd a `CHANGELOG.md`-t, és commitold.
+2. Emeld a verziót — **egy** lépésben, egy helyen:
    ```bash
-   git tag v0.1.0
-   git push origin v0.1.0
+   npm version minor   # vagy patch / major
    ```
-4. A `Release` GitHub Actions workflow automatikusan lefordít, előállítja a
+   Ez átírja a `package.json`-t, a `version` npm-hook a `manifest.json` verzióját
+   is szinkronizálja és a commitba veszi, majd létrehozza a `v<verzió>` taget.
+3. Pushold a commitot és a taget:
+   ```bash
+   git push && git push --tags
+   ```
+4. A `v*` tagre a `Release` GitHub Actions workflow lefut: fordít, előállítja a
    `.mcpb`-t, és csatolja egy új GitHub Release-hez.
+
+> A verziót **ne** írd át kézzel a `manifest.json`-ban: az `npm version` hookja
+> egy forrásból (`package.json`) állítja be, a kézi szerkesztés csak elsodródást
+> okoz.
 
 ---
 
@@ -132,6 +146,7 @@ fájlszerkesztésre. A **manuális (Node.js) mód** lépéseit és a pontos
 | `FLEX_IGNORE_SSL` | – | `false` | SSL hibák figyelmen kívül hagyása (csak fejlesztéshez). A publikus `flex.dmsone.hu` URL-en nem engedett — a szerver ott hibával kilép induláskor |
 | `FLEX_DOWNLOAD_DIR` | – | `<OS temp>/dmsone-flex` | Letöltött csatolmányok célkönyvtára (abszolút út). A letöltés **csak** ide vagy alkönyvtárába írhat; meglévő fájlt nem ír felül |
 | `FLEX_TIMEZONE` | – | `Europe/Budapest` | IANA zónanév. A Flex helyi faliórát tárol, ezért a szerver ebben a zónában értelmezi az offsettel megadott dátumokat |
+| `FLEX_MAX_DOWNLOAD_MB` | – | `50` | A csatolmány-letöltés felső határa MB-ban. A válasz teljes egészében memóriába kerül, ezért ez a korlát védi a szerverfolyamatot; a határ fölött a letöltés **hibát ad, nem csonkol** |
 
 ---
 
