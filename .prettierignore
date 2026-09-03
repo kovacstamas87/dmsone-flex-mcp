@@ -1,0 +1,11 @@
+dist
+build
+node_modules
+*.mcpb
+coverage
+
+# A Prettier hatóköre a kódra (ts/js/mjs) szól, nem a kézzel gondozott
+# dokumentációra és adatfájlokra — azok formázása nem ennek a WF-nek a
+# tárgya, és feleslegesen nagy diffet adna.
+*.md
+*.json

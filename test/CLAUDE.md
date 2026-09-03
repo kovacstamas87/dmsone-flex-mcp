@@ -27,6 +27,7 @@ A `tsconfig.json` `include`-ja `src/**/*` marad, ezért a `test/` **nem** kerül
 | `schema.test.ts` | `src/schema.ts` öt `outputSchema`-ja **valós alakú** válaszokon: a szűrt `/diag`, a sablon-részletek `none` és `includeRaw` ága, a letöltés nyugtája (`contentType` nélkül is), a két listázó boríték `summary` és `full` módban, a nem-tömb `result` fallbackje, és a `toolJson` csonkolás-ága mindegyik sémán. A kérdés nem az, hogy a séma szigorú-e, hanem hogy **soha ne bukjon** — mert az SDK-validáció bukása élesben elszállasztja a hívást | WF10 |
 | `fixtures/task-list.json` | A `/dms/news` élő, read-only mintája (21 elem), **anonimizálva** | WF9 |
 | `fixtures/wf-tasks.json` | A `/dms/wfTasks/my` alakja (25 elem) a lapozás széleihez | WF9 |
+| `handlers.test.ts` | A `register*Tools` handlerei egy fake `FlexHttp` kliensen (lásd `src/client.ts`), a valódi MCP-protokollon át (`InMemoryTransport` + `Client.callTool`, nem a `registerTool` belső callback-je): `flex_task_list` (summary/full/limit), `flex_workflow_get_my_tasks`, `flex_workflow_get_template_details` (`includeRaw` mindkét ága), `flex_workflow_download_attachment` (sandbox-lánc: mentés, könyvtár fölé mutató `savePath` elutasítása, ütközésnél `-1` utótag) fake bufferrel | WF12 |
 
 ## Rögzített szabályok
 
@@ -67,6 +68,15 @@ A `tsconfig.json` `include`-ja `src/**/*` marad, ezért a `test/` **nem** kerül
   `structuredContent`-et validálja, azt pedig a `toolJson` állítja elő — a redakcióval és a
   méretkorláttal együtt. A nyers objektum validálása zöld lenne akkor is, ha a csonkolás-ág
   élesben elszállasztja a hívást.
+- **A `handlers.test.ts` fake klienst ad át, nem HTTP-t mockol.** A `register*Tools` a `FlexHttp`
+  interfészen (`src/client.ts`) keresztül lát klienst — egy `{ request, download }` alakú objektum,
+  amit egy `nock`-szerű könyvtár helyett egy plain objektum is kielégít: rögzített választ ad vagy
+  hibát dob, a hívás URL-jét/metódusát pedig a teszt maga `assert.equal`-lel ellenőrzi. Miért nem
+  HTTP-mock: az axios-hívás sosem történik meg, tehát nincs mit elfogni — a mock-könyvtár saját
+  URL-illesztési szabályai (path-paraméterek, query-sorrend) így nem okozhatnak hamis pirosat vagy
+  hamis zöldet. A tool-hívás maga a valódi MCP-protokollon megy át (`InMemoryTransport` +
+  `Client.callTool`), így a Zod-validáció és az `outputSchema`-ellenőrzés is lefut, ugyanúgy, mint
+  élesben — csak a folyamat nem hagyja el a Node-példányt, ahogy a `tools-list.test.ts` teszi.
 - **Nincs Flex-hívás a tesztekben.** A tesztek tiszta függvényeket fednek le; élő ellenőrzés a
   kiadási munkafolyamatban (WF7) történik, Inspectorral vagy újratelepített `.mcpb`-vel.
   A `tools-list.test.ts` ugyan elindítja a szervert, de a `tools/list` nem hív Flexet — ezért

@@ -1,6 +1,6 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
-import type { FlexClient } from "../client.js";
+import type { FlexHttp } from "../client.js";
 import type { FlexConfig } from "../config.js";
 import { formatDateTime, toolError, toolJson } from "../format.js";
 import { envelope, summarizeTask } from "../projection.js";
@@ -11,7 +11,7 @@ import { taskListOutput } from "../schema.js";
  * Endpoints: /dms/task/start, /dms/comments/task/{id}, /dms/task/{id}/accept,
  * /dms/task/{id}/complete, /dms/news.
  */
-export function registerTaskTools(server: McpServer, client: FlexClient, config: FlexConfig): void {
+export function registerTaskTools(server: McpServer, client: FlexHttp, config: FlexConfig): void {
   server.registerTool(
     "flex_task_create",
     {

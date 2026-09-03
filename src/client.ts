@@ -14,6 +14,20 @@ export interface DownloadResult {
 }
 
 /**
+ * A `FlexClient` publikus felülete, elvonatkoztatva az axios-implementációtól.
+ *
+ * Miért kell ez a szint: a `register*Tools` függvények (`src/tools/*.ts`) csak
+ * ezt a két metódust hívják, sosem az axios-specifikumokat — így a
+ * `test/handlers.test.ts` egy egyszerű, memóriában dolgozó fake-et adhat át
+ * helyette (rögzített válasz / dobott hiba), élő HTTP-hívás vagy HTTP-mock
+ * (pl. `nock`) nélkül. Ez gyorsabb, és nem függ egy külső mock-könyvtár API-jától.
+ */
+export interface FlexHttp {
+  request<T = unknown>(method: "GET" | "POST", url: string, opts?: RequestOptions): Promise<T>;
+  download(url: string): Promise<DownloadResult>;
+}
+
+/**
  * Thin HTTP client for the DMS One Flex API.
  *
  * Authentication is identical to the n8n node: a Bearer token (PAT or station
@@ -21,7 +35,7 @@ export interface DownloadResult {
  * token impersonates a user. The header set is static for the process lifetime,
  * so it is configured once on the axios instance.
  */
-export class FlexClient {
+export class FlexClient implements FlexHttp {
   private readonly http: AxiosInstance;
 
   constructor(private readonly config: FlexConfig) {

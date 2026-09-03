@@ -7,12 +7,14 @@ a közösségi `n8n-nodes-dmsone-flex` node.
 
 **Állapot (2026-09-03):** **v0.1.1** kiadva (P0: WF1–WF7), a `../flex-mcp-p1-p2-megvalositasi-terv.md`
 **P1 üteme fut**: a **WF9** (payload-kontroll), a **WF10** (`outputSchema`, tömör leírások,
-generált `manifest.tools`) és a **WF11** (Task/WfTask `idKind`, `orgId` alapértelmezés kivezetése)
-kész — a két listázó lapoz és összefoglalót ad, a `toolJson` a `structuredContent`-et is csonkolja,
-öt eszköz `outputSchema`-t ad, az összleírás 11 936-ról 4 500 alá fogyott, a `flex_task_list` minden
-eleme explicit `idKind`-ot (`taskId`/`wfTaskId`) is ad, és a `performerOrgId`/`responsibleOrgId`-nak
-nincs többé néma `1` alapértelmezése. Build és teszt zöld (132 teszt). A következő a **WF12**
-(minőség-infrastruktúra: eslint, prettier, CI, dependabot, handler-tesztek).
+generált `manifest.tools`), a **WF11** (Task/WfTask `idKind`, `orgId` alapértelmezés kivezetése) és a
+**WF12** (minőség-infrastruktúra) kész — a két listázó lapoz és összefoglalót ad, a `toolJson` a
+`structuredContent`-et is csonkolja, öt eszköz `outputSchema`-t ad, az összleírás 11 936-ról 4 500
+alá fogyott, a `flex_task_list` minden eleme explicit `idKind`-ot (`taskId`/`wfTaskId`) is ad, a
+`performerOrgId`/`responsibleOrgId`-nak nincs többé néma `1` alapértelmezése, és a szerver most már
+eslint + prettier + typecheck alatt fut, CI-mátrixszal (Node 20/22, `npm audit`) és
+handler-tesztekkel egy fake `FlexHttp` kliensen. Build és teszt zöld (141 teszt). A következő a
+**WF13** (esbuild bundle, manifest 0.3, méretkorlát).
 Nyitva maradt a Flex-oldali P0-2 elküldése, a P0-6 Flex-válasz és az opcionális élő/írás-tesztek —
 lásd lent.
 
@@ -21,10 +23,12 @@ lásd lent.
 | Fájl / mappa | Mi ez | Állapot |
 |---|---|---|
 | [`src/`](src/) | A szerver forráskódja — lásd [`src/CLAUDE.md`](src/CLAUDE.md) | WF10 után (`paths.ts` új WF3-ban, `validateConfig` új WF5-ben, `projection.ts` új WF9-ben, `schema.ts` új WF10-ben) |
-| [`test/`](test/) | `node:test` alapú tesztek, `tsx`-szel futtatva (`npm test`) — lásd [`test/CLAUDE.md`](test/CLAUDE.md) | új WF1-ben, WF2–WF5-ben, WF9-ben és WF10-ben bővítve (129 teszt); a `test/fixtures/` élő, **anonimizált** minta |
+| [`test/`](test/) | `node:test` alapú tesztek, `tsx`-szel futtatva (`npm test`) — lásd [`test/CLAUDE.md`](test/CLAUDE.md) | WF1–WF5, WF9–WF12-ben bővítve (141 teszt); a `test/fixtures/` élő, **anonimizált** minta |
 | [`scripts/sync-manifest.mjs`](scripts/sync-manifest.mjs) | A `manifest.json`-t a kódhoz igazítja, idempotens: a `version` a `package.json`-ból, a `tools[]` a **lefordított** `dist/index.js` `tools/list` válaszából. `dist/` hiányában a `tools`-t érintetlenül hagyja és figyelmeztet | **új WF1-ben**; WF10: `tools[]`-generálás |
 | `manifest.json` | `.mcpb` csomag metaadata — a `version` **és WF10-től a `tools[]` is generált**, ne szerkeszd kézzel (a `sync-manifest.mjs` írja) | WF1-ben szinkron-forrás lett; WF3: `flex_download_dir` leírása a sandboxot mondja; WF4: új `flex_timezone` konfig-mező; WF10: generált `tools[]` |
-| `package.json` / `package-lock.json` | Függőségek, scriptek (`build`, `test`, `bundle`, `sync-manifest`, `version` lifecycle) | WF1-ben frissítve; WF10: új `sync-manifest` script, és a `bundle` **build után** szinkronizál |
+| `package.json` / `package-lock.json` | Függőségek, scriptek (`build`, `test`, `bundle`, `sync-manifest`, `version` lifecycle; **WF12-től** `lint`, `lint:fix`, `format:check`, `typecheck`) | WF1-ben frissítve; WF10: új `sync-manifest` script; WF12: minőség-scriptek |
+| `eslint.config.js`, `.prettierrc`, `.prettierignore` | Flat eslint-config (`typescript-eslint` recommended) és Prettier-beállítás (`printWidth: 110`) — a doksi (`*.md`, `manifest.json`) szándékosan kimarad a Prettier hatóköréből | **új WF12-ben** |
+| `.github/dependabot.yml` | Heti `npm` és `github-actions` függőségfrissítés-figyelés | **új WF12-ben** |
 | `INSTALL-WINDOWS.md`, `INSTALL-MACOS.md` | Végfelhasználói telepítési útmutatók | WF1-ben Node 20+ -ra igazítva; WF3: letöltési könyvtár leírása; WF4: „Időzóna" mező a konfig-űrlapon; WF5: SSL-tiltás a publikus URL-en |
 | `README.md` | Fejlesztői doksi | WF3: `FLEX_DOWNLOAD_DIR`, WF4: `FLEX_TIMEZONE`, WF5: SSL-tiltás megjegyzése a konfig-táblában |
 | `CHANGELOG.md` | Kiadási napló | **WF6-ban megírva** a `[0.1.1]` bejegyzés (Security/Fixed/Changed, P0-hivatkozásokkal) |
@@ -41,7 +45,8 @@ lásd lent.
 | Egy eszköz **válaszának alakja** | `src/schema.ts` `outputSchema`-ja, ahol a választ a szerver építi (öt eszköz); a passthrough eszközöknél a Flex válasza az egyetlen forrás — ezért ott nincs séma |
 | Szerver kódja | `src/` — lásd [`src/CLAUDE.md`](src/CLAUDE.md) |
 | Tesztek | `test/*.test.ts`, futtatás: `npm test` (`node --import tsx --test`) |
-| CI | `.github/workflows/ci.yml` — `npm ci && npm run build && npm test` |
+| CI | `.github/workflows/ci.yml` — Node 20/22 mátrix: `npm ci`, `lint`, `format:check`, `build`, `test`, `npm audit --audit-level=moderate` |
+| Egy tool tesztelhető válasza fake klienssel | `test/handlers.test.ts` — a `FlexHttp` interfész (`src/client.ts`) mögé tett fake, lásd „Kulcsdöntések" |
 
 ## Kulcsdöntések és rögzített szabályok
 
@@ -122,6 +127,22 @@ lásd lent.
   a szerver elindul. A publikus `flex.dmsone.hu` host és az SSL-kikapcsolás együtt korábban csendben
   átment volna (P0-8); a PAT+impersonáció kombináció pedig érvényes konfignak tűnt, miközben az
   impersonáció ilyenkor hatástalan (P0-9).
+- **`register*Tools` a `FlexHttp` interfészt kapja, nem a konkrét `FlexClient`-et** (WF12,
+  `src/client.ts`). A `FlexClient` (axios-alapú) implementálja; `index.ts` továbbra is ezt
+  példányosítja élesben. Miért kell a szint: a handler-tesztek (`test/handlers.test.ts`) így egy
+  egyszerű, memóriában dolgozó fake-et adhatnak át — rögzített válasz vagy dobott hiba —, HTTP-mock
+  könyvtár (pl. `nock`) és hálózat nélkül. A típusrendszer kényszeríti ki, hogy a fake a valódi
+  felületet (`request`/`download`) implementálja.
+- **Eslint (flat config, `typescript-eslint` recommended) + Prettier + `tsc --noEmit`, külön
+  scriptekkel** (WF12: `lint`, `lint:fix`, `format:check`, `typecheck`). Az `eslint-config-prettier`
+  kikapcsolja az ütköző stílus-szabályokat, hogy a két eszköz ne versengjen ugyanazon a soron. A
+  Prettier hatóköre (`.prettierignore`) szándékosan **csak a kód** (`.ts`/`.js`/`.mjs`) — a kézzel
+  gondozott doksi (`*.md`) és a generált `manifest.json` kimarad, mert azok újraformázása a WF-en
+  kívüli, felesleges diffet adna.
+- **A CI Node 20/22 mátrixon fut, és `npm audit`-ot is végez** (WF12). Miért két verzió: az
+  `engines` `>=20`-at ír elő, a mátrix ezt a határt és a következő LTS-t is lefedi egyetlen
+  workflow-fájlból. Az `npm audit --audit-level=moderate` a függőség-frissítések (Dependabot) mellé
+  ad folyamatos ellenőrzést, nem csak kiadáskor.
 
 ## Nyitva maradt
 

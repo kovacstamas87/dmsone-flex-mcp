@@ -3,7 +3,7 @@ import { z } from "zod";
 import { promises as fs } from "node:fs";
 import { tmpdir } from "node:os";
 import { basename, join, resolve } from "node:path";
-import type { FlexClient } from "../client.js";
+import type { FlexHttp } from "../client.js";
 import type { FlexConfig } from "../config.js";
 import { formatDateTime, toolError, toolJson } from "../format.js";
 import { ensureDirInside, resolveDownloadPath, sanitizeFileName, uniquePath } from "../paths.js";
@@ -185,7 +185,7 @@ export function missingRequiredMessage(
   );
 }
 
-export function registerWorkflowTools(server: McpServer, client: FlexClient, config: FlexConfig): void {
+export function registerWorkflowTools(server: McpServer, client: FlexHttp, config: FlexConfig): void {
   server.registerTool(
     "flex_workflow_list_templates",
     {

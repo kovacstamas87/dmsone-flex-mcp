@@ -1,6 +1,6 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
-import type { FlexClient } from "../client.js";
+import type { FlexHttp } from "../client.js";
 import { toolError, toolJson } from "../format.js";
 import { diagOutput } from "../schema.js";
 
@@ -32,7 +32,7 @@ export function pickDiagFields(raw: unknown): Record<string, unknown> {
 }
 
 /** Diagnostic / connectivity check against the Flex API. */
-export function registerDiagnosticTools(server: McpServer, client: FlexClient): void {
+export function registerDiagnosticTools(server: McpServer, client: FlexHttp): void {
   server.registerTool(
     "flex_diag",
     {

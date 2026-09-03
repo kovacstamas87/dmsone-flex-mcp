@@ -4,6 +4,11 @@ Erőforrásonként egy fájl. Mindegyik egyetlen `register*Tools(server, client,
 exportál, amit az [`../index.ts`](../index.ts) hív. Egy eszköz = egy `server.registerTool(name,
 { title, description, inputSchema, outputSchema?, annotations }, handler)` hívás.
 
+**A `client` paraméter típusa `FlexHttp`, nem `FlexClient`** (WF12, [`../client.ts`](../client.ts)):
+a tool-fájlok csak a `request`/`download` metódust hívják, sosem az axios-specifikumokat. Éles
+kódban ez ugyanúgy a `FlexClient` példány (`index.ts` építi), de a teszt ([`../../test/handlers.test.ts`](../../test/handlers.test.ts))
+egy egyszerű fake-et ad át helyette.
+
 ## Fájl-leltár
 
 | Fájl | Erőforrás | Eszközök | Megjegyzés |
