@@ -6,18 +6,12 @@ minden hívás a beállított token tulajdonosának a nevében fut. Ugyanazokat 
 a közösségi `n8n-nodes-dmsone-flex` node.
 
 **Állapot (2026-09-03):** **v0.2.0** kiadva — a `../flex-mcp-p1-p2-megvalositasi-terv.md` **P0 és
-P1 üteme kész** (WF1–WF15). A két listázó lapoz és összefoglalót ad, a `toolJson` a
-`structuredContent`-et is csonkolja, öt eszköz `outputSchema`-t ad, az összleírás 11 936-ról
-4 484 karakterre fogyott, a `flex_task_list` minden eleme explicit `idKind`-ot (`taskId`/`wfTaskId`)
-is ad, a `performerOrgId`/`responsibleOrgId`-nak nincs többé néma `1` alapértelmezése (**áttörő
-változás a hívó modellnek**), a szerver eslint + prettier + typecheck alatt fut CI-mátrixszal
-(Node 20/22, `npm audit`) és handler-tesztekkel egy fake `FlexHttp` kliensen, a `.mcpb` pedig
-3,79 MB-ról **212 kB**-ra fogyott, `node_modules` nélkül. Build és teszt zöld. Az eval-kérdéssor
-(`../flex-mcp-eval/`) kész és élő mintavétellel egy leírás-őszinteségi hibát is talált (`orgId`
-forrása) — javítva; a két Claude Desktop-mérés felhasználói lépésre vár. A következő ütem a P2
-(`v1.0.0`), kapu-döntéssel a WF16-ban.
-Nyitva maradt a Flex-oldali P0-2 elküldése, a P0-6 Flex-válasz, a WF14 két Claude Desktop-mérése
-és az opcionális élő/írás-tesztek — lásd lent.
+P1 üteme kész** (WF1–WF15; tételesen a `CHANGELOG.md` `[0.2.0]`-ban — benne a kötelező
+`performerOrgId`/`responsibleOrgId`, **áttörő változás a hívó modellnek**; eval: `../flex-mcp-eval/`).
+A P2 ütemből a **WF20 kész: SDK v2** — `@modelcontextprotocol/sdk@1.30` → `@modelcontextprotocol/server@2.0.0`,
+`zod@3` → `zod@4`; a kliens által látott `tools/list` **változatlan** (snapshot-diff), 154 teszt
+zöld; **még nincs kiadva**, a `v1.0.0` a WF21-é. Nyitva maradt a Flex-oldali P0-2 elküldése, a P0-6
+Flex-válasz, a WF14 két Claude Desktop-mérése és az opcionális élő/írás-tesztek — lásd lent.
 
 ## Mappa tartalma
 
@@ -28,7 +22,7 @@ Nyitva maradt a Flex-oldali P0-2 elküldése, a P0-6 Flex-válasz, a WF14 két C
 | [`scripts/bundle.mjs`](scripts/bundle.mjs) | A `.mcpb` előállítása **esbuild egyfájlos bundle-ből**: `dist/index.js` → `build/pkg/dist/index.js`, minimális `package.json`, majd `@anthropic-ai/mcpb pack`. Ellenőrzi, hogy a csomagban nincs `node_modules`, és kiírja a méretet | **új WF13-ban** |
 | [`scripts/sync-manifest.mjs`](scripts/sync-manifest.mjs) | A `manifest.json`-t a kódhoz igazítja, idempotens: a `version` a `package.json`-ból, a `tools[]` a **lefordított** `dist/index.js` `tools/list` válaszából. `dist/` hiányában a `tools`-t érintetlenül hagyja és figyelmeztet | **új WF1-ben**; WF10: `tools[]`-generálás |
 | `manifest.json` | `.mcpb` csomag metaadata — a `version` **és WF10-től a `tools[]` is generált**, ne szerkeszd kézzel (a `sync-manifest.mjs` írja) | WF1-ben szinkron-forrás lett; WF3: `flex_download_dir` leírása a sandboxot mondja; WF4: új `flex_timezone` konfig-mező; WF10: generált `tools[]`; **WF13: `manifest_version` 0.3**, `repository`/`homepage`/`documentation`/`support`/`author.url`, új `flex_max_download_mb` mező |
-| `package.json` / `package-lock.json` | Függőségek, scriptek (`build`, `test`, `bundle`, `sync-manifest`, `version` lifecycle; **WF12-től** `lint`, `lint:fix`, `format:check`, `typecheck`) | WF1-ben frissítve; WF10: új `sync-manifest` script; WF12: minőség-scriptek |
+| `package.json` / `package-lock.json` | Függőségek, scriptek (`build`, `test`, `bundle`, `sync-manifest`, `version` lifecycle; **WF12-től** `lint`, `lint:fix`, `format:check`, `typecheck`) | WF1-ben frissítve; WF10: új `sync-manifest` script; WF12: minőség-scriptek; **WF20: SDK v2** — futásidőben `@modelcontextprotocol/server ^2.0.0` + `zod ^4.2.0`, dev-függőségként `@modelcontextprotocol/client ^2.0.0` (csak a tesztek és a `sync-manifest.mjs` használják) |
 | `eslint.config.js`, `.prettierrc`, `.prettierignore` | Flat eslint-config (`typescript-eslint` recommended) és Prettier-beállítás (`printWidth: 110`) — a doksi (`*.md`, `manifest.json`) szándékosan kimarad a Prettier hatóköréből | **új WF12-ben** |
 | `.github/dependabot.yml` | Heti `npm` és `github-actions` függőségfrissítés-figyelés | **új WF12-ben** |
 | `INSTALL-WINDOWS.md`, `INSTALL-MACOS.md` | Végfelhasználói telepítési útmutatók | WF1-ben Node 20+ -ra igazítva; WF3: letöltési könyvtár leírása; WF4: „Időzóna" mező a konfig-űrlapon; WF5: SSL-tiltás a publikus URL-en; WF13: letöltés a **Releases** oldalról (nincs hardcode-olt verzió), új „Letöltési méretkorlát” mező a konfig-űrlapon |
@@ -67,8 +61,8 @@ Nyitva maradt a Flex-oldali P0-2 elküldése, a P0-6 Flex-válasz, a WF14 két C
 - **`node:test` a tesztkerethez, nem Jest/Vitest** — miért: zéró új futásidejű függőség, a `tsx`
   amúgy is dev-függőség volt. Futtatás közvetlenül a `.ts` forrásból, nem a `dist`-ből.
 - **Node 20 minimum** (`engines`, `manifest.json` `compatibility.runtimes.node`, mindkét
-  INSTALL-doksi) — a `tsx` 4.22 és a friss `@modelcontextprotocol/sdk` ezt várja el; a korábbi
-  `>=18` elavult volt.
+  INSTALL-doksi) — a `tsx` 4.22 és a `@modelcontextprotocol/server` v2 (`engines >=20`) ezt várja
+  el; a korábbi `>=18` elavult volt.
 - **Minden tool-eredmény redaktálva megy vissza, egyetlen ponton** (`src/redact.ts` a
   `format.ts` `toolJson`/`formatError`-én át). Miért nem csak a `/diag`-nál: a szűrés így nem
   kerülhető meg egy később hozzáadott eszközzel. Részletek: [`src/CLAUDE.md`](src/CLAUDE.md).
@@ -85,9 +79,17 @@ Nyitva maradt a Flex-oldali P0-2 elküldése, a P0-6 Flex-válasz, a WF14 két C
   `idempotentHint: false`; a folyamat-indítás, a wfTask- és a Task-lezárás `destructiveHint: true`
   (innen nem visszavonható); a Task-elfogadás nem destruktív. Miért számít: a Claude Desktop
   ezekből dönt a megerősítés-kérésről. A `test/tools-list.test.ts` a protokollon át őrzi őket.
-- **`@modelcontextprotocol/sdk` `^1.30.0`, `axios` `^1.20.0`**, `npm audit` tiszta. Az SDK belső
-  `hono`/`ip-address`/`qs` függősége csak a streamable-HTTP transzporthoz kell (mi stdio-t
-  használunk), de a lockfile-ban benne van — ezért a Dependabot és a CI-audit figyeli.
+- **SDK v2: `@modelcontextprotocol/server` `^2.0.0` + `zod` `^4.2.0` futásidőben,
+  `@modelcontextprotocol/client` `^2.0.0` dev-ként, `axios` `^1.20.0`**, `npm audit` tiszta (WF20,
+  P2-1). **Miért most:** a WF16 kapu-mérése önmagában no-go volt (a Desktop 2026-07-28-as
+  spec-egyeztetése a szerkesztett logból nem igazolható), a felhasználó ezt **tudatosan
+  felülbírálta** — [`../flex-mcp-p1-p2-megvalositasi-terv.md`](../flex-mcp-p1-p2-megvalositasi-terv.md)
+  „WF20 kapu-döntés". **Visszavonható:** a `v0.2.0` tag az 1.30-as, működő állapot. **Bizonyíték,
+  hogy a kliens ugyanazt látja:** a migráció előtti/utáni `tools/list` + `initialize` snapshot-diff —
+  név, cím, leírás, annotáció, `instructions` **bájtra azonos**; a sémák csak a v2 JSON
+  Schema-dialektus ekvivalens írásmódjaiban térnek el (tételesen, a `.mcpb` 212 → **287 kB**
+  növekedésével együtt: `CHANGELOG.md` `[Unreleased]`). Kód-oldalon minden `inputSchema` explicit
+  `z.object({...})` — miért: [`src/CLAUDE.md`](src/CLAUDE.md).
 - **A Flex dátummezői falióra-idők, nem időpillanatok.** A `formatDateTime` offset nélküli
   bemenetet változatlanul hagy, és csak offsettel megadott értéket számol át a `FLEX_TIMEZONE`
   zónájára. Miért fontos: a korábbi `toISOString()` mindig UTC-re konvertált, így egy nyári

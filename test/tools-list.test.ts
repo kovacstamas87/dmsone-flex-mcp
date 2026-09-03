@@ -2,9 +2,8 @@ import { test, before, after } from "node:test";
 import assert from "node:assert/strict";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-
-import { Client } from "@modelcontextprotocol/sdk/client/index.js";
-import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js";
+import { StdioClientTransport } from "@modelcontextprotocol/client/stdio";
+import { Client } from "@modelcontextprotocol/client";
 
 /**
  * A szervert valódi stdio-transzporton indítjuk el (ahogy a Claude Desktop teszi),
@@ -324,7 +323,16 @@ test("az outputSchema laza: nincs kötelező mező, és átengedi az ismeretlen 
     if (!tool.outputSchema) continue;
     // Miért: a csonkolás-ág és a listázók fallbackje más alakot ad — kötelező
     // mezővel vagy zárt objektummal ezek élesben protokollhibát okoznának.
-    assert.equal(tool.outputSchema.additionalProperties, true, `${tool.name}: nem passthrough`);
+    // A „bármit átenged" JSON Schema-ban kétféleképp írható: `true` (Zod 3 /
+    // zod-to-json-schema, v1 SDK) vagy `{}` (Zod 4 `z.toJSONSchema`, v2 SDK) —
+    // az üres séma mindenre illik, a kettő ekvivalens. Ami tilos, az a `false`
+    // vagy a hiány.
+    const additional = tool.outputSchema.additionalProperties;
+    assert.ok(
+      additional === true ||
+        (typeof additional === "object" && additional !== null && Object.keys(additional).length === 0),
+      `${tool.name}: nem passthrough (additionalProperties: ${JSON.stringify(additional)})`,
+    );
     assert.equal(tool.outputSchema.required, undefined, `${tool.name}: kötelező mezőt ír elő`);
   }
 });

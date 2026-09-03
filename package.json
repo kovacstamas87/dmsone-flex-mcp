@@ -37,12 +37,13 @@
   "author": "DMS One",
   "license": "MIT",
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.30.0",
+    "@modelcontextprotocol/server": "^2.0.0",
     "axios": "^1.20.0",
-    "zod": "^3.23.8"
+    "zod": "^4.2.0"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
+    "@modelcontextprotocol/client": "^2.0.0",
     "@types/node": "^22.20.1",
     "esbuild": "^0.28.2",
     "eslint": "^10.9.1",

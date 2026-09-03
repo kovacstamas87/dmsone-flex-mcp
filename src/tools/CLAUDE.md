@@ -2,7 +2,9 @@
 
 Erőforrásonként egy fájl. Mindegyik egyetlen `register*Tools(server, client, config?)` függvényt
 exportál, amit az [`../index.ts`](../index.ts) hív. Egy eszköz = egy `server.registerTool(name,
-{ title, description, inputSchema, outputSchema?, annotations }, handler)` hívás.
+{ title, description, inputSchema, outputSchema?, annotations }, handler)` hívás; a `McpServer`
+**WF20-tól** a `@modelcontextprotocol/server` csomagból jön (SDK v2), az `inputSchema` pedig mindig
+explicit `z.object({...})` — miért, lásd [`../CLAUDE.md`](../CLAUDE.md) „Kulcsdöntések".
 
 **A `client` paraméter típusa `FlexHttp`, nem `FlexClient`** (WF12, [`../client.ts`](../client.ts)):
 a tool-fájlok csak a `request`/`download` metódust hívják, sosem az axios-specifikumokat. Éles
@@ -112,7 +114,7 @@ hogy a modellnek ne kelljen a `type` stringet eszköznévre fordítania.
   mondatok (sandbox, best-effort, falióra, ismert Flex-hibák) — azok nem díszítés, hanem a
   kész-kritérium.
 - **`outputSchema` csak akkor, ha a választ mi építjük — és akkor is lazán.** A szabály:
-  `z.object({...}).partial().passthrough()` a [`../schema.ts`](../schema.ts) `looseOutput()`-ján
+  `z.object({...}).partial().loose()` (Zod 4; korábban `.passthrough()`) a [`../schema.ts`](../schema.ts) `looseOutput()`-ján
   keresztül, a csonkolás-ág mezőivel együtt. Miért nem szigorúbb: az SDK a `structuredContent`-et
   **validálja**, és bukásra a hívás `InvalidParams`-szal elszáll — egy túl szigorú séma tehát nem
   hibát *jelez*, hanem hibát *okoz* élesben. Három valós ág ad a tool saját alakjától eltérő

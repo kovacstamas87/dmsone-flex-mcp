@@ -10,10 +10,8 @@
  * runs the server locally with their own FLEX_TOKEN.
  */
 import { createRequire } from "node:module";
-
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
-
+import { StdioServerTransport } from "@modelcontextprotocol/server/stdio";
+import { McpServer } from "@modelcontextprotocol/server";
 import { loadConfig, validateConfig } from "./config.js";
 import { FlexClient } from "./client.js";
 import { registerTaskTools } from "./tools/task.js";

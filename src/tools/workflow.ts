@@ -1,4 +1,4 @@
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { McpServer } from "@modelcontextprotocol/server";
 import { z } from "zod";
 import { promises as fs } from "node:fs";
 import { tmpdir } from "node:os";
@@ -196,7 +196,7 @@ export function registerWorkflowTools(server: McpServer, client: FlexHttp, confi
 Csak azokat adja, amelyeket a bejelentkezett felhasználó indíthat el.
 
 Visszatérés: sablonok id, code, name és description mezőkkel.`,
-      inputSchema: {},
+      inputSchema: z.object({}),
       annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true },
     },
     async () => {
@@ -221,7 +221,7 @@ amit a start "metadata" objektumában kell megadni.
 A "validation" mondja meg, mennyit érnek a "required" értékek: "api-flag" esetén
 az API jelöli a kötelezőséget, "none" esetén nem: a required: false csak annyit
 tesz, hogy nem tudjuk, a kötelezőséget egyedül a Flex érvényesíti.`,
-      inputSchema: {
+      inputSchema: z.object({
         templateId: z.number().int().describe("A sablon azonosítója"),
         includeRaw: z
           .boolean()
@@ -231,7 +231,7 @@ tesz, hogy nem tudjuk, a kötelezőséget egyedül a Flex érvényesíti.`,
               "a normalizált kivonata, ezért alapból kimarad; csak akkor kérd, ha a " +
               "normalizálás elfed valamit.",
           ),
-      },
+      }),
       outputSchema: templateDetailsOutput,
       annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true },
     },
@@ -261,7 +261,7 @@ A deadline helyi falióra: offsettel megadott érték a FLEX_TIMEZONE zónájár
 átszámítva megy be.
 
 Visszatérés: az új folyamat id és referenceNumber mezője.`,
-      inputSchema: {
+      inputSchema: z.object({
         templateId: z.number().int().describe("A sablon azonosítója (a flex_workflow_list_templates adja)"),
         title: z.string().min(1).describe("A folyamat-példány címe"),
         description: z.string().optional().describe("Leírás"),
@@ -305,7 +305,7 @@ Visszatérés: az új folyamat id és referenceNumber mezője.`,
           )
           .optional()
           .describe("Csatolmányok: fájlnév + base64 tartalom"),
-      },
+      }),
       // Destruktív: új, iktatott folyamat-példány jön létre a DMS-ben, amit ez a szerver
       // nem tud visszavonni — az MCP-kliens kérjen rá megerősítést.
       annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: true },
@@ -355,7 +355,7 @@ Lapozva ad vissza, alapból 20 elemet. Szűrő nélkül a lista több száz elem
 lehet, ezért az aktuális teendőkhöz add meg a statusFilter: "FA_U" értéket.
 
 Visszatérés: lapozó boríték (total, offset, returned, hasMore, fields, items).`,
-      inputSchema: {
+      inputSchema: z.object({
         statusFilter: z
           .enum(["", "FA_U", "FA_K", "FA_A", "FA_M"])
           .default("")
@@ -375,7 +375,7 @@ Visszatérés: lapozó boríték (total, offset, returned, hasMore, fields, item
             '"summary" a hét ismert mező, "full" a nyers elem — ezen a végponton ma a kettő ' +
               "ugyanazt adja, mert a Flex válasza már eleve összefoglaló alakú.",
           ),
-      },
+      }),
       outputSchema: wfTaskListOutput,
       annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true },
     },
@@ -403,9 +403,9 @@ Visszatérés: lapozó boríték (total, offset, returned, hasMore, fields, item
 
 Mikor használd: lezárás előtt — a válasz "possibleWfTaskResults" mezőjéből kell
 a flex_workflow_complete_task wfTaskResult értéke.`,
-      inputSchema: {
+      inputSchema: z.object({
         wfTaskId: z.number().int().describe("A munkafolyamat-feladat azonosítója"),
-      },
+      }),
       annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true },
     },
     async (args) => {
@@ -423,7 +423,7 @@ a flex_workflow_complete_task wfTaskResult értéke.`,
       title: "Munkafolyamat-feladat lezárása",
       description: `Lezár egy munkafolyamat-feladatot eredménnyel: a folyamat továbblép, és
 ez innen nem vonható vissza (POST /dms/wfTask/{wfTaskId}/complete).`,
-      inputSchema: {
+      inputSchema: z.object({
         wfTaskId: z.number().int().describe("A munkafolyamat-feladat azonosítója"),
         wfTaskResult: z
           .string()
@@ -434,7 +434,7 @@ ez innen nem vonható vissza (POST /dms/wfTask/{wfTaskId}/complete).`,
           .record(z.string(), z.union([z.string(), z.number(), z.boolean()]))
           .optional()
           .describe("Frissítendő metaadatok mezőnév → érték formában, ha a sablon megköveteli"),
-      },
+      }),
       // Destruktív: a lezárás továbblépteti a munkafolyamatot, visszavonni nem lehet innen.
       annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: true },
     },
@@ -456,9 +456,9 @@ ez innen nem vonható vissza (POST /dms/wfTask/{wfTaskId}/complete).`,
       title: "Munkafolyamat-feladat megjegyzései",
       description: `Egy munkafolyamat-feladat összes megjegyzése
 (GET /dms/comments/wfTask/{wfTaskId}).`,
-      inputSchema: {
+      inputSchema: z.object({
         wfTaskId: z.number().int().describe("A munkafolyamat-feladat azonosítója"),
-      },
+      }),
       annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true },
     },
     async (args) => {
@@ -478,10 +478,10 @@ ez innen nem vonható vissza (POST /dms/wfTask/{wfTaskId}/complete).`,
 (POST /dms/comments/wfTask/{wfTaskId}).
 
 Visszatérés: a feladat összes megjegyzése, az újjal együtt.`,
-      inputSchema: {
+      inputSchema: z.object({
         wfTaskId: z.number().int().describe("A munkafolyamat-feladat azonosítója"),
         comment: z.string().min(1).describe("A megjegyzés szövege"),
-      },
+      }),
       annotations: {
         readOnlyHint: false,
         destructiveHint: false,
@@ -511,9 +511,9 @@ Visszatérés: a feladat összes megjegyzése, az újjal együtt.`,
 
 Visszatérés: csatolmányok listája; az attachmentGuid-dal tölthető le a fájl a
 flex_workflow_download_attachment tool-lal.`,
-      inputSchema: {
+      inputSchema: z.object({
         wfTaskId: z.number().int().describe("A munkafolyamat-feladat azonosítója"),
-      },
+      }),
       annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true },
     },
     async (args) => {
@@ -531,9 +531,9 @@ flex_workflow_download_attachment tool-lal.`,
       title: "Feladathoz kapcsolódó csatolmányok",
       description: `A feladathoz kapcsolódó, de nem közvetlenül csatolt fájlok
 (GET /dms/attachments/wfTask/{wfTaskId}/related).`,
-      inputSchema: {
+      inputSchema: z.object({
         wfTaskId: z.number().int().describe("A munkafolyamat-feladat azonosítója"),
-      },
+      }),
       annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true },
     },
     async (args) => {
@@ -555,7 +555,7 @@ flex_workflow_download_attachment tool-lal.`,
 A fájl mindig a letöltési könyvtárba (FLEX_DOWNLOAD_DIR) vagy annak
 alkönyvtárába kerül; az azon kívülre mutató savePath hibát ad.
 Meglévő fájlt nem ír felül: ütközésnél a név -1, -2… utótagot kap.`,
-      inputSchema: {
+      inputSchema: z.object({
         attachmentGuid: z.string().min(1).describe("A csatolmány GUID-ja"),
         savePath: z
           .string()
@@ -566,7 +566,7 @@ Meglévő fájlt nem ír felül: ütközésnél a név -1, -2… utótagot kap.`
               "fájlnév kerül alá. Üresen a szerver által adott fájlnevet használja. A letöltési " +
               'könyvtár alapértelmezetten az ideiglenes könyvtár "dmsone-flex" almappája.',
           ),
-      },
+      }),
       outputSchema: downloadOutput,
       // Fájlt hoz létre a lemezen → nem read-only; ütközésnél új nevet ad → nem idempotens.
       // Nem destruktív: meglévő fájlt sosem ír felül (`wx` flag).
@@ -616,7 +616,7 @@ Meglévő fájlt nem ír felül: ütközésnél a név -1, -2… utótagot kap.`
 Mikor használd: a flex_workflow_start "linkedItemId" mezőjéhez kell ID.
 
 Visszatérés: a talált elem id és identifier mezője.`,
-      inputSchema: {
+      inputSchema: z.object({
         linkedItemType: z
           .string()
           .min(1)
@@ -628,7 +628,7 @@ Visszatérés: a talált elem id és identifier mezője.`,
           .string()
           .min(3, "A kereséshez legalább 3 karakter kell")
           .describe('Keresett azonosító, legalább 3 karakter (pl. "DMS/13/2023")'),
-      },
+      }),
       annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true },
     },
     async (args) => {

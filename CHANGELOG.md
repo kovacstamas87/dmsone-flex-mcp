@@ -3,6 +3,24 @@
 A jelölés a [Keep a Changelog](https://keepachangelog.com/) és a
 [SemVer](https://semver.org/) ajánlásait követi.
 
+## [Unreleased]
+
+### Changed
+- **P2-1**: MCP TypeScript SDK **v1 → v2**: `@modelcontextprotocol/sdk@^1.30.0` helyett
+  `@modelcontextprotocol/server@^2.0.0` (futásidő) és `@modelcontextprotocol/client@^2.0.0`
+  (csak fejlesztéshez: tesztek, `scripts/sync-manifest.mjs`); `zod@^3.23.8` → `zod@^4.2.0`.
+  A szerver továbbra is stdio-n fut, a 19 eszköz neve, címe, leírása, annotációi és a szerver
+  `instructions` szövege **bájtra azonos** a migráció előttivel (snapshot-diff). Amit a kliens
+  másképp lát, az a v2 SDK JSON Schema-dialektusa, azonos jelentéssel: `$schema` draft 2020-12,
+  a kimeneti sémák `additionalProperties: {}` (`true` helyett), a bemeneti sémákon nincs
+  `additionalProperties: false` (futásidőben mindkét verzió eldobja az ismeretlen kulcsot),
+  `integer` mezőkön safe-integer `minimum`/`maximum`, a `metadata` rekordokon `propertyNames`,
+  és eltűnt a v1-only `execution.taskSupport: "forbidden"` jelölés.
+- Minden `inputSchema` explicit `z.object({...})` (a nyers shape a v2-ben deprecated), a
+  kimeneti sémák `.passthrough()` helyett `.loose()`-t használnak (Zod 4).
+- A `.mcpb` mérete 212 kB → **287 kB**: a v2 szerver Node-on AJV-t hoz a séma-validációhoz.
+- Node 20+ marad a minimum (`engines`), a v2 csomagok is ezt írják elő.
+
 ## [0.2.0] – 2026-09-03
 
 ### Added

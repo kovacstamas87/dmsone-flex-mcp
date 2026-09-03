@@ -1,4 +1,4 @@
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { McpServer } from "@modelcontextprotocol/server";
 import { z } from "zod";
 import type { FlexHttp } from "../client.js";
 import type { FlexConfig } from "../config.js";
@@ -25,7 +25,7 @@ Dátumok: a Flex helyi faliórát tárol — offsettel megadott érték a FLEX_T
 zónájára átszámítva megy be.
 
 Visszatérés: az új feladat id és referenceNumber mezője.`,
-      inputSchema: {
+      inputSchema: z.object({
         taskTitle: z.string().min(1).describe("A feladat címe (kötelező)"),
         taskDescription: z.string().optional().describe("A feladat leírása"),
         taskPartner: z.string().optional().describe("Partner; üresen null értéket küld"),
@@ -56,7 +56,7 @@ Visszatérés: az új feladat id és referenceNumber mezője.`,
             "A végrehajtó szervezeti egység ID-ja — performerUserId megadása esetén kötelező, " +
               "nincs alapértelmezés; forrása a flex_user_get_by_username leírásában",
           ),
-      },
+      }),
       annotations: {
         readOnlyHint: false,
         destructiveHint: false,
@@ -103,10 +103,10 @@ Visszatérés: az új feladat id és referenceNumber mezője.`,
     {
       title: "Megjegyzés feladathoz",
       description: `Megjegyzést fűz egy meglévő feladathoz (POST /dms/comments/task/{taskId}).`,
-      inputSchema: {
+      inputSchema: z.object({
         taskId: z.string().min(1).describe("A feladat azonosítója"),
         comment: z.string().min(1).describe("A megjegyzés szövege"),
-      },
+      }),
       annotations: {
         readOnlyHint: false,
         destructiveHint: false,
@@ -140,10 +140,10 @@ Visszatérés: az új feladat id és referenceNumber mezője.`,
       {
         title,
         description: `${summary} (POST /dms/task/{taskId}/${operation}).`,
-        inputSchema: {
+        inputSchema: z.object({
           taskId: z.string().min(1).describe("A feladat azonosítója"),
           comment: z.string().optional().describe("Opcionális megjegyzés a művelethez"),
-        },
+        }),
         annotations: {
           readOnlyHint: false,
           destructiveHint: destructive,
@@ -184,7 +184,7 @@ Flex-hiba: a status "all" HTTP 500-at ad; a "pending" és a "completed" ugyanazt
 a listát adja.
 
 Visszatérés: lapozó boríték (total, offset, returned, hasMore, fields, items).`,
-      inputSchema: {
+      inputSchema: z.object({
         status: z
           .enum(["in-progress", "completed", "pending", "all"])
           .default("in-progress")
@@ -201,7 +201,7 @@ Visszatérés: lapozó boríték (total, offset, returned, hasMore, fields, item
           .enum(["summary", "full"])
           .default("summary")
           .describe('"summary" a lapos összefoglaló, "full" a nyers elem — a "full" csak 1-2 elemre'),
-      },
+      }),
       outputSchema: taskListOutput,
       annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true },
     },

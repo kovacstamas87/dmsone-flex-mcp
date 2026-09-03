@@ -11,7 +11,7 @@ import { z } from "zod";
  * válaszát változatlanul továbbadó (passthrough) eszközökön nincs séma: az ő
  * alakjukra nincs szerződésünk, tehát nem is ígérhetjük meg.
  *
- * A sémák szándékosan **lazák** — minden mező opcionális, és a `passthrough()`
+ * A sémák szándékosan **lazák** — minden mező opcionális, és a `.loose()`
  * átengedi az ismeretlen kulcsokat. Három ok, mind valós lefutás:
  *
  *   1. **Csonkolás.** A `toolJson` méretkorlát fölött `{ truncated, originalChars,
@@ -19,7 +19,7 @@ import { z } from "zod";
  *      alakjának sem felel meg. Ezért a `TRUNCATION_SHAPE` minden sémában benne van.
  *   2. **Fallback a listázókon.** Váratlan válaszalaknál az `envelope()`
  *      `undefined`-et ad, és a nyers Flex-payload megy tovább boríték nélkül
- *      (lásd `src/projection.ts`) — a `passthrough()` engedi át.
+ *      (lásd `src/projection.ts`) — a `.loose()` engedi át.
  *   3. **A Flex mezői.** Amit nem mi számolunk ki, arra nincs garanciánk: egy
  *      másik telepítés adhat `null`-t vagy más típust. A séma dokumentál, nem őriz.
  *
@@ -40,7 +40,7 @@ const TRUNCATION_SHAPE = {
  * mezői hozzáadva, az ismeretlen kulcsok átengedve.
  */
 function looseOutput<Shape extends z.ZodRawShape>(shape: Shape) {
-  return z.object(shape).partial().extend(TRUNCATION_SHAPE).passthrough();
+  return z.object(shape).partial().extend(TRUNCATION_SHAPE).loose();
 }
 
 /** `flex_diag` — `pickDiagFields` (src/tools/diagnostic.ts). */
@@ -63,7 +63,7 @@ const templateFieldSchema = z
     visibility: z.string().optional().describe("A mező láthatósági kódja (MT_K / MT_M)"),
     options: z.array(z.string()).optional().describe("Option típusnál a választható értékek"),
   })
-  .passthrough();
+  .loose();
 
 /** `flex_workflow_get_template_details` — `describeTemplate` (src/tools/workflow.ts). */
 export const templateDetailsOutput = looseOutput({
@@ -107,7 +107,7 @@ const envelopeShape = {
  *
  * A `nullish()` nem óvatoskodás: a `summarizeTask` a hiányzó mezőket
  * kifejezetten `null`-ra állítja, hogy a kulcskészlet elemenként azonos legyen.
- * `fields: "full"` esetén a nyers elem jön — azt a `passthrough()` engedi át.
+ * `fields: "full"` esetén a nyers elem jön — azt a `.loose()` engedi át.
  */
 const taskSummaryItem = z
   .object({
@@ -131,7 +131,7 @@ const taskSummaryItem = z
     attachmentCount: z.number().describe("Hány csatolmány van (a listájuk nincs itt)"),
   })
   .partial()
-  .passthrough();
+  .loose();
 
 /** `flex_workflow_get_my_tasks` egy eleme — a `/dms/wfTasks/my` már eleve lapos. */
 const wfTaskSummaryItem = z
@@ -145,7 +145,7 @@ const wfTaskSummaryItem = z
     templateVersion: z.union([z.number(), z.string()]).nullish().describe("A sablon verziója"),
   })
   .partial()
-  .passthrough();
+  .loose();
 
 export const taskListOutput = looseOutput({
   ...envelopeShape,

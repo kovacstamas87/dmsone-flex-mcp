@@ -1,4 +1,4 @@
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { McpServer } from "@modelcontextprotocol/server";
 import { z } from "zod";
 import type { FlexHttp } from "../client.js";
 import { toolError, toolJson } from "../format.js";
@@ -14,12 +14,12 @@ export function registerUserTools(server: McpServer, client: FlexHttp): void {
 
 Visszatérés: userId és userName. orgId-t NEM ad — az a flex_task_list elemein és
 a wfTask részletein (wfDetails.responsibleUser.orgId) van.`,
-      inputSchema: {
+      inputSchema: z.object({
         username: z
           .string()
           .min(2, "A kereséshez legalább 2 karakter kell")
           .describe("A keresett felhasználó megjelenített neve vagy annak töredéke, ékezetesen"),
-      },
+      }),
       annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true },
     },
     async (args) => {

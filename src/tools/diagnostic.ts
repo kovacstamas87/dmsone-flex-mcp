@@ -1,4 +1,4 @@
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { McpServer } from "@modelcontextprotocol/server";
 import { z } from "zod";
 import type { FlexHttp } from "../client.js";
 import { toolError, toolJson } from "../format.js";
@@ -39,9 +39,9 @@ export function registerDiagnosticTools(server: McpServer, client: FlexHttp): vo
       title: "Kapcsolat ellenőrzése",
       description: `Diagnosztikai hívás a Flex API felé (GET /diag): a kapcsolatot és a
 token érvényességét ellenőrzi. A szerver fejléceit és környezeti változóit nem adja vissza.`,
-      inputSchema: {
+      inputSchema: z.object({
         greeting: z.string().optional().describe("Opcionális üdvözlő szöveg, amit a szerver visszatükröz"),
-      },
+      }),
       outputSchema: diagOutput,
       annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true },
     },
