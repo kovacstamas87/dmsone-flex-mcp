@@ -2,10 +2,21 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 import { promises as fs } from "node:fs";
 import { tmpdir } from "node:os";
-import { join, isAbsolute } from "node:path";
+import { basename, join, resolve } from "node:path";
 import type { FlexClient } from "../client.js";
 import type { FlexConfig } from "../config.js";
 import { formatDateTime, toolError, toolJson } from "../format.js";
+import { ensureDirInside, resolveDownloadPath, sanitizeFileName, uniquePath } from "../paths.js";
+
+/**
+ * A letöltési könyvtár: a konfigurált `FLEX_DOWNLOAD_DIR`, vagy az OS temp
+ * könyvtárának `dmsone-flex` almappája. Miért almappa és nem a temp gyökere: a
+ * sandbox-határ így egy csak nekünk szóló könyvtár, nem a rendszer közös temp-je,
+ * ahol idegen fájlokkal ütközhetnénk.
+ */
+export function downloadBaseDir(config: FlexConfig): string {
+  return resolve(config.downloadDir ?? join(tmpdir(), "dmsone-flex"));
+}
 
 /** A single metadata field of a workflow template, normalized for agent use. */
 interface ParsedField {
@@ -30,26 +41,54 @@ function parseOptionParams(params: unknown): string[] | undefined {
   return options.length > 0 ? options : undefined;
 }
 
+/** A sablon-mezők kötelezőség-jelölésének két állapota. Lásd `parseTemplateFields`. */
+export type TemplateValidation = "api-flag" | "none";
+
+export interface ParsedTemplate {
+  fields: ParsedField[];
+  allowedLinkedItemTypes: string[];
+  /**
+   * Volt-e **bármely** mezőn `required` / `mandatory` kulcs a nyers válaszban.
+   *
+   * Ez nem ugyanaz, mint hogy van-e kötelező mező: ha egyik mező sem hordozza a
+   * kulcsot, akkor a `required: false` értékek nem azt jelentik, hogy semmi sem
+   * kötelező, hanem hogy **nem tudjuk**. Ilyenkor a saját ellenőrzésünk nem fut
+   * (különben minden indítást átengedne, és közben azt sugallná, hogy ellenőrzött).
+   */
+  requiredMarkerPresent: boolean;
+}
+
+/** A `metadata` egy mezőjének nyers alakja jelöl-e egyáltalán kötelezőséget. */
+function hasRequiredMarker(info: Record<string, unknown>): boolean {
+  return (
+    Object.prototype.hasOwnProperty.call(info, "required") ||
+    Object.prototype.hasOwnProperty.call(info, "mandatory")
+  );
+}
+
 /**
  * Turn a startDetails response into a normalized field list the model can read
  * directly. Handles both the array and the object-keyed-by-code shapes the API
  * may return for `metadata`.
+ *
+ * A kötelezőséget a `required` **vagy** a `mandatory` kulcs adja (a Flex melyiket
+ * használja, az a P0-6 nyitott kérdése) — és a hívó megkapja azt is, hogy a
+ * válasz egyáltalán hordozott-e ilyen jelölést.
  */
-export function parseTemplateFields(startDetails: unknown): {
-  fields: ParsedField[];
-  allowedLinkedItemTypes: string[];
-} {
+export function parseTemplateFields(startDetails: unknown): ParsedTemplate {
   const result = (startDetails as { result?: Record<string, unknown> } | undefined)?.result ?? {};
   const metadata = (result as { metadata?: unknown }).metadata;
 
+  let requiredMarkerPresent = false;
   const toField = (fallbackCode: string, info: Record<string, unknown>): ParsedField => {
     const type = info.type as string | undefined;
+    if (hasRequiredMarker(info)) requiredMarkerPresent = true;
     return {
       code: (info.code as string) ?? fallbackCode,
       name: info.name as string | undefined,
       label: info.label as string | undefined,
       type,
-      required: info.required === true,
+      required: info.required === true || info.mandatory === true,
       default: info.default,
       visibility: info.visibility as string | undefined,
       ...(type === "Option" ? { options: parseOptionParams(info.params) } : {}),
@@ -72,7 +111,68 @@ export function parseTemplateFields(startDetails: unknown): {
   return {
     fields,
     allowedLinkedItemTypes: Array.isArray(allowed) ? (allowed as string[]) : [],
+    requiredMarkerPresent,
   };
+}
+
+/** Az a szöveg, amit a `validation: "none"` mellé teszünk, hogy a modell ne higgye ellenőrzöttnek. */
+export const NO_REQUIRED_MARKER_NOTE =
+  "A sablon mezői nem hordoznak kötelezőség-jelölést; a kötelezőséget a Flex szerver " +
+  "ellenőrzi indításkor. A flex_workflow_start ilyenkor nem tud előre hiányzó mezőt jelezni.";
+
+/**
+ * A `flex_workflow_get_template_details` válasza. Külön függvény, hogy a
+ * `validation` / `note` logikát teszt tudja fogni élő Flex nélkül.
+ */
+export function describeTemplate(templateId: number, raw: unknown): Record<string, unknown> {
+  const { fields, allowedLinkedItemTypes, requiredMarkerPresent } = parseTemplateFields(raw);
+  const validation: TemplateValidation = requiredMarkerPresent ? "api-flag" : "none";
+
+  return {
+    templateId,
+    fields,
+    allowedLinkedItemTypes,
+    linkedItemRequired: allowedLinkedItemTypes.length > 0,
+    validation,
+    ...(validation === "none" ? { note: NO_REQUIRED_MARKER_NOTE } : {}),
+    raw,
+  };
+}
+
+/**
+ * Best-effort ellenőrzés indítás előtt: a kitöltetlen, **jelölten** kötelező
+ * mezőkről ad hibaszöveget. `undefined` = nincs kifogás (vagy mert minden
+ * megvan, vagy mert a sablon nem jelöl kötelezőséget — lásd
+ * `requiredMarkerPresent`). Az érdemi ellenőrzés a Flex szerveré.
+ */
+export function missingRequiredMessage(
+  templateId: number,
+  template: ParsedTemplate,
+  provided: Record<string, unknown>,
+): string | undefined {
+  if (!template.requiredMarkerPresent) return undefined;
+
+  const missing = template.fields
+    .filter((field) => field.required)
+    .filter((field) => {
+      const value = provided[field.code];
+      return value === undefined || value === null || value === "";
+    });
+  if (missing.length === 0) return undefined;
+
+  const details = missing
+    .map((field) => {
+      const opts = field.options ? ` — lehetséges értékek: ${field.options.join(", ")}` : "";
+      const label = field.label || field.name ? ` (${field.label || field.name})` : "";
+      return `- ${field.code} [${field.type ?? "Text"}]${label}${opts}`;
+    })
+    .join("\n");
+
+  return (
+    `Hiányzó kötelező metaadat mezők a(z) ${templateId} sablonhoz:\n${details}\n\n` +
+    `Add meg ezeket a "metadata" objektumban a code kulccsal. ` +
+    `A teljes mezőlistát a flex_workflow_get_template_details adja.`
+  );
 }
 
 export function registerWorkflowTools(
@@ -106,24 +206,32 @@ Visszatérés: { success, result: [{ id, code, name, description }] }`,
     "flex_workflow_get_template_details",
     {
       title: "Sablon részletek lekérése",
-      description: `Lekéri egy sablon kötelező metaadat mezőit és indítási adatait
+      description: `Lekéri egy sablon metaadat mezőit és indítási adatait
 (GET /dms/workflow/startDetails/{templateId}).
 
-A flex_workflow_start előtt MINDIG ezzel derítsd ki, milyen mezőket kell kitölteni.
+A flex_workflow_start előtt ezzel nézd meg, milyen mezők tartoznak a sablonhoz.
 
 A válasz "fields" tömbje már normalizált, közvetlenül használható:
   - code: ezt a kulcsot kell használni a start "metadata" objektumában
   - type: a mező típusa (Text, Option, Date, Number, Money, Partner, stb.)
-  - required: true esetén kötelező kitölteni
+  - required: a mező kötelezősége, AHOGY AZ API JELÖLI — lásd a "validation" mezőt
   - options: Option típusnál a választható értékek listája
   - default: alapértelmezett érték (ha van)
+
+A "validation" mező mondja meg, mennyit érnek a "required" értékek:
+  - "api-flag": az API jelöli a kötelezőséget, a required értékek érdemiek
+  - "none": a sablon mezői NEM hordoznak kötelezőség-jelölést, így a required: false
+    azt jelenti, hogy nem tudjuk — a kötelezőséget csak a Flex szerver érvényesíti
+    indításkor. Ilyenkor a válasz "note" mezője is jelzi ezt.
+
 A "linkedItemRequired" jelzi, kell-e kapcsolt elemet (irat) megadni, az
 "allowedLinkedItemTypes" pedig a megengedett típusokat.
 
 Bemenet:
   - templateId (number, kötelező): a sablon azonosítója
 
-Visszatérés: { templateId, fields: [...], allowedLinkedItemTypes, linkedItemRequired, raw }`,
+Visszatérés: { templateId, fields: [...], allowedLinkedItemTypes, linkedItemRequired,
+validation, note?, raw }`,
       inputSchema: {
         templateId: z.number().int().describe("A sablon azonosítója"),
       },
@@ -132,14 +240,7 @@ Visszatérés: { templateId, fields: [...], allowedLinkedItemTypes, linkedItemRe
     async (args) => {
       try {
         const raw = await client.request("GET", `/dms/workflow/startDetails/${args.templateId}`);
-        const { fields, allowedLinkedItemTypes } = parseTemplateFields(raw);
-        return toolJson({
-          templateId: args.templateId,
-          fields,
-          allowedLinkedItemTypes,
-          linkedItemRequired: allowedLinkedItemTypes.length > 0,
-          raw,
-        });
+        return toolJson(describeTemplate(args.templateId, raw));
       } catch (error) {
         return toolError(error);
       }
@@ -152,9 +253,14 @@ Visszatérés: { templateId, fields: [...], allowedLinkedItemTypes, linkedItemRe
       title: "Munkafolyamat indítása",
       description: `Új munkafolyamat-példányt indít egy sablon alapján (POST /dms/workflow/start).
 
-FONTOS: minden, a sablonhoz tartozó metaadat mezőt meg kell adni. A szerver és ez a
-tool is ellenőrzi: előbb lekéri a sablon mezőit (startDetails), és hibát ad, ha
-hiányzik valamelyik. Ezért előbb hívd meg a flex_workflow_get_template_details-t.
+A sablonhoz tartozó metaadat mezőket meg kell adni. A kötelező mezőket a Flex
+szerver érvényesíti; ez a tool előtte egy best-effort ellenőrzést végez: lekéri a
+sablon mezőit (startDetails), és ha az API jelöli a kötelezőséget
+(validation: "api-flag"), a hiányzó mezőkről előre szól. Ha a sablon nem jelöl
+kötelezőséget (validation: "none"), ez az ellenőrzés kimarad, és a hiányzó mezőt
+csak a Flex hibaválasza mutatja meg. Ezért előbb hívd meg a
+flex_workflow_get_template_details-t, és add meg az összes mezőt, amit a sablon
+felsorol.
 
 Bemenet:
   - templateId (number, kötelező): a sablon azonosítója (flex_workflow_list_templates)
@@ -169,12 +275,19 @@ Bemenet:
     Add meg legalább az összes required mezőt a get_template_details alapján.
   - files (tömb): [{ fileName, contentBase64 }] csatolmányok
 
+A "deadline" a Flex helyi faliórája szerint értendő: offset nélkül megadott érték
+(pl. "2026-08-18T23:59:59") változatlanul megy be, offsettel megadott ("...Z",
+"...+02:00") a szerver zónájára (FLEX_TIMEZONE) átszámítva.
+
 Visszatérés: { id, referenceNumber } az új folyamatról`,
       inputSchema: {
         templateId: z.number().int().describe("A sablon azonosítója"),
         title: z.string().min(1).describe("A folyamat-példány címe"),
         description: z.string().optional().describe("Leírás"),
-        deadline: z.string().optional().describe("Határidő ISO 8601 formátumban"),
+        deadline: z
+          .string()
+          .optional()
+          .describe("Határidő; offset nélkül helyi faliórának számít (pl. 2026-08-18T23:59:59)"),
         responsibleUserId: z.number().int().describe("A felelős felhasználó ID-ja"),
         responsibleOrgId: z.number().int().default(1).describe("A felelős szervezeti egység ID-ja"),
         linkedItemType: z
@@ -196,35 +309,19 @@ Visszatérés: { id, referenceNumber } az új folyamatról`,
           .optional()
           .describe("Csatolmányok"),
       },
-      annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: true },
+      // Destruktív: új, iktatott folyamat-példány jön létre a DMS-ben, amit ez a szerver
+      // nem tud visszavonni — az MCP-kliens kérjen rá megerősítést.
+      annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: true },
     },
     async (args) => {
       try {
-        // Discover the template's fields and validate the genuinely required ones.
+        // Best-effort: csak akkor szólunk előre hiányzó mezőről, ha a sablon
+        // egyáltalán jelöl kötelezőséget. Az érdemi ellenőrzés a Flex szerveré.
         const startDetails = await client.request("GET", `/dms/workflow/startDetails/${args.templateId}`);
-        const { fields } = parseTemplateFields(startDetails);
+        const template = parseTemplateFields(startDetails);
         const provided = args.metadata as Record<string, unknown>;
-        const requiredFields = fields.filter((field) => field.required);
-        const missing = requiredFields.filter((field) => {
-          const value = provided[field.code];
-          return value === undefined || value === null || value === "";
-        });
-        if (missing.length > 0) {
-          const details = missing
-            .map((field) => {
-              const opts = field.options ? ` — lehetséges értékek: ${field.options.join(", ")}` : "";
-              const label = field.label || field.name ? ` (${field.label || field.name})` : "";
-              return `- ${field.code} [${field.type ?? "Text"}]${label}${opts}`;
-            })
-            .join("\n");
-          return toolError(
-            new Error(
-              `Hiányzó kötelező metaadat mezők a(z) ${args.templateId} sablonhoz:\n${details}\n\n` +
-                `Add meg ezeket a "metadata" objektumban a code kulccsal. ` +
-                `A teljes mezőlistát a flex_workflow_get_template_details adja.`,
-            ),
-          );
-        }
+        const missing = missingRequiredMessage(args.templateId, template, provided);
+        if (missing) return toolError(new Error(missing));
 
         const body: Record<string, unknown> = {
           templateId: args.templateId,
@@ -241,7 +338,7 @@ Visszatérés: { id, referenceNumber } az új folyamatról`,
           body.linkedItem = { linkedItemType: args.linkedItemType, id: args.linkedItemId };
         }
         if (args.description) body.description = args.description;
-        if (args.deadline) body.deadline = formatDateTime(args.deadline);
+        if (args.deadline) body.deadline = formatDateTime(args.deadline, config.timeZone);
 
         return toolJson(await client.request("POST", "/dms/workflow/start", { body }));
       } catch (error) {
@@ -333,7 +430,8 @@ Visszatérés: { success, result: boolean }`,
           .optional()
           .describe("Frissítendő metaadatok mezőnév → érték formában"),
       },
-      annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: true },
+      // Destruktív: a lezárás továbblépteti a munkafolyamatot, visszavonni nem lehet innen.
+      annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: true },
     },
     async (args) => {
       try {
@@ -460,45 +558,53 @@ Visszatérés: { success, result: [{ attachmentId, fileName, relatedDocumentId, 
     "flex_workflow_download_attachment",
     {
       title: "Csatolmány letöltése",
-      description: `Letölt egy csatolmányt GUID alapján és a helyi lemezre menti
+      description: `Letölt egy csatolmányt GUID alapján és a letöltési könyvtárba menti
 (GET /dms/attachment/{attachmentGuid}/download).
 
-Mivel ez egy lokális szerver, a bináris tartalmat fájlba menti, és a fájl elérési
-útját adja vissza. A GUID-ot a flex_workflow_get_task_attachments adja vissza.
+A fájl MINDIG a letöltési könyvtárba (FLEX_DOWNLOAD_DIR, alapértelmezetten az OS
+temp könyvtárának "dmsone-flex" almappája) vagy annak egy alkönyvtárába kerül.
+A könyvtáron kívülre mutató savePath (abszolút út, meghajtó-betű, UNC-út, "..")
+hibát ad. Meglévő fájlt nem ír felül: ütközésnél a név -1, -2… utótagot kap.
+A GUID-ot a flex_workflow_get_task_attachments adja vissza.
 
 Bemenet:
   - attachmentGuid (string, kötelező): a csatolmány GUID-ja
-  - savePath (string): hova mentse a fájlt. Lehet teljes útvonal vagy fájlnév
-    (ez utóbbi a letöltési könyvtárba kerül). Üresen a szerver által adott
+  - savePath (string): fájlnév vagy a letöltési könyvtár alatti relatív út,
+    pl. "szamla.pdf" vagy "2026/szamla.pdf". "/"-re végződve könyvtárnak számít,
+    és a szerver által adott fájlnév kerül alá. Üresen a szerver által adott
     fájlnevet használja a letöltési könyvtárban.
 
-Visszatérés: { success, filePath, fileName, bytes, contentType }`,
+Visszatérés: { success, filePath (abszolút, a letöltési könyvtár alatt), fileName,
+downloadDir, bytes, contentType }`,
       inputSchema: {
         attachmentGuid: z.string().min(1).describe("A csatolmány GUID-ja"),
-        savePath: z.string().optional().describe("Cél útvonal vagy fájlnév (opcionális)"),
+        savePath: z
+          .string()
+          .optional()
+          .describe("Fájlnév vagy a letöltési könyvtár alatti relatív út (opcionális)"),
       },
-      annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true },
+      // Fájlt hoz létre a lemezen → nem read-only; ütközésnél új nevet ad → nem idempotens.
+      // Nem destruktív: meglévő fájlt sosem ír felül (`wx` flag).
+      annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: true },
     },
     async (args) => {
       try {
         const result = await client.download(`/dms/attachment/${encodeURIComponent(args.attachmentGuid)}/download`);
-        const baseDir = config.downloadDir || tmpdir();
-        const fallbackName = result.fileName || `${args.attachmentGuid}`;
+        const baseDir = downloadBaseDir(config);
+        // A szerver fájlneve és a GUID is nem megbízható bemenet — mindkettő tisztul.
+        const safeName = sanitizeFileName(result.fileName, args.attachmentGuid);
+        const targetPath = resolveDownloadPath(baseDir, args.savePath, safeName);
 
-        let targetPath: string;
-        if (args.savePath && isAbsolute(args.savePath)) {
-          targetPath = args.savePath;
-        } else if (args.savePath) {
-          targetPath = join(baseDir, args.savePath);
-        } else {
-          targetPath = join(baseDir, fallbackName);
-        }
+        await ensureDirInside(baseDir, targetPath);
+        const finalPath = await uniquePath(targetPath);
+        // `wx`: csak új fájlt hoz létre; ha közben mégis létrejött, EEXIST hiba — felülírás sosem.
+        await fs.writeFile(finalPath, result.data, { flag: "wx" });
 
-        await fs.writeFile(targetPath, result.data);
         return toolJson({
           success: true,
-          filePath: targetPath,
-          fileName: result.fileName ?? fallbackName,
+          filePath: finalPath,
+          fileName: basename(finalPath),
+          downloadDir: baseDir,
           bytes: result.data.length,
           contentType: result.contentType,
         });

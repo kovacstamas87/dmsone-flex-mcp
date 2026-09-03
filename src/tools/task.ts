@@ -1,6 +1,7 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 import type { FlexClient } from "../client.js";
+import type { FlexConfig } from "../config.js";
 import { formatDateTime, toolError, toolJson } from "../format.js";
 
 /**
@@ -8,7 +9,7 @@ import { formatDateTime, toolError, toolJson } from "../format.js";
  * Endpoints: /dms/task/start, /dms/comments/task/{id}, /dms/task/{id}/accept,
  * /dms/task/{id}/complete, /dms/news.
  */
-export function registerTaskTools(server: McpServer, client: FlexClient): void {
+export function registerTaskTools(server: McpServer, client: FlexClient, config: FlexConfig): void {
   server.registerTool(
     "flex_task_create",
     {
@@ -22,12 +23,17 @@ Bemenet:
   - taskDescription (string): leírás
   - taskPartner (string): partner megnevezése, üresen null lesz
   - taskPriority (number): prioritás (alapértelmezett 2)
-  - taskScheduledStart (string): tervezett kezdés ISO 8601 időbélyeg
-  - taskDeadline (string): határidő ISO 8601 időbélyeg
+  - taskScheduledStart (string): tervezett kezdés (lásd a dátumokról szóló megjegyzést)
+  - taskDeadline (string): határidő (lásd a dátumokról szóló megjegyzést)
   - needsApprovalFromCreator (boolean): kell-e a létrehozó jóváhagyása
   - executorType ("4_elso_elfogado" | "4_mindenki"): ki hajthatja végre
   - performerUserId (number): a végrehajtó felhasználó ID-ja (flex_user_get_by_username adja vissza)
   - performerOrgId (number): a végrehajtó szervezeti egység ID-ja
+
+Dátumok: a Flex helyi faliórát tárol. Offset nélkül megadott érték (pl.
+"2026-08-18T23:59:59" vagy "2026-08-18") változatlanul, faliórának számít;
+offsettel megadott érték (pl. "...Z" vagy "...+02:00") a szerver zónájára
+(FLEX_TIMEZONE, alapértelmezés Europe/Budapest) átszámítva megy be.
 
 Visszatérés: { success, result: { id, referenceNumber } }`,
       inputSchema: {
@@ -35,8 +41,14 @@ Visszatérés: { success, result: { id, referenceNumber } }`,
         taskDescription: z.string().optional().describe("A feladat leírása"),
         taskPartner: z.string().optional().describe("Partner; üresen null értéket küld"),
         taskPriority: z.number().int().default(2).describe("Prioritás (alapértelmezett 2)"),
-        taskScheduledStart: z.string().optional().describe("Tervezett kezdés ISO 8601 formátumban"),
-        taskDeadline: z.string().optional().describe("Határidő ISO 8601 formátumban"),
+        taskScheduledStart: z
+          .string()
+          .optional()
+          .describe("Tervezett kezdés; offset nélkül helyi faliórának számít (pl. 2026-08-18T09:00:00)"),
+        taskDeadline: z
+          .string()
+          .optional()
+          .describe("Határidő; offset nélkül helyi faliórának számít (pl. 2026-08-18T23:59:59)"),
         needsApprovalFromCreator: z.boolean().default(false).describe("Kell-e a létrehozó jóváhagyása"),
         executorType: z
           .enum(["4_elso_elfogado", "4_mindenki"])
@@ -58,8 +70,8 @@ Visszatérés: { success, result: { id, referenceNumber } }`,
           taskDescription: args.taskDescription ?? "",
           taskPartner: args.taskPartner || null,
           taskPriority: args.taskPriority,
-          taskScheduledStart: formatDateTime(args.taskScheduledStart),
-          taskDeadline: formatDateTime(args.taskDeadline),
+          taskScheduledStart: formatDateTime(args.taskScheduledStart, config.timeZone),
+          taskDeadline: formatDateTime(args.taskDeadline, config.timeZone),
           needsApprovalFromCreator: args.needsApprovalFromCreator,
           executorType: args.executorType,
           files: [],
@@ -104,7 +116,9 @@ Visszatérés: { success, result }`,
     },
   );
 
-  const acceptComplete = (operation: "accept" | "complete", title: string, verb: string) =>
+  // A két művelet csak a `destructiveHint`-ben tér el: az elfogadás visszafordítható
+  // állapotváltás, a lezárás viszont befejezi a feladatot, amit innen nem lehet visszavonni.
+  const acceptComplete = (operation: "accept" | "complete", title: string, verb: string, destructive: boolean) =>
     server.registerTool(
       `flex_task_${operation}`,
       {
@@ -120,7 +134,7 @@ Visszatérés: { success, result: boolean }`,
           taskId: z.string().min(1).describe("A feladat azonosítója"),
           comment: z.string().optional().describe("Opcionális megjegyzés"),
         },
-        annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: true, openWorldHint: true },
+        annotations: { readOnlyHint: false, destructiveHint: destructive, idempotentHint: true, openWorldHint: true },
       },
       async (args) => {
         try {
@@ -134,8 +148,8 @@ Visszatérés: { success, result: boolean }`,
       },
     );
 
-  acceptComplete("accept", "Feladat elfogadása", "Elfogad");
-  acceptComplete("complete", "Feladat lezárása", "Lezár");
+  acceptComplete("accept", "Feladat elfogadása", "Elfogad", false);
+  acceptComplete("complete", "Feladat lezárása", "Lezár", true);
 
   server.registerTool(
     "flex_task_list",

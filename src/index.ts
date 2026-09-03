@@ -9,15 +9,18 @@
  * Configuration is read from environment variables (see .env.example). Each user
  * runs the server locally with their own FLEX_TOKEN.
  */
+import { createRequire } from "node:module";
+
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 
-import { loadConfig } from "./config.js";
+import { loadConfig, validateConfig } from "./config.js";
 import { FlexClient } from "./client.js";
 import { registerTaskTools } from "./tools/task.js";
 import { registerUserTools } from "./tools/user.js";
 import { registerWorkflowTools } from "./tools/workflow.js";
 import { registerDiagnosticTools } from "./tools/diagnostic.js";
+import { registerSecretValue } from "./redact.js";
 
 /**
  * Server-level guidance surfaced to the model by the MCP client. This is the
@@ -62,25 +65,33 @@ dokumentum-keresést. Navigálni csak ismert azonosítóból, saját feladatokb�
 vagy felhasználónévből lehet. Ha a kért adat csak teljes szövegű kereséssel
 lenne elérhető, jelezd ezt a felhasználónak, ne találgass azonosítókat.`;
 
+const require = createRequire(import.meta.url);
+// A csomag gyökerén álló package.json-ból olvasunk, hogy dist/ és a .mcpb
+// (build/pkg/dist) build alól is ugyanazt az egy forrást találja.
+const { version: SERVER_VERSION } = require("../package.json") as { version: string };
+
 async function main(): Promise<void> {
   const config = loadConfig();
 
-  if (!config.token) {
-    console.error(
-      "HIBA: a FLEX_TOKEN környezeti változó kötelező.\n" +
-        "Add meg a Flex Personal Access Tokent (vagy Station Tokent) a Claude Desktop\n" +
-        "claude_desktop_config.json \"env\" blokkjában, vagy a .env fájlban.",
-    );
+  const { errors, warnings } = validateConfig(config);
+  for (const warning of warnings) console.error(warning);
+  if (errors.length > 0) {
+    for (const error of errors) console.error(error);
     process.exit(1);
   }
 
+  // A konfigurált token literálisan is bejelentve: ha a Flex bármelyik válaszban
+  // visszatükrözi (a /diag ezt teszi), akkor is kiesik, ha a formátuma egyik
+  // redakciós mintára sem illik. Lásd src/redact.ts.
+  registerSecretValue(config.token);
+
   const client = new FlexClient(config);
   const server = new McpServer(
-    { name: "dmsone-flex-mcp-server", version: "0.1.0" },
+    { name: "dmsone-flex-mcp-server", version: SERVER_VERSION },
     { instructions: SERVER_INSTRUCTIONS },
   );
 
-  registerTaskTools(server, client);
+  registerTaskTools(server, client, config);
   registerUserTools(server, client);
   registerWorkflowTools(server, client, config);
   registerDiagnosticTools(server, client);

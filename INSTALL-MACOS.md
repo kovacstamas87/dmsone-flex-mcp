@@ -51,9 +51,14 @@ Megjelenik egy űrlap. Töltsd ki:
   saját szervert használtok.
 - **Hitelesítési mód** – `pat` (alapértelmezett) vagy `station`.
 - **Impersonált felhasználó email** – csak `station` módban töltsd ki.
-- **SSL hibák figyelmen kívül hagyása** – maradjon kikapcsolva (csak fejlesztéshez).
+- **SSL hibák figyelmen kívül hagyása** – maradjon kikapcsolva (csak fejlesztéshez). A publikus
+  `https://flex.dmsone.hu/api` URL-en nem is engedett: bekapcsolva a bővítmény indításkor hibával
+  leáll.
+- **Időzóna** – alapból `Europe/Budapest`. Ebben a zónában értelmezi a szerver a
+  határidőket és a tervezett kezdéseket; csak akkor írd át, ha más zónában dolgozol.
 - **Letöltési könyvtár** – hova kerüljenek a letöltött csatolmányok (üresen az
-  ideiglenes mappába).
+  ideiglenes mappa `dmsone-flex` almappájába). A letöltés csak ebbe a mappába vagy
+  alkönyvtárába írhat, meglévő fájlt nem ír felül.
 
 ### 6. lépés – Engedélyezés
 Kattints a **Save / Enable** (Mentés / Engedélyezés) gombra. A bővítmény
@@ -73,7 +78,7 @@ a telepítés sikeres. 401-es hiba esetén a token hibás vagy lejárt.
 Ezt csak akkor használd, ha a forrásból futtatnád (pl. fejlesztés, testreszabás).
 
 ### 1. lépés – Node.js telepítése
-Telepítsd a **Node.js 18+** verziót: `https://nodejs.org` (LTS ajánlott),
+Telepítsd a **Node.js 20+** verziót: `https://nodejs.org` (LTS ajánlott),
 vagy Homebrew-val: `brew install node`. Ellenőrzés Terminálban:
 ```bash
 node --version
@@ -165,7 +170,7 @@ A telepítés után egyszerűen, természetes nyelven kérd Claude-tól. Néhán
 | `403 Forbidden` | Nincs jogosultság – ellenőrizd a token jogait / az impersonált usert. |
 | `404 Not Found` | Hibás azonosító (taskId / wfTaskId / templateId / GUID). |
 | Nem éri el a szervert | Ellenőrizd a **Flex API URL**-t és a hálózati/VPN elérést. |
-| (Manuális) `node not found` | Telepítsd a Node.js 18+ verziót, és indítsd újra a Claude Desktopot. |
+| (Manuális) `node not found` | Telepítsd a Node.js 20+ verziót, és indítsd újra a Claude Desktopot. |
 | (Manuális) nem töltődnek be az eszközök | Ellenőrizd a `claude_desktop_config.json` elérési útját és hogy érvényes JSON-e. |
 
 A token a konfigban titkosan (sensitive) tárolódik. Ha kiszivárgott, vond vissza a

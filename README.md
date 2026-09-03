@@ -126,8 +126,9 @@ fájlszerkesztésre. A **manuális (Node.js) mód** lépéseit és a pontos
 | `FLEX_BASE_URL` | – | `https://flex.dmsone.hu/api` | A Flex API alap URL-je |
 | `FLEX_AUTH_METHOD` | – | `pat` | `pat` vagy `station` |
 | `FLEX_IMPERSONATED_EMAIL` | – | – | Csak station tokennél: kinek a nevében járjon el |
-| `FLEX_IGNORE_SSL` | – | `false` | SSL hibák figyelmen kívül hagyása (csak fejlesztéshez) |
-| `FLEX_DOWNLOAD_DIR` | – | OS temp | Letöltött csatolmányok célkönyvtára |
+| `FLEX_IGNORE_SSL` | – | `false` | SSL hibák figyelmen kívül hagyása (csak fejlesztéshez). A publikus `flex.dmsone.hu` URL-en nem engedett — a szerver ott hibával kilép induláskor |
+| `FLEX_DOWNLOAD_DIR` | – | `<OS temp>/dmsone-flex` | Letöltött csatolmányok célkönyvtára (abszolút út). A letöltés **csak** ide vagy alkönyvtárába írhat; meglévő fájlt nem ír felül |
+| `FLEX_TIMEZONE` | – | `Europe/Budapest` | IANA zónanév. A Flex helyi faliórát tárol, ezért a szerver ebben a zónában értelmezi az offsettel megadott dátumokat |
 
 ---
 
