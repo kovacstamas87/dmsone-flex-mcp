@@ -26,7 +26,8 @@ először, melyik fogalomhoz tartozik.
 WfTask). A leírás ezt kimondja, mert enélkül a modell Task-ként próbálna lezárni egy WfTask-ot.
 A `taskId` és a `wfTaskId` **továbbra sem cserélhető fel**: a `/dms/news` mindkét fajtát `id`
 kulcson adja vissza, a WfTask-műveletekhez viszont a `flex_workflow_get_my_tasks` `wfTaskId`-ja
-kell.
+kell. **WF11-től** a `flex_task_list` minden elemén ott az `idKind` (`"taskId"` / `"wfTaskId"`) is,
+hogy a modellnek ne kelljen a `type` stringet eszköznévre fordítania.
 
 ## Rögzített szabályok
 
@@ -75,6 +76,12 @@ kell.
   `raw` normalizált kivonata, a kettő együtt duplázna.
 - **A dátumokat a `formatDateTime(value, config.timeZone)` írja át**, sose kézzel. A Flex
   falióra-időt tárol; a részleteket és a „miért"-et lásd [`../CLAUDE.md`](../CLAUDE.md).
+- **Az `orgId` mezőknek nincs néma alapértelmezésük** (WF11). A `flex_task_create`
+  `performerOrgId`-ja és a `flex_workflow_start` `responsibleOrgId`-ja korábban csendben `1`-re
+  esett vissza, ha nem adták meg — ez rossz szervezeti egységhez rendelt feladatot okozhatott
+  észrevétlenül. Most mindkettő kötelező (a `performerOrgId` a `performerUserId` megadásához
+  kötve, futásidőben ellenőrizve), és a `.describe()` a forrást is megmondja: a
+  `flex_user_get_by_username` válaszának `orgId` mezője.
 - **Kötelező mező: best effort, kimondva.** A `workflow.ts` csak akkor szól előre hiányzó mezőről,
   ha a sablon egyáltalán hordoz `required`/`mandatory` jelölést (`requiredMarkerPresent`); az
   érdemi ellenőrzés a Flex szerveré. A `validation: "api-flag" | "none"` mező ezt a modellnek is

@@ -57,6 +57,11 @@ function count(value: unknown): number {
  * a `/dms/wfTasks/my` viszont lapos `template` + `templateVersion` párt ad. A
  * summary a **laposat** használja mindkét listán, hogy a modellnek egy szótára
  * legyen a két eszközre.
+ *
+ * Az `idKind` a `type` mezőből származtatott, explicit jelölés arról, hogy az
+ * `id` melyik eszközcsaládhoz tartozik (`taskId` → `flex_task_*`, `wfTaskId` →
+ * `flex_workflow_*`) — a `/dms/news` a kettőt vegyesen adja, és a modellnek a
+ * `type` string ismerete nélkül is egyértelműnek kell lennie, melyik toolt hívja.
  */
 export function summarizeTask(item: NewsItem): Record<string, unknown> {
   const template = item.templateName as Record<string, unknown> | null | undefined;
@@ -65,6 +70,7 @@ export function summarizeTask(item: NewsItem): Record<string, unknown> {
   return {
     id: item.id,
     type: item.type,
+    idKind: item.type === "WfTask" ? "wfTaskId" : "taskId",
     referenceNumber: item.referenceNumber ?? null,
     subject: item.subject ?? null,
     taskName: item.taskName ?? null,

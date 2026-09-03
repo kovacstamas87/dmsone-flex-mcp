@@ -6,11 +6,13 @@ minden hívás a beállított token tulajdonosának a nevében fut. Ugyanazokat 
 a közösségi `n8n-nodes-dmsone-flex` node.
 
 **Állapot (2026-09-03):** **v0.1.1** kiadva (P0: WF1–WF7), a `../flex-mcp-p1-p2-megvalositasi-terv.md`
-**P1 üteme fut**: a **WF9** (payload-kontroll) és a **WF10** (`outputSchema`, tömör leírások,
-generált `manifest.tools`) kész — a két listázó lapoz és összefoglalót ad, a `toolJson` a
-`structuredContent`-et is csonkolja, öt eszköz `outputSchema`-t ad, az összleírás 11 936-ról
-4 365 karakterre fogyott, és a `manifest.tools` a lefordított szerverből generált. Build és
-teszt zöld (129 teszt). A következő a **WF11** (Task/WfTask tisztázás, `orgId`).
+**P1 üteme fut**: a **WF9** (payload-kontroll), a **WF10** (`outputSchema`, tömör leírások,
+generált `manifest.tools`) és a **WF11** (Task/WfTask `idKind`, `orgId` alapértelmezés kivezetése)
+kész — a két listázó lapoz és összefoglalót ad, a `toolJson` a `structuredContent`-et is csonkolja,
+öt eszköz `outputSchema`-t ad, az összleírás 11 936-ról 4 500 alá fogyott, a `flex_task_list` minden
+eleme explicit `idKind`-ot (`taskId`/`wfTaskId`) is ad, és a `performerOrgId`/`responsibleOrgId`-nak
+nincs többé néma `1` alapértelmezése. Build és teszt zöld (132 teszt). A következő a **WF12**
+(minőség-infrastruktúra: eslint, prettier, CI, dependabot, handler-tesztek).
 Nyitva maradt a Flex-oldali P0-2 elküldése, a P0-6 Flex-válasz és az opcionális élő/írás-tesztek —
 lásd lent.
 
@@ -96,6 +98,17 @@ lásd lent.
   nem jelöl kötelezőséget (csak `visibility: MT_K`/`MT_M`), a régi kód mégis „ellenőrzött"-nek
   mutatkozott, miközben mindent átengedett (P0-6). Hogy a `MT_K` jelent-e kötelezőséget, az a
   Flex csapatnál nyitott kérdés — addig az érdemi ellenőrzés a szerveré.
+- **A `/dms/news` (`flex_task_list`) vegyes listájának minden eleme explicit `idKind`-ot kap**
+  (P1-5/P1-6, WF11): `"taskId"` vagy `"wfTaskId"`, a `type` mezőből származtatva. Miért nem elég a
+  `type`: a modellnek konkrét eszköznevet kell választania (`flex_task_*` vagy `flex_workflow_*`),
+  és egy string-egyezés (`"WfTask"`) helyett egyértelműbb, ha a szerver már kimondja, melyik
+  eszközcsalád kezeli az adott `id`-t.
+- **A `performerOrgId` / `responsibleOrgId`-nak nincs néma `1` alapértelmezése** (P1-5/P1-6, WF11).
+  Korábban egy meg nem adott szervezeti egység csendben `1`-re esett vissza — ez rossz szervezeti
+  egységhez rendelt feladatot/folyamatot okozhatott anélkül, hogy bárki észrevette volna. Most
+  mindkettő kötelező (a `flex_task_create`-nél a `performerUserId` megadásához kötve, futásidőben
+  ellenőrizve; a `flex_workflow_start`-nál a séma szintjén), és a leírásuk a forrást is megmondja:
+  a `flex_user_get_by_username` válaszának `orgId` mezője.
 - **A listázó eszközök lapoznak és alapból összefoglalót adnak** (P1-1). Mérés: a `/dms/news`
   egyetlen hívása 21 elemre **70 645 karakter** volt, a summary ugyanez **7 312** (11,6%). A
   `limit` (alap 20) / `offset` / `fields` szerződés mindkét listázón azonos, a boríték

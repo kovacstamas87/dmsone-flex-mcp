@@ -113,6 +113,10 @@ const taskSummaryItem = z
   .object({
     id: z.union([z.number(), z.string()]).nullish().describe("A feladat azonosítója"),
     type: z.string().nullish().describe('"Task" vagy "WfTask"'),
+    idKind: z
+      .enum(["taskId", "wfTaskId"])
+      .nullish()
+      .describe('"taskId": flex_task_* eszközzel kezelendő; "wfTaskId": flex_workflow_* eszközzel'),
     referenceNumber: z.union([z.string(), z.number()]).nullish().describe("Iktatószám"),
     subject: z.string().nullish().describe("A feladat tárgya"),
     taskName: z.string().nullish().describe("A lépés neve"),

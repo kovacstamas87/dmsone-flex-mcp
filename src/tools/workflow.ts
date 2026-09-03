@@ -277,7 +277,13 @@ Visszatérés: az új folyamat id és referenceNumber mezője.`,
           .number()
           .int()
           .describe("A felelős felhasználó ID-ja (a flex_user_get_by_username adja meg)"),
-        responsibleOrgId: z.number().int().default(1).describe("A felelős szervezeti egység ID-ja"),
+        responsibleOrgId: z
+          .number()
+          .int()
+          .describe(
+            "A felelős szervezeti egység ID-ja — kötelező, nincs alapértelmezés; " +
+              "a flex_user_get_by_username válaszának orgId mezőjéből",
+          ),
         linkedItemType: z
           .string()
           .optional()

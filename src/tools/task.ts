@@ -52,15 +52,23 @@ Visszatérés: az új feladat id és referenceNumber mezője.`,
           .number()
           .int()
           .optional()
-          .describe("A végrehajtó szervezeti egység ID-ja (alapértelmezetten 1)"),
+          .describe(
+            "A végrehajtó szervezeti egység ID-ja — performerUserId megadása esetén kötelező, " +
+              "nincs alapértelmezés; a flex_user_get_by_username válaszának orgId mezőjéből",
+          ),
       },
       annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: true },
     },
     async (args) => {
       try {
+        if (args.performerUserId !== undefined && args.performerOrgId === undefined) {
+          return toolError(
+            new Error("performerOrgId kötelező, ha performerUserId meg van adva (nincs alapértelmezett szervezeti egység)"),
+          );
+        }
         const users =
           args.performerUserId !== undefined
-            ? [{ userId: args.performerUserId, orgId: args.performerOrgId ?? 1 }]
+            ? [{ userId: args.performerUserId, orgId: args.performerOrgId! }]
             : [];
         const body = {
           taskTitle: args.taskTitle,
@@ -146,7 +154,8 @@ Visszatérés: az új feladat id és referenceNumber mezője.`,
     {
       title: "Feladatok listázása",
       description: `A bejelentkezett felhasználó feladatai (GET /dms/news). Vegyes lista: a
-"type" választja el a Task és a WfTask elemeket.
+"type" választja el a Task és a WfTask elemeket; az "idKind" ("taskId" vagy
+"wfTaskId") mondja meg, melyik eszközcsalád (flex_task_* / flex_workflow_*) kezeli.
 
 Alapból lapozott összefoglaló, 20 elem — a leírás, a metaadatok és a
 megjegyzések szövege NEM szerepel benne, azokhoz a

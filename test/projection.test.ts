@@ -33,6 +33,7 @@ describe("summarizeTask", () => {
       "commentCount",
       "creatorName",
       "id",
+      "idKind",
       "referenceNumber",
       "status",
       "subject",
@@ -49,6 +50,13 @@ describe("summarizeTask", () => {
   test("a lista vegyesen tartalmaz Task és WfTask elemet — mindkettő átmegy", () => {
     const types = new Set(NEWS.result.map((item) => summarizeTask(item).type));
     assert.deepEqual([...types].sort(), ["Task", "WfTask"]);
+  });
+
+  test("az idKind a type-ból származik: WfTask -> wfTaskId, minden más -> taskId", () => {
+    for (const item of NEWS.result) {
+      const summary = summarizeTask(item);
+      assert.equal(summary.idKind, item.type === "WfTask" ? "wfTaskId" : "taskId");
+    }
   });
 
   test("a templateName objektumból lapos template + templateVersion lesz", () => {

@@ -39,7 +39,9 @@ FONTOS — két külön "feladat" fogalom van, ne keverd őket:
 - WfTask (munkafolyamat-feladat): flex_workflow_* tool-ok, /dms/wfTask végpontok.
   Egy futó munkafolyamat-példány egy lépése, wfTaskId azonosítóval.
 Ha a felhasználó nem pontosít, kérdezz rá, vagy nézd meg mindkettőt
-(flex_task_list és flex_workflow_get_my_tasks).
+(flex_task_list és flex_workflow_get_my_tasks). A flex_task_list a /dms/news
+vegyes válaszát adja: elemenként az "idKind" mondja meg, melyik eszközcsalád
+kezeli — "taskId" a flex_task_*-ot, "wfTaskId" a flex_workflow_*-ot.
 
 Melyik kérdéshez melyik tool:
 - "Milyen feladataim / teendőim vannak?" -> flex_task_list (status: in-progress)

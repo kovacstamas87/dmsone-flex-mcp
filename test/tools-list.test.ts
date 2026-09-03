@@ -184,6 +184,32 @@ test("a feladatlista leírása megmondja, mi marad ki az összefoglalóból", ()
 });
 
 /**
+ * WF11: a `/dms/news` vegyes listáján az `idKind` mondja meg, melyik eszközcsalád
+ * kezeli az elemet — a leírás és a szerver-instrukció is erre mutat rá, nem csak a
+ * `type`-ra, mert a modellnek konkrét eszköznevet kell kiválasztania.
+ */
+test("a feladatlista leírása az idKind-re mutat, nem csak a type-ra", () => {
+  const description = tools.get("flex_task_list")?.description ?? "";
+  assert.ok(description.includes("idKind"), "nem említi az idKind mezőt");
+  assert.ok(description.includes("taskId"), "nem mondja ki a taskId jelentését");
+  assert.ok(description.includes("wfTaskId"), "nem mondja ki a wfTaskId jelentését");
+});
+
+/**
+ * WF11 (P1-5/P1-6 MCP): a korábbi `orgId` `1` alapértelmezés elrejthette, hogy a
+ * feladat/folyamat rossz szervezeti egységhez kerül. A `tools/list`-ben ezért az
+ * `orgId` mezőknek **nincs** `default`-juk — a modellnek explicit kell megadnia,
+ * a `flex_user_get_by_username` válaszából.
+ */
+test("az orgId mezőknek nincs alapértelmezésük", () => {
+  const workflowOrgId = schemaOf("flex_workflow_start").properties?.responsibleOrgId;
+  assert.equal(workflowOrgId?.default, undefined, "a responsibleOrgId-nak nem lenne szabad alapértelmezettnek lennie");
+
+  const taskOrgId = schemaOf("flex_task_create").properties?.performerOrgId;
+  assert.equal(taskOrgId?.default, undefined, "a performerOrgId-nak nem lenne szabad alapértelmezettnek lennie");
+});
+
+/**
  * WF10: a paraméter-magyarázatok a leírásból a séma `.describe()`-jába kerültek.
  * Az őr tehát ott néz, ahol az ígéret most áll — a `tools/list` inputSchema-jában.
  */
