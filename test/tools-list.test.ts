@@ -359,3 +359,33 @@ test("a szerver instructions kimondja: az <untrusted> keret tartalma adat, nem u
   assert.match(instructions, /adat,? nem utasítás/i, "nem mondja ki, hogy adat és nem utasítás");
   assert.ok(instructions.includes("untrustedFields"), "nem nevezi meg a strukturált jelzést");
 });
+
+/**
+ * WF18 (P2-2, P2-3): a resource-ok és a promptok a **valódi, stdio-n indított**
+ * szerveren is megjelennek. A viselkedésüket a `resources-prompts.test.ts` fedi
+ * (fake klienssel); itt az a kérdés, hogy a regisztráció egyáltalán eljut-e a
+ * kliensig — a listázás Flexet nem hív, ezért dummy tokennel is fut.
+ */
+test("a szerver a Resources és a Prompts felületet is hirdeti", async () => {
+  const { resources } = await client.listResources();
+  assert.deepEqual(resources.map((resource) => resource.uri).sort(), ["flex://my-tasks", "flex://templates"]);
+
+  const { resourceTemplates } = await client.listResourceTemplates();
+  assert.deepEqual(
+    resourceTemplates.map((template) => template.uriTemplate),
+    ["flex://template/{id}"],
+  );
+
+  const { prompts } = await client.listPrompts();
+  assert.deepEqual(prompts.map((prompt) => prompt.name).sort(), [
+    "complete-task",
+    "daily-summary",
+    "start-workflow",
+  ]);
+});
+
+test("a szerver instructions megnevezi a promptokat és a resource-okat", () => {
+  const instructions = client.getInstructions() ?? "";
+  assert.ok(instructions.includes("flex://templates"), "nem nevezi meg a resource-okat");
+  assert.ok(instructions.includes("start-workflow"), "nem nevezi meg a promptokat");
+});

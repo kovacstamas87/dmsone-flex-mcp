@@ -5,22 +5,22 @@ DMS One Flex REST API-t teszi elérhetővé feladatok, munkafolyamatok és felha
 minden hívás a beállított token tulajdonosának a nevében fut. Ugyanazokat a végpontokat fedi, mint
 a közösségi `n8n-nodes-dmsone-flex` node.
 
-**Állapot (2026-09-03):** **v0.2.0** kiadva — a `../flex-mcp-p1-p2-megvalositasi-terv.md` **P0 és
-P1 üteme kész** (WF1–WF15; tételesen a `CHANGELOG.md` `[0.2.0]`-ban — benne a kötelező
+**Állapot (2026-09-03):** **v0.2.0** kiadva — a `../flex-mcp-p1-p2-megvalositasi-terv.md` **P0 és P1
+üteme kész** (WF1–WF15; tételesen a `CHANGELOG.md` `[0.2.0]`-ban — benne a kötelező
 `performerOrgId`/`responsibleOrgId`, **áttörő változás a hívó modellnek**; eval: `../flex-mcp-eval/`).
-A P2 ütemből a **WF20 kész: SDK v2** — `@modelcontextprotocol/sdk@1.30` → `@modelcontextprotocol/server@2.0.0`,
-`zod@3` → `zod@4`; a kliens által látott `tools/list` **változatlan** (snapshot-diff). **WF17 kész:
-prompt-injection jelölés** (P2-4/B9): a felhasználói Flex-szövegek `<untrusted>` keretben, HTML nélkül
-mennek a modellnek, az `instructions` kimondja: adat, nem utasítás. 184 teszt zöld; **még nincs
-kiadva**, a `v1.0.0` a WF21-é. Nyitva maradt a Flex-oldali P0-2 elküldése, a P0-6
-Flex-válasz, a WF14 két Claude Desktop-mérése és az opcionális élő/írás-tesztek — lásd lent.
+A P2 ütemből kész, de **még kiadatlan** (a `v1.0.0` a WF21-é): **WF20** SDK v2
+(`@modelcontextprotocol/sdk@1.30` → `@modelcontextprotocol/server@2.0.0`, `zod@3` → `zod@4`; a
+`tools/list` a kliens felé változatlan), **WF17** prompt-injection jelölés (P2-4/B9), **WF18**
+Resources + Prompts (P2-2/P2-3): három resource, három vezetett prompt, `templateId`-completion.
+201 teszt zöld. Nyitva: a Flex-oldali P0-2 elküldése, a P0-6 Flex-válasz, a WF14 két Claude
+Desktop-mérése és az opcionális élő/írás-tesztek — lásd lent.
 
 ## Mappa tartalma
 
 | Fájl / mappa | Mi ez | Állapot |
 |---|---|---|
-| [`src/`](src/) | A szerver forráskódja — lásd [`src/CLAUDE.md`](src/CLAUDE.md) | WF10 után (`paths.ts` új WF3-ban, `validateConfig` új WF5-ben, `projection.ts` új WF9-ben, `schema.ts` új WF10-ben, **`untrusted.ts` új WF17-ben**) |
-| [`test/`](test/) | `node:test` alapú tesztek, `tsx`-szel futtatva (`npm test`) — lásd [`test/CLAUDE.md`](test/CLAUDE.md) | WF1–WF5, WF9–WF14, WF17-ben bővítve (184 teszt); a `test/fixtures/` élő, **anonimizált** minta |
+| [`src/`](src/) | A szerver forráskódja — lásd [`src/CLAUDE.md`](src/CLAUDE.md) | WF10 után (`paths.ts` új WF3-ban, `validateConfig` új WF5-ben, `projection.ts` új WF9-ben, `schema.ts` új WF10-ben, `untrusted.ts` új WF17-ben, **`resources.ts` + `prompts.ts` új WF18-ban**) |
+| [`test/`](test/) | `node:test` alapú tesztek, `tsx`-szel futtatva (`npm test`) — lásd [`test/CLAUDE.md`](test/CLAUDE.md) | WF1–WF5, WF9–WF14, WF17–WF18-ban bővítve (201 teszt); a `test/fixtures/` élő, **anonimizált** minta |
 | [`scripts/bundle.mjs`](scripts/bundle.mjs) | A `.mcpb` előállítása **esbuild egyfájlos bundle-ből**: `dist/index.js` → `build/pkg/dist/index.js`, minimális `package.json`, majd `@anthropic-ai/mcpb pack`. Ellenőrzi, hogy a csomagban nincs `node_modules`, és kiírja a méretet | **új WF13-ban** |
 | [`scripts/sync-manifest.mjs`](scripts/sync-manifest.mjs) | A `manifest.json`-t a kódhoz igazítja, idempotens: a `version` a `package.json`-ból, a `tools[]` a **lefordított** `dist/index.js` `tools/list` válaszából. `dist/` hiányában a `tools`-t érintetlenül hagyja és figyelmeztet | **új WF1-ben**; WF10: `tools[]`-generálás |
 | `manifest.json` | `.mcpb` csomag metaadata — a `version` **és WF10-től a `tools[]` is generált**, ne szerkeszd kézzel (a `sync-manifest.mjs` írja) | WF1-ben szinkron-forrás lett; WF3: `flex_download_dir` leírása a sandboxot mondja; WF4: új `flex_timezone` konfig-mező; WF10: generált `tools[]`; **WF13: `manifest_version` 0.3**, `repository`/`homepage`/`documentation`/`support`/`author.url`, új `flex_max_download_mb` mező |
@@ -45,6 +45,7 @@ Flex-válasz, a WF14 két Claude Desktop-mérése és az opcionális élő/írá
 | Tesztek | `test/*.test.ts`, futtatás: `npm test` (`node --import tsx --test`) |
 | A `.mcpb` **tartalma** | `scripts/bundle.mjs` `COPIED` listája + az esbuild bundle; a `build/pkg/` staging mappa minden futásnál nulláról készül |
 | CI | `.github/workflows/ci.yml` — Node 20/22 mátrix: `npm ci`, `lint`, `format:check`, `build`, `test`, `npm audit --audit-level=moderate` |
+| Resource-ok és promptok | `src/resources.ts`, `src/prompts.ts`; a felületet a `test/resources-prompts.test.ts` rögzíti (protokollon át) |
 | Egy tool tesztelhető válasza fake klienssel | `test/handlers.test.ts` — a `FlexHttp` interfész (`src/client.ts`) mögé tett fake, lásd „Kulcsdöntések" |
 
 ## Kulcsdöntések és rögzített szabályok
@@ -89,9 +90,8 @@ Flex-válasz, a WF14 két Claude Desktop-mérése és az opcionális élő/írá
   „WF20 kapu-döntés". **Visszavonható:** a `v0.2.0` tag az 1.30-as, működő állapot. **Bizonyíték,
   hogy a kliens ugyanazt látja:** a migráció előtti/utáni `tools/list` + `initialize` snapshot-diff —
   név, cím, leírás, annotáció, `instructions` **bájtra azonos**; a sémák csak a v2 JSON
-  Schema-dialektus ekvivalens írásmódjaiban térnek el (tételesen, a `.mcpb` 212 → **287 kB**
-  növekedésével együtt: `CHANGELOG.md` `[Unreleased]`). Kód-oldalon minden `inputSchema` explicit
-  `z.object({...})` — miért: [`src/CLAUDE.md`](src/CLAUDE.md).
+  Schema-dialektus ekvivalens írásmódjaiban térnek el (tételesen, a `.mcpb` méretnövekedésével
+  együtt: `CHANGELOG.md` `[Unreleased]`).
 - **A Flex dátummezői falióra-idők, nem időpillanatok.** A `formatDateTime` offset nélküli
   bemenetet változatlanul hagy, és csak offsettel megadott értéket számol át a `FLEX_TIMEZONE`
   zónájára. Miért fontos: a korábbi `toISOString()` mindig UTC-re konvertált, így egy nyári
@@ -107,19 +107,16 @@ Flex-válasz, a WF14 két Claude Desktop-mérése és az opcionális élő/írá
   `type`: a modellnek konkrét eszköznevet kell választania (`flex_task_*` vagy `flex_workflow_*`),
   és egy string-egyezés (`"WfTask"`) helyett egyértelműbb, ha a szerver már kimondja, melyik
   eszközcsalád kezeli az adott `id`-t.
-- **A `performerOrgId` / `responsibleOrgId` kötelező, és a leírás megmondja, honnan jön —
-  és honnan NEM** (P1-5/P1-6 WF11, javítva WF14). Korábban a meg nem adott szervezeti egység
-  csendben `1`-re esett vissza, ami rossz szervezeti egységhez rendelt feladatot okozhatott
-  észrevétlenül; most mindkettő kötelező (a `flex_task_create`-nél a `performerUserId`-hoz kötve,
-  futásidőben; a `flex_workflow_start`-nál a séma szintjén). A WF11 leírása viszont a
-  `flex_user_get_by_username` *válaszának* `orgId` mezőjére mutatott — a `/dms/ac/user` pedig csak
-  `userId`-t és `userName`-et ad (élő, read-only mintavétel, flex-dev, WF14). A leírás tehát olyan
-  végponthoz küldte a modellt, ami a kért értéket nem tudja megadni: a leírás-őszinteség nem csak a
-  *túl sokat ígérésre* vonatkozik, hanem a **rossz helyre mutatásra** is. A valódi forrás a
-  `flex_task_list` elemeinek `orgId` mezője vagy egy wfTask `wfDetails.responsibleUser.orgId`-ja,
-  **egy helyen** kimondva (a felhasználó-kereső leírásában); a két paraméter csak odamutat, mert a
-  WF10 leírás-költségvetése (< 4 500 karakter) valós teher — a duplikálás azonnal ki is buktatta.
-  Ugyanitt derült ki, hogy a keresés **ékezet-érzékeny** (`"ková"` talál, `"kovacs"` nem).
+- **A `performerOrgId` / `responsibleOrgId` kötelező, és a leírás megmondja, honnan jön — és honnan
+  NEM** (P1-5/P1-6 WF11, javítva WF14). Korábban a meg nem adott szervezeti egység csendben `1`-re
+  esett vissza, ami észrevétlenül rossz szervezeti egységhez rendelhetett feladatot; most mindkettő
+  kötelező. A WF11 leírása viszont a `flex_user_get_by_username` *válaszának* `orgId` mezőjére
+  mutatott, a `/dms/ac/user` pedig csak `userId`-t és `userName`-et ad (élő mintavétel, WF14) — a
+  leírás-őszinteség tehát nem csak a *túl sokat ígérésre* vonatkozik, hanem a **rossz helyre
+  mutatásra** is. A valódi forrás (a `flex_task_list` elemeinek `orgId`-ja vagy egy wfTask
+  `wfDetails.responsibleUser.orgId`-ja) **egy helyen** van kimondva, a felhasználó-kereső
+  leírásában; a két paraméter csak odamutat, mert a WF10 leírás-költségvetése valós teher. Ugyanitt
+  derült ki, hogy a keresés **ékezet-érzékeny** (`"ková"` talál, `"kovacs"` nem).
 - **A listázó eszközök lapoznak és alapból összefoglalót adnak** (P1-1). Mérés: a `/dms/news`
   egyetlen hívása 21 elemre **70 645 karakter** volt, a summary ugyanez **7 312** (11,6%). A
   `limit` (alap 20) / `offset` / `fields` szerződés mindkét listázón azonos, a boríték
@@ -127,11 +124,18 @@ Flex-válasz, a WF14 két Claude Desktop-mérése és az opcionális élő/írá
   a csonkolás a lista közepén vág el, a modell pedig nem tudja, mi maradt ki — a `hasMore`
   viszont kimondja. Részletek és a mezőnkénti indoklás: [`src/CLAUDE.md`](src/CLAUDE.md).
 - **A felhasználó által írt szöveg jelölve megy a modellnek, HTML nélkül** (P2-4/B9, WF17). Leírás,
-  tárgy, megjegyzés, szöveges metaadat: más felhasználók gépelt szövege, ami utasításnak látszhat
+  tárgy, megjegyzés, szöveges metaadat más felhasználók gépelt szövege, ami utasításnak látszhat
   (prompt-injection). A `src/untrusted.ts` a `text`-ben `<untrusted source="flex:…">` keretbe teszi
-  (belülről nem hamisítható), a `structuredContent`-be puszta szöveget + `untrustedFields`-et ad, a
-  `SERVER_INSTRUCTIONS` kimondja: adat, nem utasítás. Jelölés + instrukció, nem kényszer — az eval
+  (belülről nem hamisítható), a `structuredContent`-be puszta szöveget + `untrustedFields`-et ad, az
+  `instructions` kimondja: adat, nem utasítás. Jelölés + instrukció, nem kényszer — az eval
   injection-kérdése (WF21) méri. Miért két csatorna, miért zéró függőség: [`src/CLAUDE.md`](src/CLAUDE.md).
+- **Ami állapot, az resource; ami vezetett munkamenet, az prompt** (P2-2/P2-3, WF18). A három
+  resource (`flex://templates`, `flex://template/{id}`, `flex://my-tasks`) ugyanazt adja, mint a
+  megfelelő csak-olvasó eszköz — a különbség az, **ki kezdeményez**: a resource-t a felhasználó
+  csatolja a kliens „+" menüjéből, a toolt a modell hívja; mellékhatásos műveletnek ezért nincs
+  resource-változata. A három prompt a **lépések sorrendjét** rögzíti, és minden visszavonhatatlan
+  lépés előtt jóváhagyást kér — szöveggel, nem kóddal. Részletek és a completion döntései:
+  [`src/CLAUDE.md`](src/CLAUDE.md).
 - **A konfig-validáció (`validateConfig`) elkülönül a betöltéstől (`loadConfig`).** A `loadConfig()`
   sosem lép ki és nem ír stderr-re — a hívó (`index.ts`) dönt. Üres token és publikus URL-en
   kikapcsolt SSL → **hiba**, kilépés; fejlesztői URL-en kikapcsolt SSL vagy PAT módban megadott
@@ -142,30 +146,26 @@ Flex-válasz, a WF14 két Claude Desktop-mérése és az opcionális élő/írá
   egyszerű, memóriában dolgozó fake-et adhatnak át — rögzített válasz vagy dobott hiba —, HTTP-mock
   könyvtár (pl. `nock`) és hálózat nélkül, a valódi felületet (`request`/`download`) típusból
   kikényszerítve.
-- **Eslint (flat config) + Prettier + `tsc --noEmit`, külön scriptekkel** (WF12). Az
-  `eslint-config-prettier` kikapcsolja az ütköző stílus-szabályokat. A Prettier hatóköre
-  szándékosan **csak a kód** — a kézzel gondozott doksi (`*.md`) és a generált `manifest.json`
-  kimarad, mert azok újraformázása felesleges diffet adna.
+- **Eslint (flat config) + Prettier + `tsc --noEmit`, külön scriptekkel** (WF12). A Prettier hatóköre
+  szándékosan **csak a kód**: a kézzel gondozott doksi és a generált `manifest.json` kimarad, mert
+  azok újraformázása felesleges diffet adna.
 - **A `.mcpb` egyfájlos esbuild-bundle-ből készül, `node_modules` nélkül** (P1-10, WF13). A
   korábbi `npm install --omit=dev` 3,79 MB-os csomagot adott, amiben minden tranzitív függőség
   teljes tartalma (doksi, teszt, source map) a felhasználó gépére került; az esbuild csak a tényleg
-  elért kódot fordítja → **212 kB**, 0 futásidejű függőség (`npm audit` a csomagra 0, mert nincs
-  mit auditálni), és továbbra is tiszta JavaScript, tehát platformfüggetlen. Az ESM-buktatókat
-  (`banner` a CJS-függőségek `require`/`__dirname`-jéhez, minimális `package.json` a staging
-  mappában) a [`scripts/bundle.mjs`](scripts/bundle.mjs) fejkommentje indokolja; a szkript
+  elért kódot fordítja, 0 futásidejű függőséggel, platformfüggetlen JavaScriptként. Az
+  ESM-buktatókat (`banner` a CJS-függőségek `require`/`__dirname`-jéhez, minimális `package.json` a
+  staging mappában) a [`scripts/bundle.mjs`](scripts/bundle.mjs) fejkommentje indokolja; a szkript
   ellenőrzi is, hogy a kész csomagban nincs `node_modules`, és elesik, ha van.
 - **A csatolmány-letöltésnek felső mérethatára van** (`FLEX_MAX_DOWNLOAD_MB`, alap 50 MB; B11,
   WF13). Miért kell: a `client.download()` a választ teljes egészében memóriába olvassa (a Flex nem
   ad részleges letöltést), és a szerver a Claude Desktop alfolyamata — korlát nélkül egy nagy
   melléklet a beszélgetés közepén viszi el a folyamatot. A túllépés **hiba, nem csonkolás** (egy
-  félig letöltött fájl rosszabb lenne), magyar, cselekvésre fordítható szöveggel. A megvalósítás és
-  az él-esetek (hiányzó `Content-Length`, elírt/nulla korlát): [`src/CLAUDE.md`](src/CLAUDE.md).
-- **A verziót az `npm version` emeli, egy helyen** (WF13, README „Kiadás készítése"). Korábban a
-  README kézi, kétszeres verzióemelést írt (`package.json` **és** `manifest.json`) — ez pontosan az
-  az elsodródás, amit a `version` npm-hook (`sync-manifest.mjs` + `git add manifest.json`) kizár.
-- **A CI Node 20/22 mátrixon fut, és `npm audit`-ot is végez** (WF12). Miért két verzió: az
-  `engines` `>=20`-at ír elő, a mátrix ezt a határt és a következő LTS-t is lefedi. Az audit a
-  Dependabot mellé ad folyamatos ellenőrzést, nem csak kiadáskor.
+  félig letöltött fájl rosszabb lenne). Az él-esetek: [`src/CLAUDE.md`](src/CLAUDE.md).
+- **A verziót az `npm version` emeli, egy helyen** (WF13). A README korábbi, kézi kétszeres
+  verzióemelése (`package.json` **és** `manifest.json`) pontosan az az elsodródás, amit a `version`
+  npm-hook kizár.
+- **A CI Node 20/22 mátrixon fut, és `npm audit`-ot is végez** (WF12): a mátrix az `engines`
+  `>=20` határát és a következő LTS-t fedi, az audit a Dependabot mellé ad folyamatos ellenőrzést.
 
 ## Nyitva maradt
 
@@ -186,8 +186,7 @@ Flex-válasz, a WF14 két Claude Desktop-mérése és az opcionális élő/írá
 - **A WF14 két Claude Desktop-mérése és az élő read-only ellenőrzés** (friss `.mcpb` telepítése,
   `flex_diag`, 10 beszélgetés a [`../flex-mcp-eval/`](../flex-mcp-eval/) kérdéssorával): felhasználói
   művelet. **A Claude Desktopban most a P0 előtti build van** (a `flex_diag` tokennel együtt adja a
-  `/diag`-ot), ezért a „v0.1.1" oszlop csak újratelepítés után értelmes. A csomagolt szerver
-  `initialize` + `tools/list` + `tools/call` válaszát a WF13 Flex nélkül ellenőrizte.
+  `/diag`-ot), ezért a „v0.1.1" oszlop csak újratelepítés után értelmes.
 
 ## Kapcsolódó
 

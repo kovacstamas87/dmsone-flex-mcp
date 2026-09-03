@@ -5,6 +5,23 @@ A jelölés a [Keep a Changelog](https://keepachangelog.com/) és a
 
 ## [Unreleased]
 
+### Added
+- **P2-2 / P2-3**: MCP **Resources** és **Prompts** (WF18). Három resource — `flex://templates`
+  (elindítható sablonok), `flex://template/{id}` (egy sablon mezői, `ResourceTemplate` a `{id}`
+  argumentum kiegészítésével) és `flex://my-tasks` (a folyamatban lévő teendők összefoglalója,
+  ugyanazzal a projekcióval, mint a `flex_task_list`) —, valamint három vezetett prompt:
+  `start-workflow`, `daily-summary`, `complete-task`. A promptok magyarul, a szerver
+  `instructions`-ének fogalmaival vezetnek végig a lépéseken, és minden visszavonhatatlan lépés
+  (indítás, lezárás) előtt jóváhagyást kérnek. A resource-ok mind csak-olvasók: mellékhatásos
+  műveletnek nincs resource-változata.
+- **P1-7 (áthelyezve)**: `templateId` **completion** (`completion/complete`) a
+  `flex://template/{id}` resource `{id}` argumentumán és a `start-workflow` prompt `templateId`
+  argumentumán. A javaslat értéke maga az azonosító (a kliens változatlanul írja be), a szűrés
+  viszont a sablon nevére és kódjára is illeszkedik. A sablonlista 60 s-ig gyorsítótárazott, a
+  resource-ok és a promptok között megosztva; Flex-hiba esetén a javaslat üres lista, nem
+  protokollhiba. A tool-**paraméterekre** a spec ma sem ad completiont — ezt a kiértékelési terv
+  S8 sora rögzíti.
+
 ### Changed
 - **P2-1**: MCP TypeScript SDK **v1 → v2**: `@modelcontextprotocol/sdk@^1.30.0` helyett
   `@modelcontextprotocol/server@^2.0.0` (futásidő) és `@modelcontextprotocol/client@^2.0.0`
@@ -18,11 +35,13 @@ A jelölés a [Keep a Changelog](https://keepachangelog.com/) és a
   és eltűnt a v1-only `execution.taskSupport: "forbidden"` jelölés.
 - Minden `inputSchema` explicit `z.object({...})` (a nyers shape a v2-ben deprecated), a
   kimeneti sémák `.passthrough()` helyett `.loose()`-t használnak (Zod 4).
-- A `.mcpb` mérete 212 kB → **287 kB**: a v2 szerver Node-on AJV-t hoz a séma-validációhoz.
+- A `.mcpb` mérete 212 kB → **293 kB**: a v2 szerver Node-on AJV-t hoz a séma-validációhoz (287 kB),
+  a Resources/Prompts felület további ~6 kB.
 - Node 20+ marad a minimum (`engines`), a v2 csomagok is ezt írják elő.
 - A tool-leírások költségvetése 4 500 → 4 700 karakter (mérve 4 619): a `flex_workflow_get_task_details`
   és a `flex_workflow_get_task_comments` leírása megnevezi az `<untrusted>` keretet. A szerver
-  `instructions` 2 331 → 2 925 karakter (a megbízhatatlan tartalomról szóló bekezdés).
+  `instructions` 2 331 → 2 925 karakter (a megbízhatatlan tartalomról szóló bekezdés), majd
+  **3 277** (WF18: a promptok és a resource-ok bemutatása).
 
 ### Security
 - **P2-4 / B9**: a Flexből jövő, **felhasználó által írt** szövegek (feladatleírás, tárgy,

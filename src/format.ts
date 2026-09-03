@@ -39,17 +39,12 @@ type ToolResult = {
  */
 export function toolJson(data: unknown): ToolResult {
   const safe = redactSecrets(data);
-  const framed = renderUntrusted(safe, "framed");
-  const serialized = typeof framed === "string" ? framed : (JSON.stringify(framed, null, 2) ?? "");
+  const framed = framedText(safe);
 
-  if (serialized.length > CHARACTER_LIMIT) {
-    const note =
-      `A válasz csonkolva lett ${serialized.length} karakterről ${CHARACTER_LIMIT}-re. ` +
-      `Szűkítsd a lekérdezést (limit / fields: "summary") vagy kérj el konkrét elemet.`;
-    const head = closeOpenFrames(serialized.slice(0, CHARACTER_LIMIT));
+  if (framed.truncated) {
     return {
-      content: [{ type: "text", text: `${head}\n\n... [${note}]` }],
-      structuredContent: { truncated: true, originalChars: serialized.length, note },
+      content: [{ type: "text", text: framed.text }],
+      structuredContent: { truncated: true, originalChars: framed.originalChars, note: framed.note },
     };
   }
 
@@ -59,7 +54,36 @@ export function toolJson(data: unknown): ToolResult {
       ? (plain as Record<string, unknown>)
       : { result: plain };
 
-  return { content: [{ type: "text", text: serialized }], structuredContent };
+  return { content: [{ type: "text", text: framed.text }], structuredContent };
+}
+
+/**
+ * Egy MCP **resource** szöveges tartalma (WF18).
+ *
+ * Ugyanaz a lánc, mint a `toolJson` `text` ágán — redakció, `<untrusted>`
+ * keretezés, méret-védőháló —, mert a resource tartalma pontosan ugyanúgy a
+ * modell kontextusába kerül. Ami hiányzik: a `structuredContent`, mert a
+ * `resources/read` válaszának nincs ilyen csatornája; a csonkolás megjegyzése
+ * ezért itt magába a szövegbe kerül.
+ */
+export function resourceJson(data: unknown): string {
+  return framedText(redactSecrets(data)).text;
+}
+
+type FramedText =
+  { text: string; truncated: false } | { text: string; truncated: true; originalChars: number; note: string };
+
+/** A már redaktált adat keretezett, szükség esetén csonkolt JSON-szövege. */
+function framedText(safe: unknown): FramedText {
+  const framed = renderUntrusted(safe, "framed");
+  const serialized = typeof framed === "string" ? framed : (JSON.stringify(framed, null, 2) ?? "");
+  if (serialized.length <= CHARACTER_LIMIT) return { text: serialized, truncated: false };
+
+  const note =
+    `A válasz csonkolva lett ${serialized.length} karakterről ${CHARACTER_LIMIT}-re. ` +
+    `Szűkítsd a lekérdezést (limit / fields: "summary") vagy kérj el konkrét elemet.`;
+  const head = closeOpenFrames(serialized.slice(0, CHARACTER_LIMIT));
+  return { text: `${head}\n\n... [${note}]`, truncated: true, originalChars: serialized.length, note };
 }
 
 /** Error tool result with an actionable, Hungarian message. */
