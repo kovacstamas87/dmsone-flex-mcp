@@ -81,6 +81,14 @@ hogy a modellnek ne kelljen a `type` stringet eszköznévre fordítania.
   `_attachments`, a listában legfeljebb egy darabszám. Ugyanez az elv vitte el a `raw`-ot a
   `flex_workflow_get_template_details` alapértelmezéséből (`includeRaw: false`): a `fields` már a
   `raw` normalizált kivonata, a kettő együtt duplázna.
+- **Felhasználói szöveget hordozó válasz `withUntrusted()`-en át megy a `toolJson` elé** (WF17,
+  [`../untrusted.ts`](../untrusted.ts)). Ma hat eszközön: `flex_task_list`, `flex_task_comment`,
+  `flex_workflow_get_my_tasks`, `_get_task_details`, `_get_task_comments`, `_add_task_comment`.
+  Miért ezek: a Flex itt ad vissza leírást, tárgyat vagy megjegyzést — más felhasználók gépelt
+  szövegét, ami a modellnek utasításnak látszhat. Ha új eszköz olyan végpontot fed, ami ilyen mezőt
+  ad, ugyanígy. A jelölés kulcs alapú **engedélyező lista** (`USER_AUTHORED_KEYS`): egy új
+  felhasználói mező oda kerül, nem ide. A `flex_workflow_get_task_details` és a
+  `_get_task_comments` leírása megnevezi a keretet — őr a `tools-list.test.ts`-ben.
 - **A dátumokat a `formatDateTime(value, config.timeZone)` írja át**, sose kézzel. A Flex
   falióra-időt tárol; a részleteket és a „miért"-et lásd [`../CLAUDE.md`](../CLAUDE.md).
 - **Az `orgId` mezőknek nincs néma alapértelmezésük** (WF11). A `flex_task_create`
@@ -105,9 +113,11 @@ hogy a modellnek ne kelljen a `type` stringet eszköznévre fordítania.
   kód ezt `required: false`-ra fordítva „ellenőrzött"-nek látszott, miközben mindent átengedett.
 
 
-- **A leírásnak költségvetése van: az összleírás < 4 500 karakter** (`tools-list.test.ts`).
+- **A leírásnak költségvetése van: az összleírás < 4 700 karakter** (`tools-list.test.ts`).
   A `tools/list` minden munkamenet elején bekerül a modell kontextusába, tehát a leírások hossza
-  állandó, fizetett teher — a WF10 előtt 11 936 karakter volt, ma 4 365. A hármas munkamegosztás:
+  állandó, fizetett teher — a WF10 előtt 11 936 karakter volt, a WF10 után 4 365, ma 4 619
+  (a keret 4 500-ról 4 700-ra a WF17-ben nőtt: a két, felhasználói szöveget adó eszköz leírása
+  megnevezi az `<untrusted>` keretet, és ez őszinteség-mondat, nem díszítés). A hármas munkamegosztás:
   **paraméter-magyarázat** → a Zod `.describe()`-ba (a modell ugyanúgy látja, a `tools/list`
   `inputSchema`-jában), **a válasz alakja** → `outputSchema`, **a leírásban** csak „mi ez",
   „mikor használd" és egy mondat a visszatérésről marad. Ami *nem* kerülhet ki: az őszinteség-

@@ -9,16 +9,18 @@ a közösségi `n8n-nodes-dmsone-flex` node.
 P1 üteme kész** (WF1–WF15; tételesen a `CHANGELOG.md` `[0.2.0]`-ban — benne a kötelező
 `performerOrgId`/`responsibleOrgId`, **áttörő változás a hívó modellnek**; eval: `../flex-mcp-eval/`).
 A P2 ütemből a **WF20 kész: SDK v2** — `@modelcontextprotocol/sdk@1.30` → `@modelcontextprotocol/server@2.0.0`,
-`zod@3` → `zod@4`; a kliens által látott `tools/list` **változatlan** (snapshot-diff), 154 teszt
-zöld; **még nincs kiadva**, a `v1.0.0` a WF21-é. Nyitva maradt a Flex-oldali P0-2 elküldése, a P0-6
+`zod@3` → `zod@4`; a kliens által látott `tools/list` **változatlan** (snapshot-diff). **WF17 kész:
+prompt-injection jelölés** (P2-4/B9): a felhasználói Flex-szövegek `<untrusted>` keretben, HTML nélkül
+mennek a modellnek, az `instructions` kimondja: adat, nem utasítás. 184 teszt zöld; **még nincs
+kiadva**, a `v1.0.0` a WF21-é. Nyitva maradt a Flex-oldali P0-2 elküldése, a P0-6
 Flex-válasz, a WF14 két Claude Desktop-mérése és az opcionális élő/írás-tesztek — lásd lent.
 
 ## Mappa tartalma
 
 | Fájl / mappa | Mi ez | Állapot |
 |---|---|---|
-| [`src/`](src/) | A szerver forráskódja — lásd [`src/CLAUDE.md`](src/CLAUDE.md) | WF10 után (`paths.ts` új WF3-ban, `validateConfig` új WF5-ben, `projection.ts` új WF9-ben, `schema.ts` új WF10-ben) |
-| [`test/`](test/) | `node:test` alapú tesztek, `tsx`-szel futtatva (`npm test`) — lásd [`test/CLAUDE.md`](test/CLAUDE.md) | WF1–WF5, WF9–WF14-ben bővítve (154 teszt); a `test/fixtures/` élő, **anonimizált** minta |
+| [`src/`](src/) | A szerver forráskódja — lásd [`src/CLAUDE.md`](src/CLAUDE.md) | WF10 után (`paths.ts` új WF3-ban, `validateConfig` új WF5-ben, `projection.ts` új WF9-ben, `schema.ts` új WF10-ben, **`untrusted.ts` új WF17-ben**) |
+| [`test/`](test/) | `node:test` alapú tesztek, `tsx`-szel futtatva (`npm test`) — lásd [`test/CLAUDE.md`](test/CLAUDE.md) | WF1–WF5, WF9–WF14, WF17-ben bővítve (184 teszt); a `test/fixtures/` élő, **anonimizált** minta |
 | [`scripts/bundle.mjs`](scripts/bundle.mjs) | A `.mcpb` előállítása **esbuild egyfájlos bundle-ből**: `dist/index.js` → `build/pkg/dist/index.js`, minimális `package.json`, majd `@anthropic-ai/mcpb pack`. Ellenőrzi, hogy a csomagban nincs `node_modules`, és kiírja a méretet | **új WF13-ban** |
 | [`scripts/sync-manifest.mjs`](scripts/sync-manifest.mjs) | A `manifest.json`-t a kódhoz igazítja, idempotens: a `version` a `package.json`-ból, a `tools[]` a **lefordított** `dist/index.js` `tools/list` válaszából. `dist/` hiányában a `tools`-t érintetlenül hagyja és figyelmeztet | **új WF1-ben**; WF10: `tools[]`-generálás |
 | `manifest.json` | `.mcpb` csomag metaadata — a `version` **és WF10-től a `tools[]` is generált**, ne szerkeszd kézzel (a `sync-manifest.mjs` írja) | WF1-ben szinkron-forrás lett; WF3: `flex_download_dir` leírása a sandboxot mondja; WF4: új `flex_timezone` konfig-mező; WF10: generált `tools[]`; **WF13: `manifest_version` 0.3**, `repository`/`homepage`/`documentation`/`support`/`author.url`, új `flex_max_download_mb` mező |
@@ -124,6 +126,12 @@ Flex-válasz, a WF14 két Claude Desktop-mérése és az opcionális élő/írá
   `{ total, offset, returned, hasMore, fields, items }`. Miért a kérés oldalán és nem csonkolással:
   a csonkolás a lista közepén vág el, a modell pedig nem tudja, mi maradt ki — a `hasMore`
   viszont kimondja. Részletek és a mezőnkénti indoklás: [`src/CLAUDE.md`](src/CLAUDE.md).
+- **A felhasználó által írt szöveg jelölve megy a modellnek, HTML nélkül** (P2-4/B9, WF17). Leírás,
+  tárgy, megjegyzés, szöveges metaadat: más felhasználók gépelt szövege, ami utasításnak látszhat
+  (prompt-injection). A `src/untrusted.ts` a `text`-ben `<untrusted source="flex:…">` keretbe teszi
+  (belülről nem hamisítható), a `structuredContent`-be puszta szöveget + `untrustedFields`-et ad, a
+  `SERVER_INSTRUCTIONS` kimondja: adat, nem utasítás. Jelölés + instrukció, nem kényszer — az eval
+  injection-kérdése (WF21) méri. Miért két csatorna, miért zéró függőség: [`src/CLAUDE.md`](src/CLAUDE.md).
 - **A konfig-validáció (`validateConfig`) elkülönül a betöltéstől (`loadConfig`).** A `loadConfig()`
   sosem lép ki és nem ír stderr-re — a hívó (`index.ts`) dönt. Üres token és publikus URL-en
   kikapcsolt SSL → **hiba**, kilépés; fejlesztői URL-en kikapcsolt SSL vagy PAT módban megadott
@@ -161,15 +169,11 @@ Flex-válasz, a WF14 két Claude Desktop-mérése és az opcionális élő/írá
 
 ## Nyitva maradt
 
-- **Flex-oldali hibák a `/dms/news`-on (WF9-ben találva, 2026-09-03).** Kettő, mindkettő a Flex
-  szerverben, MCP-oldalon nincs mit javítani — a hívás helyes, a hibaüzenet a felhasználóhoz eljut.
-  Részletek, reprodukció és a kérés: [`../flex-diag-hibajelentes.md`](../flex-diag-hibajelentes.md)
-  2. és 3. pontja.
-  1. **`status: "all"` → HTTP 500** (a szerver a referencia n8n node-dal egyezően nem küld `status`
-     paramétert, a Flex ezen elhasal). 2. **A `pending` és a `completed` bájtra azonos választ ad**,
-     benne nyitott (`FA_U`) feladatokkal. Mindkettőt **kimondja a `flex_task_list` leírása** — a
-     leírás-őszinteség szabálya a szerveroldali hibára is vonatkozik, mert a modellnek ebből kell
-     döntenie.
+- **Flex-oldali hibák a `/dms/news`-on (WF9, 2026-09-03):** `status: "all"` → HTTP 500 (a szerver a
+  referencia n8n node-dal egyezően nem küld `status`-t), és a `pending`/`completed` bájtra azonos
+  választ ad. MCP-oldalon nincs mit javítani; mindkettőt **kimondja a `flex_task_list` leírása**
+  (a leírás-őszinteség a szerveroldali hibára is vonatkozik). Reprodukció és kérés:
+  [`../flex-diag-hibajelentes.md`](../flex-diag-hibajelentes.md) 2. és 3. pontja.
 - **P0-2**: a `/diag` végpont backend-oldali szűrése — a jelentés szövege kész
   (`../flex-diag-hibajelentes.md`), elküldése a Flex csapatnak a felhasználó lépése.
 - **P0-6 Flex-oldali fele**: mi jelöli a kötelezőséget a startDetails válaszában (a `visibility:
@@ -179,15 +183,11 @@ Flex-válasz, a WF14 két Claude Desktop-mérése és az opcionális élő/írá
   sandbox-próba** — alapból kimaradnak. A `datetime.test.ts` és a WF3 tesztjei a konverziót és az
   útvonal-korlátot Flex nélkül lefedik; ami hiányzik, az annak igazolása, hogy a Flex **tényleg**
   faliórát tárol.
-- **A WF14 két Claude Desktop-mérése** (v0.1.1 és a friss bundle, 10 friss beszélgetés):
-  felhasználói művelet, mert a bővítmény telepítése és a beszélgetések lefolytatása az. A
-  kérdéssor, a rögzített válaszok és a mért statikus költségek készen állnak:
-  [`../flex-mcp-eval/`](../flex-mcp-eval/). **A Claude Desktopban most a P0 előtti build van** —
-  a `flex_diag` a teljes `/diag` választ adja, tokennel együtt —, ezért a „v0.1.1" oszlop csak
-  újratelepítés után értelmes.
-- **Élő read-only ellenőrzés a felhasználó tokenjével**: a friss `.mcpb` Claude Desktopba
-  telepítése és egy `flex_diag` hívás — a felhasználó választása, mikor teszi meg. (A csomagolt
-  szerver `initialize` + `tools/list` + `tools/call` válaszát a WF13 Flex nélkül ellenőrizte.)
+- **A WF14 két Claude Desktop-mérése és az élő read-only ellenőrzés** (friss `.mcpb` telepítése,
+  `flex_diag`, 10 beszélgetés a [`../flex-mcp-eval/`](../flex-mcp-eval/) kérdéssorával): felhasználói
+  művelet. **A Claude Desktopban most a P0 előtti build van** (a `flex_diag` tokennel együtt adja a
+  `/diag`-ot), ezért a „v0.1.1" oszlop csak újratelepítés után értelmes. A csomagolt szerver
+  `initialize` + `tools/list` + `tools/call` válaszát a WF13 Flex nélkül ellenőrizte.
 
 ## Kapcsolódó
 

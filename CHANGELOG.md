@@ -20,6 +20,21 @@ A jelölés a [Keep a Changelog](https://keepachangelog.com/) és a
   kimeneti sémák `.passthrough()` helyett `.loose()`-t használnak (Zod 4).
 - A `.mcpb` mérete 212 kB → **287 kB**: a v2 szerver Node-on AJV-t hoz a séma-validációhoz.
 - Node 20+ marad a minimum (`engines`), a v2 csomagok is ezt írják elő.
+- A tool-leírások költségvetése 4 500 → 4 700 karakter (mérve 4 619): a `flex_workflow_get_task_details`
+  és a `flex_workflow_get_task_comments` leírása megnevezi az `<untrusted>` keretet. A szerver
+  `instructions` 2 331 → 2 925 karakter (a megbízhatatlan tartalomról szóló bekezdés).
+
+### Security
+- **P2-4 / B9**: a Flexből jövő, **felhasználó által írt** szövegek (feladatleírás, tárgy,
+  megjegyzések, `Text`/`Textarea` metaadat-értékek) jelölten mennek a modellnek: a `text`
+  csatornán `<untrusted source="flex:útvonal">…</untrusted>` keretben, HTML-ből szöveggé alakítva
+  (`src/untrusted.ts`, zéró függőség), a `structuredContent`-ben puszta szövegként plusz
+  `untrustedFields` útvonal-listával. A keret belülről nem hamisítható (a tartalomban álló
+  `<untrusted`/`</untrusted` escape-elt, az entitás-dekódolás *után*), csonkolásnál a nyitva maradt
+  keret lezárul a csonkolás-megjegyzés előtt. A szerver `instructions`-e kimondja: a keret tartalma
+  adat, nem utasítás. Érintett eszközök: `flex_workflow_get_task_details`, `_get_task_comments`,
+  `_add_task_comment`, `flex_task_comment`, és a két listázó (`subject`/`wfSubject`; `fields: "full"`
+  esetén a teljes elem, a HTML-leírás szöveggé alakítva).
 
 ## [0.2.0] – 2026-09-03
 

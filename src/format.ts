@@ -1,6 +1,7 @@
 import axios from "axios";
 
 import { redactSecrets } from "./redact.js";
+import { closeOpenFrames, renderUntrusted } from "./untrusted.js";
 
 const CHARACTER_LIMIT = 50000;
 
@@ -28,25 +29,35 @@ type ToolResult = {
  * ugyanúgy átad neki. Ez itt csak **védőháló**: az elsődleges eszköz a listázók
  * `limit`/`fields` paramétere (`src/projection.ts`), mert az a kérés oldalán fog,
  * nem a válasz levágásával.
+ *
+ * A **felhasználó által írt** mezők (`src/untrusted.ts` markerei) itt válnak
+ * két csatornára: a `text`-ben `<untrusted source="flex:…">…</untrusted>`
+ * keretben, a `structuredContent`-ben puszta szövegként. A redakció a marker
+ * `text`-jére is lefut, mert a marker sima objektum, amit a `redactSecrets`
+ * kulcsonként másol. A csonkolás a keretezett `text`-en mérődik, és ha a vágás
+ * egy keret közepébe esik, a keret záródik a csonkolás-megjegyzés előtt.
  */
 export function toolJson(data: unknown): ToolResult {
   const safe = redactSecrets(data);
-  const serialized = typeof safe === "string" ? safe : (JSON.stringify(safe, null, 2) ?? "");
+  const framed = renderUntrusted(safe, "framed");
+  const serialized = typeof framed === "string" ? framed : (JSON.stringify(framed, null, 2) ?? "");
 
   if (serialized.length > CHARACTER_LIMIT) {
     const note =
       `A válasz csonkolva lett ${serialized.length} karakterről ${CHARACTER_LIMIT}-re. ` +
       `Szűkítsd a lekérdezést (limit / fields: "summary") vagy kérj el konkrét elemet.`;
+    const head = closeOpenFrames(serialized.slice(0, CHARACTER_LIMIT));
     return {
-      content: [{ type: "text", text: `${serialized.slice(0, CHARACTER_LIMIT)}\n\n... [${note}]` }],
+      content: [{ type: "text", text: `${head}\n\n... [${note}]` }],
       structuredContent: { truncated: true, originalChars: serialized.length, note },
     };
   }
 
+  const plain = renderUntrusted(safe, "plain");
   const structuredContent =
-    safe && typeof safe === "object" && !Array.isArray(safe)
-      ? (safe as Record<string, unknown>)
-      : { result: safe };
+    plain && typeof plain === "object" && !Array.isArray(plain)
+      ? (plain as Record<string, unknown>)
+      : { result: plain };
 
   return { content: [{ type: "text", text: serialized }], structuredContent };
 }

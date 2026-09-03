@@ -5,6 +5,7 @@ import type { FlexConfig } from "../config.js";
 import { formatDateTime, toolError, toolJson } from "../format.js";
 import { envelope, summarizeTask } from "../projection.js";
 import { taskListOutput } from "../schema.js";
+import { withUntrusted } from "../untrusted.js";
 
 /**
  * Task resource — simple DMS tasks (not full workflow processes).
@@ -116,10 +117,13 @@ Visszatérés: az új feladat id és referenceNumber mezője.`,
     },
     async (args) => {
       try {
+        // A válasz a megjegyzéseket adja vissza — más felhasználók szövegét is.
         return toolJson(
-          await client.request("POST", `/dms/comments/task/${encodeURIComponent(args.taskId)}`, {
-            body: { comment: args.comment },
-          }),
+          withUntrusted(
+            await client.request("POST", `/dms/comments/task/${encodeURIComponent(args.taskId)}`, {
+              body: { comment: args.comment },
+            }),
+          ),
         );
       } catch (error) {
         return toolError(error);
@@ -215,7 +219,8 @@ Visszatérés: lapozó boríték (total, offset, returned, hasMore, fields, item
           summarizeTask,
         );
         // Váratlan válaszalak esetén a nyers payload megy tovább — lásd `envelope`.
-        return toolJson(page ?? payload);
+        // A `subject` (és `full` módban a leírás, a megjegyzések) felhasználói szöveg.
+        return toolJson(withUntrusted(page ?? payload));
       } catch (error) {
         return toolError(error);
       }

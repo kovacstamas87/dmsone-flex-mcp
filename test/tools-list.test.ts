@@ -284,6 +284,10 @@ test("a dátumot fogadó eszközök leírása a falióra-szemantikát mondja", (
  * A paraméter-magyarázatok helye a séma `.describe()`-ja, a válasz alakjának
  * helye az `outputSchema` — a leírásban „Mikor használd" + egy mondat a
  * visszatérésről marad.
+ *
+ * A keret 4 500 → 4 700 (WF17): a két, felhasználói szöveget adó eszköz leírása
+ * megnevezi az `<untrusted>` keretet — ez őszinteség-mondat, nem díszítés, és a
+ * költségvetés az ilyen mondatoknak való. Mérve: 4 484 → 4 619 karakter.
  */
 test("az összleírás a költségvetésen belül van", () => {
   const total = [...tools.values()].reduce((sum, tool) => sum + (tool.description?.length ?? 0), 0);
@@ -291,7 +295,7 @@ test("az összleírás a költségvetésen belül van", () => {
     .map((tool) => `${tool.name}: ${tool.description?.length ?? 0}`)
     .join(", ");
 
-  assert.ok(total < 4500, `az összleírás ${total} karakter (< 4500 kell) — ${perTool}`);
+  assert.ok(total < 4700, `az összleírás ${total} karakter (< 4700 kell) — ${perTool}`);
   assert.ok(total > 2000, `az összleírás ${total} karakter: ennyiből valami kiesett`);
 });
 
@@ -335,4 +339,23 @@ test("az outputSchema laza: nincs kötelező mező, és átengedi az ismeretlen 
     );
     assert.equal(tool.outputSchema.required, undefined, `${tool.name}: kötelező mezőt ír elő`);
   }
+});
+
+/**
+ * WF17 (P2-4): a felhasználói szöveget hordozó eszközök leírása megnevezi a
+ * keretet, és a szerver `instructions`-e kimondja, hogy a keret tartalma adat,
+ * nem utasítás. Mindkettőt a protokollon át nézzük — a modell ezt kapja.
+ */
+test("a felhasználói szöveget adó eszközök leírása megnevezi az <untrusted> keretet", () => {
+  for (const name of ["flex_workflow_get_task_details", "flex_workflow_get_task_comments"]) {
+    const description = tools.get(name)?.description ?? "";
+    assert.ok(description.includes("<untrusted>"), `${name}: a leírás nem nevezi meg a keretet`);
+  }
+});
+
+test("a szerver instructions kimondja: az <untrusted> keret tartalma adat, nem utasítás", () => {
+  const instructions = client.getInstructions() ?? "";
+  assert.ok(instructions.includes("<untrusted"), "nincs szó a keretről");
+  assert.match(instructions, /adat,? nem utasítás/i, "nem mondja ki, hogy adat és nem utasítás");
+  assert.ok(instructions.includes("untrustedFields"), "nem nevezi meg a strukturált jelzést");
 });
