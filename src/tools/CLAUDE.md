@@ -15,7 +15,7 @@ egy egyszerű fake-et ad át helyette.
 |---|---|---|---|
 | `task.ts` | **Task** — kézzel kiosztott DMS feladat, `taskId` | `flex_task_create`, `_comment`, `_accept`, `_complete`, `_list` | `/dms/task`, `/dms/news`. **WF4-től a `config`-ot is megkapja**: a `taskDeadline` / `taskScheduledStart` a `config.timeZone` faliórája szerint megy be. **WF9-től** a `_list` lapoz és összefoglalót ad (`../projection.ts`), a leírása pedig kimondja a `/dms/news` két ismert Flex-hibáját — lásd lent |
 | `workflow.ts` | **WfTask** — egy futó munkafolyamat egy lépése, `wfTaskId` | 12 eszköz: sablonok, indítás, feladatok, megjegyzések, csatolmányok, `flex_search_linked_items` | a legnagyobb fájl; a sablon-feldolgozás (`parseTemplateFields` → `describeTemplate` / `missingRequiredMessage`) itt exportált, hogy tesztelhető legyen. A letöltés a [`../paths.ts`](../paths.ts)-re épül, a `downloadBaseDir(config)` adja a sandbox gyökerét |
-| `user.ts` | Felhasználó | `flex_user_get_by_username` | `userId` + `orgId` párt ad vissza — a Flexben **együtt** azonosít egy felhasználót |
+| `user.ts` | Felhasználó | `flex_user_get_by_username` | Csak `userId` + `userName` — **`orgId`-t nem ad**, pedig a Flexben a kettő együtt azonosít (lásd „Kulcsdöntések") |
 | `diagnostic.ts` | Diagnosztika | `flex_diag` | kapcsolat- és token-ellenőrzés; a `pickDiagFields()` a `/diag` válaszából csak `ok`/`method`/`uri`/`qs`-t engedi tovább |
 
 **`outputSchema` (WF10-től) öt eszközön van:** `flex_diag`, `flex_task_list`,
@@ -85,8 +85,17 @@ hogy a modellnek ne kelljen a `type` stringet eszköznévre fordítania.
   `performerOrgId`-ja és a `flex_workflow_start` `responsibleOrgId`-ja korábban csendben `1`-re
   esett vissza, ha nem adták meg — ez rossz szervezeti egységhez rendelt feladatot okozhatott
   észrevétlenül. Most mindkettő kötelező (a `performerOrgId` a `performerUserId` megadásához
-  kötve, futásidőben ellenőrizve), és a `.describe()` a forrást is megmondja: a
-  `flex_user_get_by_username` válaszának `orgId` mezője.
+  kötve, futásidőben ellenőrizve).
+- **A `/dms/ac/user` NEM ad `orgId`-t — a leírások ezt WF14-ig hamisan ígérték.** A WF11
+  `.describe()`-jei „a `flex_user_get_by_username` válaszának `orgId` mezőjéből" szöveggel olyan
+  végponthoz küldték a modellt, ami a kért értéket nem tudja megadni; élő, read-only mintavétel
+  (flex-dev, 2026-09-03) mutatta meg, hogy a válasz csak `userId`-t és `userName`-et tartalmaz.
+  Javítva: a valódi forrás a `flex_task_list` elemeinek `orgId` mezője vagy egy wfTask
+  `wfDetails.responsibleUser.orgId`-ja, **egyszer** kimondva a `user.ts` leírásában; a két
+  paraméter csak odamutat, mert a WF10 leírás-költségvetése valós teher. Ugyanitt derült ki, hogy
+  a keresés a **megjelenített névre** illeszkedik és **ékezet-érzékeny** (`"ková"` talál,
+  `"kovacs"` nem) — ez is bekerült a leírásba, mert enélkül egy üres találat úgy néz ki, mintha a
+  felhasználó nem létezne. Az őr: `test/tools-list.test.ts`.
 - **Kötelező mező: best effort, kimondva.** A `workflow.ts` csak akkor szól előre hiányzó mezőről,
   ha a sablon egyáltalán hordoz `required`/`mandatory` jelölést (`requiredMarkerPresent`); az
   érdemi ellenőrzés a Flex szerveré. A `validation: "api-flag" | "none"` mező ezt a modellnek is
@@ -115,8 +124,8 @@ hogy a modellnek ne kelljen a `type` stringet eszköznévre fordítania.
   normalizálást (`{ userId, orgId, username, displayName }`), de a végpont **listát** ad — a
   részleges egyezés több találatot is hozhat —, egyetlen objektumra normalizálva pedig találatok
   esnének ki. Élő minta nélkül a mezőnevek átkeresztelése (`userName` → `username`) is találgatás
-  lenne, ezért a tool passthrough maradt: a `userId` + `orgId` pár a nyers válaszból is
-  közvetlenül olvasható.
+  lenne, ezért a tool passthrough maradt: a `userId` a nyers válaszból is közvetlenül olvasható.
+  (A WF14 élő mintája megerősítette: a válasz `orgId`-t nem is tartalmaz.)
 
 ## Kapcsolódó
 

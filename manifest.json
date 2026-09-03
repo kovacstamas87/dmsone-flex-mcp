@@ -119,7 +119,7 @@
     },
     {
       "name": "flex_user_get_by_username",
-      "description": "Felhasználó keresése felhasználónév (töredék) alapján (GET /dms/ac/user)."
+      "description": "Felhasználó keresése megjelenített név (töredéke) alapján (GET /dms/ac/user)."
     },
     {
       "name": "flex_workflow_list_templates",

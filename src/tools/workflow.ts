@@ -277,8 +277,8 @@ Visszatérés: az új folyamat id és referenceNumber mezője.`,
           .number()
           .int()
           .describe(
-            "A felelős szervezeti egység ID-ja — kötelező, nincs alapértelmezés; " +
-              "a flex_user_get_by_username válaszának orgId mezőjéből",
+            "A felelős szervezeti egység ID-ja — kötelező, " +
+              "nincs alapértelmezés; forrása a flex_user_get_by_username leírásában",
           ),
         linkedItemType: z
           .string()

@@ -9,17 +9,16 @@ export function registerUserTools(server: McpServer, client: FlexHttp): void {
     "flex_user_get_by_username",
     {
       title: "Felhasználó keresése név alapján",
-      description: `Felhasználó keresése felhasználónév (töredék) alapján (GET /dms/ac/user).
+      description: `Felhasználó keresése megjelenített név (töredéke) alapján (GET /dms/ac/user).
+Ékezet-érzékeny: "ková" talál, "kovacs" nem.
 
-Mikor használd: ha egy művelethez userId + orgId kell — feladat végrehajtójához
-vagy munkafolyamat felelőséhez.
-
-Visszatérés: találatok userId, orgId, userName és orgName mezőkkel.`,
+Visszatérés: userId és userName. orgId-t NEM ad — az a flex_task_list elemein és
+a wfTask részletein (wfDetails.responsibleUser.orgId) van.`,
       inputSchema: {
         username: z
           .string()
           .min(2, "A kereséshez legalább 2 karakter kell")
-          .describe("Keresett felhasználónév vagy töredéke"),
+          .describe("A keresett felhasználó megjelenített neve vagy annak töredéke, ékezetesen"),
       },
       annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true },
     },

@@ -54,7 +54,7 @@ Visszatérés: az új feladat id és referenceNumber mezője.`,
           .optional()
           .describe(
             "A végrehajtó szervezeti egység ID-ja — performerUserId megadása esetén kötelező, " +
-              "nincs alapértelmezés; a flex_user_get_by_username válaszának orgId mezőjéből",
+              "nincs alapértelmezés; forrása a flex_user_get_by_username leírásában",
           ),
       },
       annotations: {

@@ -201,8 +201,7 @@ test("a feladatlista leírása az idKind-re mutat, nem csak a type-ra", () => {
 /**
  * WF11 (P1-5/P1-6 MCP): a korábbi `orgId` `1` alapértelmezés elrejthette, hogy a
  * feladat/folyamat rossz szervezeti egységhez kerül. A `tools/list`-ben ezért az
- * `orgId` mezőknek **nincs** `default`-juk — a modellnek explicit kell megadnia,
- * a `flex_user_get_by_username` válaszából.
+ * `orgId` mezőknek **nincs** `default`-juk — a modellnek explicit kell megadnia.
  */
 test("az orgId mezőknek nincs alapértelmezésük", () => {
   const workflowOrgId = schemaOf("flex_workflow_start").properties?.responsibleOrgId;
@@ -218,6 +217,39 @@ test("az orgId mezőknek nincs alapértelmezésük", () => {
     undefined,
     "a performerOrgId-nak nem lenne szabad alapértelmezettnek lennie",
   );
+});
+
+/**
+ * WF14: a WF11 leírásai a `flex_user_get_by_username` válaszának `orgId` mezőjére
+ * mutattak — a `/dms/ac/user` végpont viszont **csak** `userId`-t és `userName`-et
+ * ad (élő, read-only mintavétel, flex-dev, 2026-09-03). A leírás tehát olyan
+ * végponthoz küldte a modellt, ami a kért értéket nem tudja megadni. Ez az őr azt
+ * tartja fenn, hogy a leírások a valódi forrást nevezzék meg, és hogy a
+ * felhasználó-kereső ne ígérjen `orgId`-t.
+ */
+test("az orgId forrása helyesen van megnevezve, a user-kereső nem ígér orgId-t", () => {
+  for (const [tool, field] of [
+    ["flex_workflow_start", "responsibleOrgId"],
+    ["flex_task_create", "performerOrgId"],
+  ] as const) {
+    const describe = schemaOf(tool).properties?.[field]?.description ?? "";
+    // A paraméter a *leírásra* mutat, nem a válaszra — a korábbi, hamis állítás
+    // ("a flex_user_get_by_username válaszának orgId mezőjéből") itt tilos.
+    assert.match(describe, /flex_user_get_by_username leírásában/, `${tool}.${field}`);
+    assert.doesNotMatch(
+      describe,
+      /válaszának orgId/,
+      `${tool}.${field}: a válaszra mutat, pedig az nem adja`,
+    );
+  }
+
+  const userTool = tools.get("flex_user_get_by_username");
+  assert.ok(userTool, "hiányzik az eszköz: flex_user_get_by_username");
+  const userDescription = userTool.description ?? "";
+  assert.match(userDescription, /orgId-t NEM ad/, "a user-kereső orgId-t ígér");
+  // A tényleges forrás egy helyen van kimondva — itt, nem minden paraméternél.
+  assert.match(userDescription, /wfDetails\.responsibleUser\.orgId/, "nem nevezi meg a valódi forrást");
+  assert.match(userDescription, /kezet-érzékeny/, "nem mondja ki az ékezet-érzékenységet");
 });
 
 /**
