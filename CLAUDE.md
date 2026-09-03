@@ -11,26 +11,27 @@ a közösségi `n8n-nodes-dmsone-flex` node.
 A P2 ütemből kész, de **még kiadatlan** (a `v1.0.0` a WF21-é): **WF20** SDK v2
 (`@modelcontextprotocol/sdk@1.30` → `@modelcontextprotocol/server@2.0.0`, `zod@3` → `zod@4`; a
 `tools/list` a kliens felé változatlan), **WF17** prompt-injection jelölés (P2-4/B9), **WF18**
-Resources + Prompts (P2-2/P2-3): három resource, három vezetett prompt, `templateId`-completion.
-201 teszt zöld. Nyitva: a Flex-oldali P0-2 elküldése, a P0-6 Flex-válasz, a WF14 két Claude
-Desktop-mérése és az opcionális élő/írás-tesztek — lásd lent.
+Resources + Prompts (P2-2/P2-3): három resource, három vezetett prompt, `templateId`-completion,
+**WF19** induláskori token-ellenőrzés (`FLEX_CHECK_ON_START`, opt-in, `checkTokenOnStart` a
+`tools/diagnostic.ts`-ben). 214 teszt zöld. Nyitva: a Flex-oldali P0-2 elküldése, a P0-6
+Flex-válasz, a WF14 két Claude Desktop-mérése és az opcionális élő/írás-tesztek — lásd lent.
 
 ## Mappa tartalma
 
 | Fájl / mappa | Mi ez | Állapot |
 |---|---|---|
 | [`src/`](src/) | A szerver forráskódja — lásd [`src/CLAUDE.md`](src/CLAUDE.md) | WF10 után (`paths.ts` új WF3-ban, `validateConfig` új WF5-ben, `projection.ts` új WF9-ben, `schema.ts` új WF10-ben, `untrusted.ts` új WF17-ben, **`resources.ts` + `prompts.ts` új WF18-ban**) |
-| [`test/`](test/) | `node:test` alapú tesztek, `tsx`-szel futtatva (`npm test`) — lásd [`test/CLAUDE.md`](test/CLAUDE.md) | WF1–WF5, WF9–WF14, WF17–WF18-ban bővítve (201 teszt); a `test/fixtures/` élő, **anonimizált** minta |
+| [`test/`](test/) | `node:test` alapú tesztek, `tsx`-szel futtatva (`npm test`) — lásd [`test/CLAUDE.md`](test/CLAUDE.md) | WF1–WF5, WF9–WF14, WF17–WF19-ben bővítve (214 teszt); a `test/fixtures/` élő, **anonimizált** minta |
 | [`scripts/bundle.mjs`](scripts/bundle.mjs) | A `.mcpb` előállítása **esbuild egyfájlos bundle-ből**: `dist/index.js` → `build/pkg/dist/index.js`, minimális `package.json`, majd `@anthropic-ai/mcpb pack`. Ellenőrzi, hogy a csomagban nincs `node_modules`, és kiírja a méretet | **új WF13-ban** |
 | [`scripts/sync-manifest.mjs`](scripts/sync-manifest.mjs) | A `manifest.json`-t a kódhoz igazítja, idempotens: a `version` a `package.json`-ból, a `tools[]` a **lefordított** `dist/index.js` `tools/list` válaszából. `dist/` hiányában a `tools`-t érintetlenül hagyja és figyelmeztet | **új WF1-ben**; WF10: `tools[]`-generálás |
-| `manifest.json` | `.mcpb` csomag metaadata — a `version` **és WF10-től a `tools[]` is generált**, ne szerkeszd kézzel (a `sync-manifest.mjs` írja) | WF1-ben szinkron-forrás lett; WF3: `flex_download_dir` leírása a sandboxot mondja; WF4: új `flex_timezone` konfig-mező; WF10: generált `tools[]`; **WF13: `manifest_version` 0.3**, `repository`/`homepage`/`documentation`/`support`/`author.url`, új `flex_max_download_mb` mező |
+| `manifest.json` | `.mcpb` csomag metaadata — a `version` **és WF10-től a `tools[]` is generált**, ne szerkeszd kézzel (a `sync-manifest.mjs` írja); a `user_config` és a `mcp_config.env` továbbra is kézzel gondozott | WF1-ben szinkron-forrás lett; WF3: `flex_download_dir` leírása a sandboxot mondja; WF4: új `flex_timezone` konfig-mező; WF10: generált `tools[]`; **WF13: `manifest_version` 0.3**, `repository`/`homepage`/`documentation`/`support`/`author.url`, új `flex_max_download_mb` mező; **WF19: új `flex_check_on_start` mező** |
 | `package.json` / `package-lock.json` | Függőségek, scriptek (`build`, `test`, `bundle`, `sync-manifest`, `version` lifecycle; **WF12-től** `lint`, `lint:fix`, `format:check`, `typecheck`) | WF1-ben frissítve; WF10: új `sync-manifest` script; WF12: minőség-scriptek; **WF20: SDK v2** — futásidőben `@modelcontextprotocol/server ^2.0.0` + `zod ^4.2.0`, dev-függőségként `@modelcontextprotocol/client ^2.0.0` (csak a tesztek és a `sync-manifest.mjs` használják) |
 | `eslint.config.js`, `.prettierrc`, `.prettierignore` | Flat eslint-config (`typescript-eslint` recommended) és Prettier-beállítás (`printWidth: 110`) — a doksi (`*.md`, `manifest.json`) szándékosan kimarad a Prettier hatóköréből | **új WF12-ben** |
 | `.github/dependabot.yml` | Heti `npm` és `github-actions` függőségfrissítés-figyelés | **új WF12-ben** |
-| `INSTALL-WINDOWS.md`, `INSTALL-MACOS.md` | Végfelhasználói telepítési útmutatók | WF1-ben Node 20+ -ra igazítva; WF3: letöltési könyvtár leírása; WF4: „Időzóna" mező a konfig-űrlapon; WF5: SSL-tiltás a publikus URL-en; WF13: letöltés a **Releases** oldalról (nincs hardcode-olt verzió), új „Letöltési méretkorlát” mező a konfig-űrlapon |
-| `README.md` | Fejlesztői doksi | WF3: `FLEX_DOWNLOAD_DIR`, WF4: `FLEX_TIMEZONE`, WF5: SSL-tiltás; WF13: `FLEX_MAX_DOWNLOAD_MB`, és a „Kiadás készítése” fejezet az `npm version`-re javítva |
+| `INSTALL-WINDOWS.md`, `INSTALL-MACOS.md` | Végfelhasználói telepítési útmutatók | WF1-ben Node 20+ -ra igazítva; WF3: letöltési könyvtár leírása; WF4: „Időzóna" mező a konfig-űrlapon; WF5: SSL-tiltás a publikus URL-en; WF13: letöltés a **Releases** oldalról (nincs hardcode-olt verzió), új „Letöltési méretkorlát” mező a konfig-űrlapon; WF19: új „Kapcsolat ellenőrzése induláskor” mező |
+| `README.md` | Fejlesztői doksi | WF3: `FLEX_DOWNLOAD_DIR`, WF4: `FLEX_TIMEZONE`, WF5: SSL-tiltás; WF13: `FLEX_MAX_DOWNLOAD_MB`, és a „Kiadás készítése” fejezet az `npm version`-re javítva; WF19: `FLEX_CHECK_ON_START` |
 | `CHANGELOG.md` | Kiadási napló | **WF6**: `[0.1.1]` (Security/Fixed/Changed, P0-hivatkozásokkal); **WF15**: `[0.2.0]` (Added/Changed/Fixed/Security, P1-hivatkozásokkal, eval-mérésekkel) |
-| `.env.example` | Env változók mintája (`FLEX_TOKEN`, `FLEX_BASE_URL`, …) | WF3: `FLEX_DOWNLOAD_DIR` megjegyzés (abszolút út, sandbox); WF4: `FLEX_TIMEZONE`; WF13: `FLEX_MAX_DOWNLOAD_MB` |
+| `.env.example` | Env változók mintája (`FLEX_TOKEN`, `FLEX_BASE_URL`, …) | WF3: `FLEX_DOWNLOAD_DIR` megjegyzés (abszolút út, sandbox); WF4: `FLEX_TIMEZONE`; WF13: `FLEX_MAX_DOWNLOAD_MB`; WF19: `FLEX_CHECK_ON_START` |
 | `dist/`, `build/`, `*.mcpb`, `node_modules/` | **Build-artefaktum** — ne szerkeszd, `npm run build` / `npm run bundle` állítja elő | generált |
 
 ## Hol van az igazság forrása
@@ -166,6 +167,11 @@ Desktop-mérése és az opcionális élő/írás-tesztek — lásd lent.
   npm-hook kizár.
 - **A CI Node 20/22 mátrixon fut, és `npm audit`-ot is végez** (WF12): a mátrix az `engines`
   `>=20` határát és a következő LTS-t fedi, az audit a Dependabot mellé ad folyamatos ellenőrzést.
+- **Az induláskori token-ellenőrzés opt-in, alapból kikapcsolva** (`FLEX_CHECK_ON_START`, WF19,
+  P2-5) — egy alapból bekapcsolt hálózati hívás hálózatfüggővé tenné a `tools-list.test.ts`-t.
+  Bekapcsolva a `checkTokenOnStart` (`src/tools/diagnostic.ts`) egyetlen `GET /diag`-ot hív, hibára
+  **csak** stderr-figyelmeztet (a `formatError` szövegével) és **nem lép ki**: egy átmeneti hiba
+  nem ok arra, hogy egy egyébként érvényes tokennel se induljon el a szerver.
 
 ## Nyitva maradt
 

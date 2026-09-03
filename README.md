@@ -147,6 +147,7 @@ fájlszerkesztésre. A **manuális (Node.js) mód** lépéseit és a pontos
 | `FLEX_DOWNLOAD_DIR` | – | `<OS temp>/dmsone-flex` | Letöltött csatolmányok célkönyvtára (abszolút út). A letöltés **csak** ide vagy alkönyvtárába írhat; meglévő fájlt nem ír felül |
 | `FLEX_TIMEZONE` | – | `Europe/Budapest` | IANA zónanév. A Flex helyi faliórát tárol, ezért a szerver ebben a zónában értelmezi az offsettel megadott dátumokat |
 | `FLEX_MAX_DOWNLOAD_MB` | – | `50` | A csatolmány-letöltés felső határa MB-ban. A válasz teljes egészében memóriába kerül, ezért ez a korlát védi a szerverfolyamatot; a határ fölött a letöltés **hibát ad, nem csonkol** |
+| `FLEX_CHECK_ON_START` | – | `false` | Induláskor egy `GET /diag` hívás a token ellenőrzésére; lejárt/érvénytelen tokenre stderr-figyelmeztetést ad, de a szerver ekkor sem lép ki |
 
 ---
 

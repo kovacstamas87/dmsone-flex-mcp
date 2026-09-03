@@ -64,6 +64,9 @@ Megjelenik egy űrlap. Töltsd ki:
 - **Letöltési méretkorlát (MB)** – alapból `50`. Ennél nagyobb csatolmányt a
   bővítmény nem tölt le, hanem hibát ad (a fájl teljes egészében a memóriába
   kerül). Csak akkor emeld, ha tényleg nagyobb mellékleteket kell letöltened.
+- **Kapcsolat ellenőrzése induláskor** – alapból kikapcsolva. Bekapcsolva a
+  bővítmény indításkor egy `GET /diag` hívással ellenőrzi a tokent; lejárt vagy
+  érvénytelen tokenre figyelmeztet a naplóban, de a bővítmény ekkor is elindul.
 
 ### 6. lépés – Engedélyezés
 Kattints a **Save / Enable** (Mentés / Engedélyezés) gombra. A bővítmény

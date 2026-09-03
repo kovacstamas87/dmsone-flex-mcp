@@ -33,7 +33,8 @@
         "FLEX_IGNORE_SSL": "${user_config.flex_ignore_ssl}",
         "FLEX_DOWNLOAD_DIR": "${user_config.flex_download_dir}",
         "FLEX_TIMEZONE": "${user_config.flex_timezone}",
-        "FLEX_MAX_DOWNLOAD_MB": "${user_config.flex_max_download_mb}"
+        "FLEX_MAX_DOWNLOAD_MB": "${user_config.flex_max_download_mb}",
+        "FLEX_CHECK_ON_START": "${user_config.flex_check_on_start}"
       }
     }
   },
@@ -93,6 +94,13 @@
       "description": "Ennél nagyobb csatolmányt a szerver nem tölt le, hanem hibát ad. A letöltés teljes egészében memóriába kerül, ezért a korlát védi a szerverfolyamatot a nagy mellékletektől.",
       "default": 50,
       "min": 1,
+      "required": false
+    },
+    "flex_check_on_start": {
+      "type": "boolean",
+      "title": "Kapcsolat ellenőrzése induláskor",
+      "description": "Egy GET /diag hívás indításkor: lejárt vagy érvénytelen tokenre stderr-figyelmeztetés (a szerver ekkor is elindul). Alapból kikapcsolva.",
+      "default": false,
       "required": false
     }
   },

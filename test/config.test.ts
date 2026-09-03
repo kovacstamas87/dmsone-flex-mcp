@@ -1,7 +1,7 @@
 import { test, describe } from "node:test";
 import assert from "node:assert/strict";
 
-import { validateConfig, DEFAULT_TIME_ZONE, type FlexConfig } from "../src/config.js";
+import { validateConfig, loadConfig, DEFAULT_TIME_ZONE, type FlexConfig } from "../src/config.js";
 
 const base: FlexConfig = {
   baseUrl: "https://flex.dmsone.hu/api",
@@ -84,4 +84,51 @@ describe("validateConfig", () => {
     assert.deepEqual(errors, []);
     assert.equal(warnings.length, 1);
   });
+});
+
+/** A `loadConfig` env-olvasó, ezért a teszt maga állítja és állítja vissza a változót. */
+function withCheckOnStart<T>(value: string | undefined, run: () => T): T {
+  const original = process.env.FLEX_CHECK_ON_START;
+  if (value === undefined) delete process.env.FLEX_CHECK_ON_START;
+  else process.env.FLEX_CHECK_ON_START = value;
+  try {
+    return run();
+  } finally {
+    if (original === undefined) delete process.env.FLEX_CHECK_ON_START;
+    else process.env.FLEX_CHECK_ON_START = original;
+  }
+}
+
+describe("loadConfig — FLEX_CHECK_ON_START", () => {
+  test("alapból kikapcsolva", () => {
+    assert.equal(
+      withCheckOnStart(undefined, () => loadConfig().checkOnStart),
+      false,
+    );
+  });
+
+  test("üres string: kikapcsolva", () => {
+    assert.equal(
+      withCheckOnStart("", () => loadConfig().checkOnStart),
+      false,
+    );
+  });
+
+  for (const truthyValue of ["1", "true", "yes", "on", "TRUE"]) {
+    test(`"${truthyValue}": bekapcsolva`, () => {
+      assert.equal(
+        withCheckOnStart(truthyValue, () => loadConfig().checkOnStart),
+        true,
+      );
+    });
+  }
+
+  for (const falsyValue of ["0", "false", "no", "off"]) {
+    test(`"${falsyValue}": kikapcsolva`, () => {
+      assert.equal(
+        withCheckOnStart(falsyValue, () => loadConfig().checkOnStart),
+        false,
+      );
+    });
+  }
 });

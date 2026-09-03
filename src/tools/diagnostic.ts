@@ -1,7 +1,7 @@
 import { McpServer } from "@modelcontextprotocol/server";
 import { z } from "zod";
 import type { FlexHttp } from "../client.js";
-import { toolError, toolJson } from "../format.js";
+import { formatError, toolError, toolJson } from "../format.js";
 import { diagOutput } from "../schema.js";
 
 /**
@@ -29,6 +29,29 @@ export function pickDiagFields(raw: unknown): Record<string, unknown> {
     if (value !== undefined) out[key] = value;
   }
   return out;
+}
+
+/**
+ * Induláskori, opt-in ellenőrzés (`FLEX_CHECK_ON_START`, P2-5): egyetlen
+ * `GET /diag` hívás, hogy egy lejárt vagy érvénytelen token ne csak az első
+ * valódi tool-hívásnál derüljön ki, hanem már a szerver indulásakor, stderr-en.
+ *
+ * Szándékosan **nem lép ki és nem dob** — egy átmeneti hálózati hiba vagy a
+ * Flex pillanatnyi elérhetetlensége nem ok arra, hogy egy egyébként érvényes
+ * tokennel se induljon el a szerver; a tényleges hívások a saját hibaágukon
+ * úgyis jelentkeznek. A `formatError` ugyanazt a magyar, HTTP-státusz szerinti
+ * üzenetet adja, amit egy sikertelen tool-hívás is kapna (401/403 → „érvénytelen
+ * vagy lejárt token").
+ */
+export async function checkTokenOnStart(client: FlexHttp): Promise<void> {
+  try {
+    await client.request("GET", "/diag");
+  } catch (error) {
+    console.error(
+      `FIGYELEM: az induláskori kapcsolat-ellenőrzés (FLEX_CHECK_ON_START) hibát adott — ` +
+        `a szerver elindul, de a Flex-hívások valószínűleg hibázni fognak. ${formatError(error)}`,
+    );
+  }
 }
 
 /** Diagnostic / connectivity check against the Flex API. */

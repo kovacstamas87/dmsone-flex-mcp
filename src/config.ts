@@ -26,6 +26,14 @@ export interface FlexConfig {
    * alfolyamataként ez a beszélgetés közepén jelentkező összeomlás.
    */
   maxDownloadBytes: number;
+  /**
+   * Opt-in: induláskor egyetlen `GET /diag` hívás fusson-e, hogy a lejárt vagy
+   * érvénytelen token ne csak az első valódi tool-hívásnál derüljön ki (lásd
+   * `tools/diagnostic.ts` `checkTokenOnStart`). Alapból `false`, mert egy
+   * induláskori hálózati hívás a `tools-list.test.ts`-t (és minden hálózat
+   * nélküli indítást) hálózatfüggővé tenné.
+   */
+  checkOnStart: boolean;
 }
 
 /**
@@ -150,6 +158,7 @@ export function loadConfig(): FlexConfig {
   const downloadDir = downloadDirRaw ? resolve(downloadDirRaw) : undefined;
   const timeZone = resolveTimeZone(process.env.FLEX_TIMEZONE);
   const maxDownloadBytes = resolveMaxDownloadBytes(process.env.FLEX_MAX_DOWNLOAD_MB);
+  const checkOnStart = truthy(process.env.FLEX_CHECK_ON_START);
 
   return {
     baseUrl,
@@ -160,5 +169,6 @@ export function loadConfig(): FlexConfig {
     downloadDir,
     timeZone,
     maxDownloadBytes,
+    checkOnStart,
   };
 }

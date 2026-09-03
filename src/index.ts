@@ -17,7 +17,7 @@ import { FlexClient } from "./client.js";
 import { registerTaskTools } from "./tools/task.js";
 import { registerUserTools } from "./tools/user.js";
 import { registerWorkflowTools } from "./tools/workflow.js";
-import { registerDiagnosticTools } from "./tools/diagnostic.js";
+import { registerDiagnosticTools, checkTokenOnStart } from "./tools/diagnostic.js";
 import { registerSecretValue } from "./redact.js";
 import { createTemplateCache, registerResources } from "./resources.js";
 import { registerPrompts } from "./prompts.js";
@@ -103,6 +103,8 @@ async function main(): Promise<void> {
   registerSecretValue(config.token);
 
   const client = new FlexClient(config);
+  if (config.checkOnStart) await checkTokenOnStart(client);
+
   const server = new McpServer(
     { name: "dmsone-flex-mcp-server", version: SERVER_VERSION },
     { instructions: SERVER_INSTRUCTIONS },
