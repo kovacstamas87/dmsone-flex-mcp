@@ -77,7 +77,7 @@ export function validateConfig(config: FlexConfig): ConfigValidation {
     errors.push(
       "HIBA: a FLEX_TOKEN környezeti változó kötelező.\n" +
         "Add meg a Flex Personal Access Tokent (vagy Station Tokent) a Claude Desktop\n" +
-        "claude_desktop_config.json \"env\" blokkjában, vagy a .env fájlban.",
+        'claude_desktop_config.json "env" blokkjában, vagy a .env fájlban.',
     );
   }
 

@@ -76,7 +76,7 @@ test("a rövid hibatörzs változatlanul megy vissza", () => {
   const message = formatError(axiosError(400, { error: "hiányzó mező: OSSZEG" }));
   assert.equal(
     message,
-    'Hiba: Hibás kérés (400). Ellenőrizd a kötelező mezőket és a paraméterek formátumát.\n' +
+    "Hiba: Hibás kérés (400). Ellenőrizd a kötelező mezőket és a paraméterek formátumát.\n" +
       'Válasz: {"error":"hiányzó mező: OSSZEG"}',
   );
 });

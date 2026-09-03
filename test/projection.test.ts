@@ -7,9 +7,7 @@ import { envelope, paginate, summarizeTask, summarizeWfTask } from "../src/proje
 
 /** A fixture-ök élő, read-only mintából készültek, anonimizálva — lásd `test/CLAUDE.md`. */
 function fixture(name: string): { success: boolean; result: Record<string, unknown>[] } {
-  return JSON.parse(
-    readFileSync(fileURLToPath(new URL(`./fixtures/${name}.json`, import.meta.url)), "utf8"),
-  );
+  return JSON.parse(readFileSync(fileURLToPath(new URL(`./fixtures/${name}.json`, import.meta.url)), "utf8"));
 }
 
 const NEWS = fixture("task-list");
@@ -19,7 +17,14 @@ describe("summarizeTask", () => {
   test("a drága mezők nincsenek benne", () => {
     for (const item of NEWS.result) {
       const summary = summarizeTask(item);
-      for (const key of ["taskDescription", "wfDescription", "metaItems", "comments", "attachments", "possibleResults"]) {
+      for (const key of [
+        "taskDescription",
+        "wfDescription",
+        "metaItems",
+        "comments",
+        "attachments",
+        "possibleResults",
+      ]) {
         assert.ok(!(key in summary), `${key} nem kerülhet a summary-be`);
       }
       assert.ok(!JSON.stringify(summary).includes("<p>"), "HTML nem szivároghat át");
@@ -148,14 +153,7 @@ describe("paginate", () => {
 describe("envelope", () => {
   test("a boríték mezői és az alapértelmezett lap", () => {
     const page = envelope(NEWS, { offset: 0, limit: 20, fields: "summary" }, summarizeTask)!;
-    assert.deepEqual(Object.keys(page).sort(), [
-      "fields",
-      "hasMore",
-      "items",
-      "offset",
-      "returned",
-      "total",
-    ]);
+    assert.deepEqual(Object.keys(page).sort(), ["fields", "hasMore", "items", "offset", "returned", "total"]);
     assert.equal(page.total, 21);
     assert.equal(page.returned, 20);
     assert.equal(page.hasMore, true);
@@ -185,7 +183,14 @@ describe("envelope", () => {
   });
 
   test("nem tömb result esetén undefined — a hívó a nyers választ küldi tovább", () => {
-    assert.equal(envelope({ success: true, result: { id: 1 } }, { offset: 0, limit: 20, fields: "summary" }, summarizeTask), undefined);
+    assert.equal(
+      envelope(
+        { success: true, result: { id: 1 } },
+        { offset: 0, limit: 20, fields: "summary" },
+        summarizeTask,
+      ),
+      undefined,
+    );
     assert.equal(envelope(null, { offset: 0, limit: 20, fields: "summary" }, summarizeTask), undefined);
     assert.equal(envelope("szöveg", { offset: 0, limit: 20, fields: "summary" }, summarizeTask), undefined);
   });

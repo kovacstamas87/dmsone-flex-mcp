@@ -19,9 +19,12 @@ type ManifestTool = { name: string; description: string };
  * előbb fordít. Miért nem elég a forrás: a manifest arról a szerverről tesz
  * ígéretet, ami a csomagba kerül — a build része a mérésnek.
  */
-before(() => {
-  execFileSync("npm", ["run", "build"], { cwd: rootDir, stdio: "ignore" });
-}, { timeout: 120_000 });
+before(
+  () => {
+    execFileSync("npm", ["run", "build"], { cwd: rootDir, stdio: "ignore" });
+  },
+  { timeout: 120_000 },
+);
 
 function readManifest(): { version: string; tools: ManifestTool[] } {
   return JSON.parse(readFileSync(manifestPath, "utf8"));
@@ -44,33 +47,37 @@ describe("sync-manifest", () => {
    * meg, ha a manifest olyan eszközt ígér, amit a szerver nem regisztrál (vagy
    * fordítva) — korábban a két lista szinkron-őr nélkül duplikálta egymást.
    */
-  test("a manifest tools tömbje a lefordított szerver tools/list-jével egyezik", { timeout: 30_000 }, async () => {
-    execFileSync("node", [scriptPath], { cwd: rootDir, stdio: "ignore" });
+  test(
+    "a manifest tools tömbje a lefordított szerver tools/list-jével egyezik",
+    { timeout: 30_000 },
+    async () => {
+      execFileSync("node", [scriptPath], { cwd: rootDir, stdio: "ignore" });
 
-    const transport = new StdioClientTransport({
-      command: process.execPath,
-      args: ["dist/index.js"],
-      cwd: rootDir,
-      env: { ...(process.env as Record<string, string>), FLEX_TOKEN: "dummy-token-for-manifest-test" },
-      stderr: "ignore",
-    });
-    const client = new Client({ name: "manifest-test", version: "0.0.0" });
-    await client.connect(transport);
-    const { tools } = await client.listTools();
-    await client.close();
+      const transport = new StdioClientTransport({
+        command: process.execPath,
+        args: ["dist/index.js"],
+        cwd: rootDir,
+        env: { ...(process.env as Record<string, string>), FLEX_TOKEN: "dummy-token-for-manifest-test" },
+        stderr: "ignore",
+      });
+      const client = new Client({ name: "manifest-test", version: "0.0.0" });
+      await client.connect(transport);
+      const { tools } = await client.listTools();
+      await client.close();
 
-    const manifest = readManifest();
-    assert.deepEqual(
-      manifest.tools.map((tool) => tool.name),
-      tools.map((tool) => tool.name),
-      "a manifest és a kód tool-listája eltér",
-    );
+      const manifest = readManifest();
+      assert.deepEqual(
+        manifest.tools.map((tool) => tool.name),
+        tools.map((tool) => tool.name),
+        "a manifest és a kód tool-listája eltér",
+      );
 
-    for (const tool of manifest.tools) {
-      assert.ok(tool.description.length > 0, `${tool.name}: üres leírás`);
-      // A manifest-leírás az első mondat, nem a teljes leírás — a felületre való.
-      assert.ok(tool.description.length < 200, `${tool.name}: túl hosszú manifest-leírás`);
-      assert.ok(!tool.description.includes("\n"), `${tool.name}: a leírás többsoros`);
-    }
-  });
+      for (const tool of manifest.tools) {
+        assert.ok(tool.description.length > 0, `${tool.name}: üres leírás`);
+        // A manifest-leírás az első mondat, nem a teljes leírás — a felületre való.
+        assert.ok(tool.description.length < 200, `${tool.name}: túl hosszú manifest-leírás`);
+        assert.ok(!tool.description.includes("\n"), `${tool.name}: a leírás többsoros`);
+      }
+    },
+  );
 });

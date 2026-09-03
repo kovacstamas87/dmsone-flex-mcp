@@ -81,9 +81,18 @@ function withEnv<T>(value: string | undefined, run: () => T): T {
 
 test("a FLEX_TIMEZONE alapértéke Europe/Budapest", () => {
   assert.equal(DEFAULT_TIME_ZONE, "Europe/Budapest");
-  assert.equal(withEnv(undefined, () => loadConfig().timeZone), DEFAULT_TIME_ZONE);
-  assert.equal(withEnv("   ", () => loadConfig().timeZone), DEFAULT_TIME_ZONE);
-  assert.equal(withEnv("Europe/Vienna", () => loadConfig().timeZone), "Europe/Vienna");
+  assert.equal(
+    withEnv(undefined, () => loadConfig().timeZone),
+    DEFAULT_TIME_ZONE,
+  );
+  assert.equal(
+    withEnv("   ", () => loadConfig().timeZone),
+    DEFAULT_TIME_ZONE,
+  );
+  assert.equal(
+    withEnv("Europe/Vienna", () => loadConfig().timeZone),
+    "Europe/Vienna",
+  );
 });
 
 test("érvénytelen FLEX_TIMEZONE esetén az alapértelmezettre esünk vissza, figyelmeztetéssel", () => {
@@ -91,7 +100,10 @@ test("érvénytelen FLEX_TIMEZONE esetén az alapértelmezettre esünk vissza, f
   const lines: string[] = [];
   console.error = (...args: unknown[]) => void lines.push(args.join(" "));
   try {
-    assert.equal(withEnv("Nem/Letezik", () => loadConfig().timeZone), DEFAULT_TIME_ZONE);
+    assert.equal(
+      withEnv("Nem/Letezik", () => loadConfig().timeZone),
+      DEFAULT_TIME_ZONE,
+    );
   } finally {
     console.error = original;
   }

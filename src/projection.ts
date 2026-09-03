@@ -111,7 +111,11 @@ export function summarizeWfTask(item: NewsItem): Record<string, unknown> {
  * Lapozás. A túlfutó `offset` üres listát ad `hasMore: false`-szal — nem hiba,
  * csak a lista vége.
  */
-export function paginate<T>(items: T[], offset: number, limit: number): {
+export function paginate<T>(
+  items: T[],
+  offset: number,
+  limit: number,
+): {
   page: T[];
   total: number;
   hasMore: boolean;
@@ -138,8 +142,7 @@ export function envelope(
   if (!Array.isArray(result)) return undefined;
 
   const { page, total, hasMore } = paginate(result, options.offset, options.limit);
-  const items =
-    options.fields === "summary" ? page.map((item) => summarize(item as NewsItem)) : page;
+  const items = options.fields === "summary" ? page.map((item) => summarize(item as NewsItem)) : page;
 
   return {
     total,

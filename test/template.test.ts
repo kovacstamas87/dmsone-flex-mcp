@@ -124,7 +124,10 @@ describe("describeTemplate", () => {
     const verbose = describeTemplate(66, TEMPLATE_66, true);
     assert.equal(verbose.raw, TEMPLATE_66);
     // A többi mező mindkét módban ugyanaz — a raw csak hozzáadódik.
-    assert.deepEqual(Object.keys(lean), Object.keys(verbose).filter((key) => key !== "raw"));
+    assert.deepEqual(
+      Object.keys(lean),
+      Object.keys(verbose).filter((key) => key !== "raw"),
+    );
   });
 
   test('jelöléssel validation: "api-flag", note nélkül', () => {

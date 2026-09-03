@@ -42,9 +42,7 @@ function expectValid(schema: AnySchema, data: unknown, label: string): void {
 
 /** A fixture-ök élő, read-only mintából készültek, anonimizálva — lásd `test/CLAUDE.md`. */
 function fixture(name: string): { success: boolean; result: Record<string, unknown>[] } {
-  return JSON.parse(
-    readFileSync(fileURLToPath(new URL(`./fixtures/${name}.json`, import.meta.url)), "utf8"),
-  );
+  return JSON.parse(readFileSync(fileURLToPath(new URL(`./fixtures/${name}.json`, import.meta.url)), "utf8"));
 }
 
 const NEWS = fixture("task-list");
@@ -129,7 +127,12 @@ describe("downloadOutput", () => {
 });
 
 describe("a listázók borítéka", () => {
-  const cases: [string, AnySchema, typeof NEWS, (item: Record<string, unknown>) => Record<string, unknown>][] = [
+  const cases: [
+    string,
+    AnySchema,
+    typeof NEWS,
+    (item: Record<string, unknown>) => Record<string, unknown>,
+  ][] = [
     ["flex_task_list", taskListOutput, NEWS, summarizeTask],
     ["flex_workflow_get_my_tasks", wfTaskListOutput, WF_TASKS, summarizeWfTask],
   ];
@@ -139,7 +142,10 @@ describe("a listázók borítéka", () => {
       // A `full` mód a **nyers** elemeket adja, és 21 nyers /dms/news elem már a
       // csonkolás-ágra futna (mérés: 50 140 karakter) — azt a lentebbi teszt
       // fogja. Itt a nyers elem *alakja* a kérdés, ezért kicsi a limit.
-      for (const [fields, limit] of [["summary", 100], ["full", 3]] as const) {
+      for (const [fields, limit] of [
+        ["summary", 100],
+        ["full", 3],
+      ] as const) {
         const page = envelope(payload, { offset: 0, limit, fields }, summarize);
         assert.ok(page, "az envelope borítékot ad a fixture alakjára");
         const content = structured(page);

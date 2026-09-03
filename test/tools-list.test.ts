@@ -38,19 +38,22 @@ type Tool = {
 let client: Client;
 let tools: Map<string, Tool>;
 
-before(async () => {
-  const transport = new StdioClientTransport({
-    command: process.execPath,
-    args: ["--import", "tsx", "src/index.ts"],
-    cwd: rootDir,
-    env: { ...(process.env as Record<string, string>), FLEX_TOKEN: "dummy-token-only-for-tools-list-test" },
-    stderr: "ignore",
-  });
-  client = new Client({ name: "tools-list-test", version: "0.0.0" });
-  await client.connect(transport);
-  const list = await client.listTools();
-  tools = new Map((list.tools as Tool[]).map((tool) => [tool.name, tool]));
-}, { timeout: 30_000 });
+before(
+  async () => {
+    const transport = new StdioClientTransport({
+      command: process.execPath,
+      args: ["--import", "tsx", "src/index.ts"],
+      cwd: rootDir,
+      env: { ...(process.env as Record<string, string>), FLEX_TOKEN: "dummy-token-only-for-tools-list-test" },
+      stderr: "ignore",
+    });
+    client = new Client({ name: "tools-list-test", version: "0.0.0" });
+    await client.connect(transport);
+    const list = await client.listTools();
+    tools = new Map((list.tools as Tool[]).map((tool) => [tool.name, tool]));
+  },
+  { timeout: 30_000 },
+);
 
 after(async () => {
   await client?.close();
@@ -203,10 +206,18 @@ test("a feladatlista leírása az idKind-re mutat, nem csak a type-ra", () => {
  */
 test("az orgId mezőknek nincs alapértelmezésük", () => {
   const workflowOrgId = schemaOf("flex_workflow_start").properties?.responsibleOrgId;
-  assert.equal(workflowOrgId?.default, undefined, "a responsibleOrgId-nak nem lenne szabad alapértelmezettnek lennie");
+  assert.equal(
+    workflowOrgId?.default,
+    undefined,
+    "a responsibleOrgId-nak nem lenne szabad alapértelmezettnek lennie",
+  );
 
   const taskOrgId = schemaOf("flex_task_create").properties?.performerOrgId;
-  assert.equal(taskOrgId?.default, undefined, "a performerOrgId-nak nem lenne szabad alapértelmezettnek lennie");
+  assert.equal(
+    taskOrgId?.default,
+    undefined,
+    "a performerOrgId-nak nem lenne szabad alapértelmezettnek lennie",
+  );
 });
 
 /**

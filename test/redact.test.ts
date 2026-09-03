@@ -1,12 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 
-import {
-  REDACTED,
-  clearSecretValues,
-  redactSecrets,
-  registerSecretValue,
-} from "../src/redact.js";
+import { REDACTED, clearSecretValues, redactSecrets, registerSecretValue } from "../src/redact.js";
 
 /**
  * A `/diag` válaszának alakja — a tokenek és kulcsok **kitaláltak**, valós titok

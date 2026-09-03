@@ -77,7 +77,13 @@ describe("sanitizeFileName", () => {
   });
 
   test("a valós, ártatlan fájlnevek változatlanok maradnak", () => {
-    for (const name of ["Számla_2026 (1).pdf", "jegyzőkönyv-final.docx", ".gitignore", "kép.jpeg", "árvíztűrő tükörfúrógép.txt"]) {
+    for (const name of [
+      "Számla_2026 (1).pdf",
+      "jegyzőkönyv-final.docx",
+      ".gitignore",
+      "kép.jpeg",
+      "árvíztűrő tükörfúrógép.txt",
+    ]) {
       assert.equal(sanitizeFileName(name), name);
     }
   });
@@ -121,7 +127,11 @@ describe("resolveDownloadPath", () => {
 
   test("a könyvtár fölé lépő savePath elutasítva", () => {
     for (const bad of ["../x", "..", "../", "..\\x", "a/../../x", "a/b/../../../x", "./../x"]) {
-      assert.throws(() => resolveDownloadPath(base, bad, "x.pdf"), REJECT_MESSAGE, `nem utasította el: ${bad}`);
+      assert.throws(
+        () => resolveDownloadPath(base, bad, "x.pdf"),
+        REJECT_MESSAGE,
+        `nem utasította el: ${bad}`,
+      );
     }
   });
 

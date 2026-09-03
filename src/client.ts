@@ -43,11 +43,7 @@ export class FlexClient {
   }
 
   /** Perform a JSON request and return the parsed response body. */
-  async request<T = unknown>(
-    method: "GET" | "POST",
-    url: string,
-    opts: RequestOptions = {},
-  ): Promise<T> {
+  async request<T = unknown>(method: "GET" | "POST", url: string, opts: RequestOptions = {}): Promise<T> {
     const res = await this.http.request<T>({
       method,
       url,

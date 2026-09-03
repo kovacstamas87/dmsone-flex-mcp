@@ -25,9 +25,7 @@ Visszatérés: találatok userId, orgId, userName és orgName mezőkkel.`,
     },
     async (args) => {
       try {
-        return toolJson(
-          await client.request("GET", "/dms/ac/user", { params: { username: args.username } }),
-        );
+        return toolJson(await client.request("GET", "/dms/ac/user", { params: { username: args.username } }));
       } catch (error) {
         return toolError(error);
       }

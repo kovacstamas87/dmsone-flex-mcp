@@ -39,7 +39,10 @@ const ABBREVIATIONS = new Set(["pl", "ill", "stb", "kb", "vö", "ún"]);
  * modellé, a manifest a Claude Desktop felületén megjelenő lista.
  */
 function firstSentence(description) {
-  const paragraph = (description ?? "").split(/\n\s*\n/)[0].replace(/\s+/g, " ").trim();
+  const paragraph = (description ?? "")
+    .split(/\n\s*\n/)[0]
+    .replace(/\s+/g, " ")
+    .trim();
   const boundary = /\.(?=\s|$)/g;
   let match;
   while ((match = boundary.exec(paragraph)) !== null) {

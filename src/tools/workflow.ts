@@ -185,11 +185,7 @@ export function missingRequiredMessage(
   );
 }
 
-export function registerWorkflowTools(
-  server: McpServer,
-  client: FlexClient,
-  config: FlexConfig,
-): void {
+export function registerWorkflowTools(server: McpServer, client: FlexClient, config: FlexConfig): void {
   server.registerTool(
     "flex_workflow_list_templates",
     {
@@ -432,9 +428,7 @@ ez innen nem vonható vissza (POST /dms/wfTask/{wfTaskId}/complete).`,
         wfTaskResult: z
           .string()
           .min(1)
-          .describe(
-            'Eredménykód a flex_workflow_get_task_details "possibleWfTaskResults" mezőjéből',
-          ),
+          .describe('Eredménykód a flex_workflow_get_task_details "possibleWfTaskResults" mezőjéből'),
         comment: z.string().optional().describe("Megjegyzés"),
         metadata: z
           .record(z.string(), z.union([z.string(), z.number(), z.boolean()]))
@@ -488,7 +482,12 @@ Visszatérés: a feladat összes megjegyzése, az újjal együtt.`,
         wfTaskId: z.number().int().describe("A munkafolyamat-feladat azonosítója"),
         comment: z.string().min(1).describe("A megjegyzés szövege"),
       },
-      annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: true },
+      annotations: {
+        readOnlyHint: false,
+        destructiveHint: false,
+        idempotentHint: false,
+        openWorldHint: true,
+      },
     },
     async (args) => {
       try {
@@ -571,11 +570,18 @@ Meglévő fájlt nem ír felül: ütközésnél a név -1, -2… utótagot kap.`
       outputSchema: downloadOutput,
       // Fájlt hoz létre a lemezen → nem read-only; ütközésnél új nevet ad → nem idempotens.
       // Nem destruktív: meglévő fájlt sosem ír felül (`wx` flag).
-      annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: true },
+      annotations: {
+        readOnlyHint: false,
+        destructiveHint: false,
+        idempotentHint: false,
+        openWorldHint: true,
+      },
     },
     async (args) => {
       try {
-        const result = await client.download(`/dms/attachment/${encodeURIComponent(args.attachmentGuid)}/download`);
+        const result = await client.download(
+          `/dms/attachment/${encodeURIComponent(args.attachmentGuid)}/download`,
+        );
         const baseDir = downloadBaseDir(config);
         // A szerver fájlneve és a GUID is nem megbízható bemenet — mindkettő tisztul.
         const safeName = sanitizeFileName(result.fileName, args.attachmentGuid);
@@ -618,7 +624,10 @@ Visszatérés: a talált elem id és identifier mezője.`,
             "A kapcsolt elem típusa. Ismert értékek: alszam, foszam, dmsszamla, dmsszerz, " +
               "sopver, vvszerz, szamlatar, szamlatar_utalasi_lista.",
           ),
-        identifier: z.string().min(3, "A kereséshez legalább 3 karakter kell").describe('Keresett azonosító, legalább 3 karakter (pl. "DMS/13/2023")'),
+        identifier: z
+          .string()
+          .min(3, "A kereséshez legalább 3 karakter kell")
+          .describe('Keresett azonosító, legalább 3 karakter (pl. "DMS/13/2023")'),
       },
       annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true },
     },

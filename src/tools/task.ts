@@ -57,13 +57,20 @@ Visszatérés: az új feladat id és referenceNumber mezője.`,
               "nincs alapértelmezés; a flex_user_get_by_username válaszának orgId mezőjéből",
           ),
       },
-      annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: true },
+      annotations: {
+        readOnlyHint: false,
+        destructiveHint: false,
+        idempotentHint: false,
+        openWorldHint: true,
+      },
     },
     async (args) => {
       try {
         if (args.performerUserId !== undefined && args.performerOrgId === undefined) {
           return toolError(
-            new Error("performerOrgId kötelező, ha performerUserId meg van adva (nincs alapértelmezett szervezeti egység)"),
+            new Error(
+              "performerOrgId kötelező, ha performerUserId meg van adva (nincs alapértelmezett szervezeti egység)",
+            ),
           );
         }
         const users =
@@ -100,7 +107,12 @@ Visszatérés: az új feladat id és referenceNumber mezője.`,
         taskId: z.string().min(1).describe("A feladat azonosítója"),
         comment: z.string().min(1).describe("A megjegyzés szövege"),
       },
-      annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: true },
+      annotations: {
+        readOnlyHint: false,
+        destructiveHint: false,
+        idempotentHint: false,
+        openWorldHint: true,
+      },
     },
     async (args) => {
       try {
@@ -132,13 +144,20 @@ Visszatérés: az új feladat id és referenceNumber mezője.`,
           taskId: z.string().min(1).describe("A feladat azonosítója"),
           comment: z.string().optional().describe("Opcionális megjegyzés a művelethez"),
         },
-        annotations: { readOnlyHint: false, destructiveHint: destructive, idempotentHint: true, openWorldHint: true },
+        annotations: {
+          readOnlyHint: false,
+          destructiveHint: destructive,
+          idempotentHint: true,
+          openWorldHint: true,
+        },
       },
       async (args) => {
         try {
           const body = args.comment ? { comment: args.comment } : {};
           return toolJson(
-            await client.request("POST", `/dms/task/${encodeURIComponent(args.taskId)}/${operation}`, { body }),
+            await client.request("POST", `/dms/task/${encodeURIComponent(args.taskId)}/${operation}`, {
+              body,
+            }),
           );
         } catch (error) {
           return toolError(error);

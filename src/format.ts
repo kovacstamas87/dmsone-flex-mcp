@@ -31,7 +31,7 @@ type ToolResult = {
  */
 export function toolJson(data: unknown): ToolResult {
   const safe = redactSecrets(data);
-  const serialized = typeof safe === "string" ? safe : JSON.stringify(safe, null, 2) ?? "";
+  const serialized = typeof safe === "string" ? safe : (JSON.stringify(safe, null, 2) ?? "");
 
   if (serialized.length > CHARACTER_LIMIT) {
     const note =
@@ -62,9 +62,7 @@ function normalizeBody(value: unknown): unknown {
 }
 
 function truncateBody(text: string): string {
-  return text.length > ERROR_BODY_LIMIT
-    ? `${text.slice(0, ERROR_BODY_LIMIT)}… [csonkolva]`
-    : text;
+  return text.length > ERROR_BODY_LIMIT ? `${text.slice(0, ERROR_BODY_LIMIT)}… [csonkolva]` : text;
 }
 
 function safeJson(value: unknown): string {
@@ -94,8 +92,10 @@ export function formatError(error: unknown): string {
       return "Hiba: a kérés időtúllépés miatt megszakadt. Próbáld újra.";
     }
     if (status === undefined) {
-      return `Hiba: nem sikerült elérni a Flex API-t (${error.code ?? "ismeretlen hálózati hiba"}). ` +
-        `Ellenőrizd a FLEX_BASE_URL-t és a hálózati elérést.`;
+      return (
+        `Hiba: nem sikerült elérni a Flex API-t (${error.code ?? "ismeretlen hálózati hiba"}). ` +
+        `Ellenőrizd a FLEX_BASE_URL-t és a hálózati elérést.`
+      );
     }
 
     const message = known[status] ?? `A Flex API hibát adott (HTTP ${status}).`;
@@ -123,9 +123,7 @@ function isRealDateTime(parts: string[]): boolean {
   if (hour > 23 || minute > 59 || second > 59) return false;
 
   const probe = new Date(Date.UTC(year, month - 1, day));
-  return (
-    probe.getUTCFullYear() === year && probe.getUTCMonth() === month - 1 && probe.getUTCDate() === day
-  );
+  return probe.getUTCFullYear() === year && probe.getUTCMonth() === month - 1 && probe.getUTCDate() === day;
 }
 
 /** A `+0200` / `-05` alakot is `±hh:mm`-re hozzuk, hogy a `Date` biztosan értse. */
@@ -162,8 +160,7 @@ function wallClockInZone(date: Date, timeZone: string): string {
     parts.find((candidate) => candidate.type === type)?.value ?? "";
 
   return (
-    `${part("year")}-${part("month")}-${part("day")} ` +
-    `${part("hour")}:${part("minute")}:${part("second")}`
+    `${part("year")}-${part("month")}-${part("day")} ` + `${part("hour")}:${part("minute")}:${part("second")}`
   );
 }
 
@@ -194,9 +191,7 @@ export function formatDateTime(value: string | undefined, timeZone: string): str
   if (!isRealDateTime([year, month, day, hour, minute, second])) return value;
 
   if (offset) {
-    const instant = new Date(
-      `${year}-${month}-${day}T${hour}:${minute}:${second}${normalizeOffset(offset)}`,
-    );
+    const instant = new Date(`${year}-${month}-${day}T${hour}:${minute}:${second}${normalizeOffset(offset)}`);
     if (Number.isNaN(instant.getTime())) return value;
     return wallClockInZone(instant, timeZone);
   }
