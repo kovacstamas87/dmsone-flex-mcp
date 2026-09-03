@@ -8,7 +8,7 @@ exportál, amit az [`../index.ts`](../index.ts) hív. Egy eszköz = egy `server.
 
 | Fájl | Erőforrás | Eszközök | Megjegyzés |
 |---|---|---|---|
-| `task.ts` | **Task** — kézzel kiosztott DMS feladat, `taskId` | `flex_task_create`, `_comment`, `_accept`, `_complete`, `_list` | `/dms/task`, `/dms/news`. **WF4-től a `config`-ot is megkapja**: a `taskDeadline` / `taskScheduledStart` a `config.timeZone` faliórája szerint megy be |
+| `task.ts` | **Task** — kézzel kiosztott DMS feladat, `taskId` | `flex_task_create`, `_comment`, `_accept`, `_complete`, `_list` | `/dms/task`, `/dms/news`. **WF4-től a `config`-ot is megkapja**: a `taskDeadline` / `taskScheduledStart` a `config.timeZone` faliórája szerint megy be. **WF9-től** a `_list` lapoz és összefoglalót ad (`../projection.ts`), a leírása pedig kimondja a `/dms/news` két ismert Flex-hibáját — lásd lent |
 | `workflow.ts` | **WfTask** — egy futó munkafolyamat egy lépése, `wfTaskId` | 12 eszköz: sablonok, indítás, feladatok, megjegyzések, csatolmányok, `flex_search_linked_items` | a legnagyobb fájl; a sablon-feldolgozás (`parseTemplateFields` → `describeTemplate` / `missingRequiredMessage`) itt exportált, hogy tesztelhető legyen. A letöltés a [`../paths.ts`](../paths.ts)-re épül, a `downloadBaseDir(config)` adja a sandbox gyökerét |
 | `user.ts` | Felhasználó | `flex_user_get_by_username` | `userId` + `orgId` párt ad vissza — a Flexben **együtt** azonosít egy felhasználót |
 | `diagnostic.ts` | Diagnosztika | `flex_diag` | kapcsolat- és token-ellenőrzés; a `pickDiagFields()` a `/diag` válaszából csak `ok`/`method`/`uri`/`qs`-t engedi tovább |
@@ -42,6 +42,14 @@ kell.
   (WF4). WF9-ben három továbbival: a listázók leírása kimondja a lapozást és az összefoglaló
   alapértelmezést (a séma `limit`/`offset`/`fields` mezőjével együtt), a feladatlista megnevezi,
   mi marad ki és hogy a lista vegyes, a sablon-részletek pedig az `includeRaw` alapértelmezését.
+- **A leírás-őszinteség a *szerveroldali* hibákra is vonatkozik.** A `flex_task_list` leírása
+  kimondja, hogy a `status: "all"` ma HTTP 500-ba fut (a Flex elhasal a hiányzó `status`
+  paraméteren), és hogy a `pending` és a `completed` ugyanazt a listát adja vissza. Miért van ez a
+  leírásban, ha nem a mi hibánk: a modell ebből választ szűrőértéket — ha elhallgatjuk, hibás
+  hívást fog megkísérelni, és a Flex hibaüzenetéből próbál majd következtetni. Az opciót viszont
+  **nem vettük ki**: a hívás helyes, és ha a Flex javítja, magától működni fog; a kivétele
+  visszafelé törő változás lenne. A bejelentés a [`../../../flex-diag-hibajelentes.md`](../../../flex-diag-hibajelentes.md)
+  2. és 3. pontja. Ha a Flex javítja, ez a két mondat kikerül a leírásból.
 - **Az annotációk a valós hatást írják le**, nem a szándékot: ami a Flexbe vagy a lemezre ír, az
   nem `readOnlyHint`; ami visszavonhatatlan (`complete_task`, `task_complete`, `workflow_start`),
   az `destructiveHint: true`. A `tools-list.test.ts` a következetességet is fogja (read-only →
