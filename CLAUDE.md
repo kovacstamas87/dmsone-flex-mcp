@@ -5,7 +5,8 @@ DMS One Flex REST API-t teszi elérhetővé feladatok, munkafolyamatok és felha
 minden hívás a beállított token tulajdonosának a nevében fut. Ugyanazokat a végpontokat fedi, mint
 a közösségi `n8n-nodes-dmsone-flex` node.
 
-**Állapot (2026-09-03):** **v1.0.0** kiadva (WF21) — a `../flex-mcp-p1-p2-megvalositasi-terv.md`
+**Állapot (2026-09-03):** **v1.0.1** kiadva (P0-6 javítása, `CHANGELOG.md` `[1.0.1]`) — korábban
+**v1.0.0** (WF21) — a `../flex-mcp-p1-p2-megvalositasi-terv.md`
 **P0, P1 és P2 üteme MCP-oldalon kész**: P0/P1 a `[0.2.0]`-ban (WF1–WF15 — benne a kötelező
 `performerOrgId`/`responsibleOrgId`, **áttörő változás a hívó modellnek**), P2 a `[1.0.0]`-ban
 (`CHANGELOG.md`) — **WF20** SDK v2 (`@modelcontextprotocol/sdk@1.30` → `server@2.0.0`, `zod@3` →
