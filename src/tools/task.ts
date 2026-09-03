@@ -170,7 +170,9 @@ mert egyetlen elem is több ezer karakter lehet.
 
 Bemenet:
   - status ("in-progress" | "completed" | "pending" | "all"): szűrő (alapértelmezett "in-progress").
-    Az "all" esetén nem küld status szűrőt.
+    Az "all" esetén nem küld status szűrőt — FIGYELEM: a Flex jelenleg erre HTTP 500-at ad
+    (szerveroldali hiba, bejelentve). Amíg nem javítják, a három konkrét értéket használd.
+    A "pending" és a "completed" a mérés szerint ugyanazt a listát adja vissza.
   - limit (1-100, alapértelmezett 20), offset (alapértelmezett 0): lapozás
   - fields ("summary" | "full", alapértelmezett "summary")
 

@@ -102,12 +102,18 @@ lásd lent.
 
 ## Nyitva maradt
 
-- **Flex-oldali hiba (WF9-ben találva, 2026-09-03): a `flex_task_list` `status: "all"` 500-at ad.**
-  Ilyenkor a szerver szándékosan nem küld `status` paramétert, a Flex viszont elhasal rajta:
-  `Service_MVP_News::getWorkflowTaskSql(): Argument #2 ($statusFilter) must be of type string,
-  null given`. Az MCP-oldalon nincs mit javítani — a hívás helyes, a hibaüzenet a felhasználóhoz
-  eljut. A jelentés a Flex csapatnak a [`../flex-diag-hibajelentes.md`](../flex-diag-hibajelentes.md)
-  harmadik pontja. Amíg nincs javítva, a három konkrét állapotszűrő működik.
+- **Flex-oldali hibák a `/dms/news`-on (WF9-ben találva, 2026-09-03).** Kettő, mindkettő a Flex
+  szerverben, MCP-oldalon nincs mit javítani — a hívás helyes, a hibaüzenet a felhasználóhoz eljut.
+  Részletek, reprodukció és a kérés: [`../flex-diag-hibajelentes.md`](../flex-diag-hibajelentes.md)
+  2. és 3. pontja.
+  1. **`status: "all"` → HTTP 500.** Ilyenkor a szerver (a referencia n8n node-dal egyezően)
+     szándékosan nem küld `status` paramétert, a Flex viszont elhasal rajta:
+     `getWorkflowTaskSql(): Argument #2 ($statusFilter) must be of type string, null given`.
+     A tool leírása ezért **kimondja**, hogy ez ma hibára fut — a leírás-őszinteség szabálya
+     a szerveroldali hibára is vonatkozik, mert a modellnek ebből kell döntenie.
+  2. **A `pending` és a `completed` bájtra azonos választ ad** (50 elem, benne 15 darab `FA_U`
+     státuszú, azaz nyitott feladat). Nem tudjuk, mi a szándékolt viselkedés — a jelentés
+     rákérdez. A leírás ezt is megemlíti.
 - **P0-2**: a `/diag` végpont backend-oldali szűrése — a jelentés szövege kész
   (`../flex-diag-hibajelentes.md`), elküldése a Flex csapatnak a felhasználó lépése.
 - **P0-6 Flex-oldali fele**: mi jelöli a kötelezőséget a startDetails válaszában (a `visibility:
