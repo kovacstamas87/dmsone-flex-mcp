@@ -1,6 +1,6 @@
 {
   "name": "dmsone-flex-mcp-server",
-  "version": "0.2.0",
+  "version": "1.0.0",
   "description": "Local MCP server for the DMS One Flex API (Claude Desktop / any MCP client). Wraps the same REST API as n8n-nodes-dmsone-flex.",
   "type": "module",
   "main": "dist/index.js",

@@ -2,7 +2,7 @@
   "manifest_version": "0.3",
   "name": "dmsone-flex-mcp-server",
   "display_name": "DMS One Flex",
-  "version": "0.2.0",
+  "version": "1.0.0",
   "description": "DMS One Flex feladatok, munkafolyamatok és felhasználók kezelése a Flex REST API-n keresztül.",
   "long_description": "Lokálisan futó MCP szerver a DMS One Flex rendszerhez. Feladatok létrehozása/lezárása, munkafolyamatok indítása sablon-specifikus mezőkkel, munkafolyamat-feladatok kezelése, csatolmányok és felhasználó-keresés. Minden hívás a megadott token tulajdonosának (vagy station tokennél az impersonált felhasználónak) a nevében fut.",
   "author": {
