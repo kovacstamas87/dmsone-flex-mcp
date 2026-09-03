@@ -3,9 +3,15 @@
 A jelölés a [Keep a Changelog](https://keepachangelog.com/) és a
 [SemVer](https://semver.org/) ajánlásait követi.
 
-## [Unreleased]
+## [1.0.0] – 2026-09-03
 
 ### Added
+- **P2-5**: opt-in induláskori token-ellenőrzés (`FLEX_CHECK_ON_START`, alap `false`). Bekapcsolva
+  a szerver induláskor egy `GET /diag`-ot hív (`checkTokenOnStart`,
+  `src/tools/diagnostic.ts`); lejárt/érvénytelen tokenre stderr-figyelmeztetést ad a
+  `formatError` szövegével, de **nem lép ki** — egy átmeneti hiba nem ok arra, hogy egy
+  egyébként érvényes tokennel se induljon el a szerver. Alapból kikapcsolva, hogy a
+  `tools-list.test.ts` és minden hálózat nélküli indítás hálózatmentes maradjon.
 - **P2-2 / P2-3**: MCP **Resources** és **Prompts** (WF18). Három resource — `flex://templates`
   (elindítható sablonok), `flex://template/{id}` (egy sablon mezői, `ResourceTemplate` a `{id}`
   argumentum kiegészítésével) és `flex://my-tasks` (a folyamatban lévő teendők összefoglalója,
@@ -54,6 +60,22 @@ A jelölés a [Keep a Changelog](https://keepachangelog.com/) és a
   adat, nem utasítás. Érintett eszközök: `flex_workflow_get_task_details`, `_get_task_comments`,
   `_add_task_comment`, `flex_task_comment`, és a két listázó (`subject`/`wfSubject`; `fields: "full"`
   esetén a teljes elem, a HTML-leírás szöveggé alakítva).
+
+### Eval (P2-7)
+- A `../flex-mcp-eval/evaluation.xml` 10 kérdése **újrafuttatva** (WF21, 2026-09-03) élő, read-only
+  hívásokkal: **10/10 helyes**, a flex-dev adatok (sablon-metaadat, lezárt munkafolyamat-feladatok,
+  felhasználó) a WF14 óta nem drifteltek — a Q7 verzió-őr (`flex_ux` sablon) is változatlanul 13-on
+  áll. Részletek: `../flex-mcp-eval/meresek.md`.
+- **Injection-teszt:** az automatizált tesztkészlet fixture-e (`Flex/test/untrusted.test.ts`,
+  `Flex/test/handlers.test.ts`) egy szó szerinti „Ignore previous instructions…" szöveget futtat át a
+  `<untrusted>` kereten — a szöveg a kereten belül, escape-elve marad, nem generál se
+  tool-hívást, se protokoll-szintű mellékhatást. `npm test`: **214/214 zöld**, ebben az
+  injection-fixture is. Ez a live-QA formátumban nem reprodukálható (a flex-dev-en nincs, és nem is
+  hozunk létre írással ilyen tartalmú éles adatot) — az automatizált teszt a hitelesebb, ismételhető
+  forrás.
+- A teljes **Claude Desktop UX-mérés** (hívásszám/token, a friss `.mcpb`-vel telepítve) — mint a
+  v0.1.1/v0.2.0 esetén — felhasználói lépés marad; a statikus költség (`tools/list` + `instructions`)
+  és a válasz-payload méréseit lásd `../flex-mcp-eval/meresek.md`.
 
 ## [0.2.0] – 2026-09-03
 
