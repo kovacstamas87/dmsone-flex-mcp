@@ -16,19 +16,36 @@ A `tsconfig.json` `include`-ja `src/**/*` marad, ezért a `test/` **nem** kerül
 | `smoke.test.ts` | Füst-teszt: a `formatError` egy `Error`-ra `Hiba: …`-t ad — azt igazolja, hogy maga a keret fut | WF1 |
 | `sync-manifest.test.ts` | A `scripts/sync-manifest.mjs` idempotens, és a `manifest.json` verziója a `package.json`-t követi | WF1 |
 | `redact.test.ts` | `src/redact.ts`: kulcs- és érték-alapú szűrés, a valós Flex-mezők érintetlensége, másolat-szemantika, ciklusvédelem, a bejelentett literális titok | WF2 |
-| `format.test.ts` | `src/format.ts`: a `toolJson` a `text`-et és a `structuredContent`-et is redaktálja; a hibatörzs 2 000 karakterre csonkol; a hibaüzenetek szövege változatlan. Plusz a **megkerülés-őr** (lásd lent) | WF2 |
+| `format.test.ts` | `src/format.ts`: a `toolJson` a `text`-et és a `structuredContent`-et is redaktálja; a hibatörzs 2 000 karakterre csonkol; a hibaüzenetek szövege változatlan. **WF9-ben**: nagy válasznál a `structuredContent` **is** csonkolt (`truncated`/`originalChars`/`note`), a limit alatti válasz viszont érintetlen. Plusz a **megkerülés-őr** (lásd lent) | WF2, WF9 |
 | `diag.test.ts` | `src/tools/diagnostic.ts` `pickDiagFields()`: a `/diag` válaszából csak `ok`/`method`/`uri`/`qs` marad, mindkét válaszalakra | WF2 |
 | `paths.test.ts` | `src/paths.ts`: `sanitizeFileName` (traversal, `.`/`..`, fenntartott nevek, tiltott karakterek, 200 kódpont, idempotencia), `resolveDownloadPath` (engedett/tiltott `savePath`-ok posix **és** win32 alakban, `a/b/../c` engedett), `ensureDirInside` (symlink-kiszökés elutasítva, macOS `/var` symlinkes temp átmegy) és `uniquePath` valódi temp-könyvtárban, plusz a teljes lánc (`resolve → ensureDir → unique → wx`) | WF3 |
-| `tools-list.test.ts` | A szervert **valódi stdio-transzporton** indítja (`node --import tsx src/index.ts`, dummy token), és a `tools/list` választ nézi: 19 eszköz, a négy WF3-annotáció, a read-only eszközök következetessége, a letöltés leírása nem ígér tetszőleges útvonalat; **WF4-ben**: a sablon-részletek leírásából eltűnt a „MINDIG", az indítás leírása kimondja a best-effortot, a dátumos eszközök megnevezik a falióra-szemantikát és a `FLEX_TIMEZONE`-t | WF3, WF4 |
+| `tools-list.test.ts` | A szervert **valódi stdio-transzporton** indítja (`node --import tsx src/index.ts`, dummy token), és a `tools/list` választ nézi: 19 eszköz, a négy WF3-annotáció, a read-only eszközök következetessége, a letöltés leírása nem ígér tetszőleges útvonalat; **WF4-ben**: a sablon-részletek leírásából eltűnt a „MINDIG", az indítás leírása kimondja a best-effortot, a dátumos eszközök megnevezik a falióra-szemantikát és a `FLEX_TIMEZONE`-t; **WF9-ben**: a két listázó leírása kimondja a lapozást és az összefoglaló alapértelmezést, a séma tartalmazza a `limit`/`offset`/`fields` mezőt (`limit` alapértelmezése 20), a feladatlista megmondja, mi marad ki és hogy a lista vegyes, a sablon-részleteknél az `includeRaw` alapból hamis | WF3, WF4, WF9 |
 | `datetime.test.ts` | `src/format.ts` `formatDateTime` és a `FLEX_TIMEZONE` konfigurációja: offsetes bemenet átszámítása CET/CEST-re, offset nélküli falióra változatlansága, csak-dátum, éjfél `00`-ként, a mintára illő de nem létező időpontok elutasítása, zóna-visszaesés elírt `FLEX_TIMEZONE`-nál | WF4 |
-| `template.test.ts` | `src/tools/workflow.ts` sablon-feldolgozása: `parseTemplateFields` `requiredMarkerPresent`-je (`required`/`mandatory`, a kulcs jelenléte vs. értéke), `describeTemplate` `validation` + `note` mezője, `missingRequiredMessage` best-effort viselkedése | WF4 |
+| `template.test.ts` | `src/tools/workflow.ts` sablon-feldolgozása: `parseTemplateFields` `requiredMarkerPresent`-je (`required`/`mandatory`, a kulcs jelenléte vs. értéke), `describeTemplate` `validation` + `note` mezője, `missingRequiredMessage` best-effort viselkedése; **WF9-ben**: a `raw` alapból kimarad, `includeRaw`-val jön vissza | WF4, WF9 |
 | `config.test.ts` | `src/config.ts` `validateConfig`: üres token, SSL-kikapcsolás publikus vs. fejlesztői URL-en, PAT+impersonáció, több hiba/figyelmeztetés egyszerre, érvénytelen `baseUrl` | WF5 |
+| `projection.test.ts` | `src/projection.ts`: a summary kulcskészlete és az, hogy HTML / `metaItems` / kommentek / csatolmányok **nincsenek** benne; a vegyes Task+WfTask lista; a `templateName` lapítása; `paginate` szélei (túlfutó és negatív `offset`, üres lista, `hasMore`); az `envelope` mezői, a `full` mód és a nem-tömb `result` átengedése. A **21 elemes fixture summary-ja < 8 KB** kész-kritérium is itt van lefogva | WF9 |
+| `fixtures/task-list.json` | A `/dms/news` élő, read-only mintája (21 elem), **anonimizálva** | WF9 |
+| `fixtures/wf-tasks.json` | A `/dms/wfTasks/my` alakja (25 elem) a lapozás széleihez | WF9 |
 
 ## Rögzített szabályok
 
 - **Valós titok nem kerülhet tesztfájlba.** A redakciós tesztek *kitalált* tokennel és
   `APP_KEY`-jel dolgoznak; a fixture-ökben a **szerkezet** a lényeg (a `/diag` `req` / `cookies` /
   `server` burkolói), nem a konkrét érték.
+- **A `fixtures/` alatti minták élő, read-only hívásból származnak, anonimizálva.** Provenance:
+  a `task-list.json` a fejlesztői rendszer `GET /dms/news?status=in-progress` válasza
+  (2026-09-03, 21 elem, eredetileg 70 645 karakter, anonimizálva 61 550); a `wf-tasks.json` a `GET /dms/wfTasks/my`
+  alakját követi (az élő válasz 137 eleméből 25, hogy a `limit: 20` széle tesztelhető legyen).
+  **Kicserélve:** minden ember által írt vagy üzleti tartalmat hordozó szöveg — tárgyak, leírások,
+  megjegyzések, személynevek, fájlnevek, **sablonnevek és -kódok, munkafolyamat-lépések nevei,
+  metaadat-mezők kódjai és címkéi, opciólisták, lehetséges eredmények**. **Megtartva:** a
+  kulcsnevek, a beágyazás, a mennyiségek, a mezőtípusok (`Text`, `Option`, `Money`, `Partner`…) és
+  az enum-értékek (`FA_U`, `MT_K`, `Task`/`WfTask`), valamint az, hogy a leírás **HTML**-t
+  tartalmaz — a projekció épp ezekre a szerkezeti tényekre épül, az üzleti címkékre nem.
+  **Miért ilyen szigorúan:** a repó **publikus**, és a sablon- és mezőnevek a DMS One belső
+  folyamatait írnák le. Ha új fixture kell, ugyanígy: élő read-only hívás, anonimizálás, majd a
+  maradék string-értékek átnézése (`jq -r '[.. | strings] | unique | .[]'`); írás-teszt a Flexbe
+  nem megy.
 - **A tesztek a `src/`-ből importálnak, `.js` kiterjesztéssel** (`../src/redact.js`) — ez az ESM +
   `NodeNext` modulfeloldás követelménye, a `tsx` a `.ts` forrást tölti be helyette.
 - **A `format.test.ts` végén álló „megkerülés-őr" forrás-szintű teszt**, nem futásidejű: azt

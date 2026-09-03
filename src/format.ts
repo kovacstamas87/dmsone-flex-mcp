@@ -21,16 +21,26 @@ type ToolResult = {
  *
  * A redakció itt, a szerializálás **előtt** történik, hogy a `text` és a
  * `structuredContent` ugyanazt a megtisztított adatot lássa.
+ *
+ * A méretkorlát **mindkét** ágra hat. Korábban csak a `text` csonkolódott, a
+ * `structuredContent` teljes egészében ment — így egy nagy válasz a csonkolás
+ * ellenére is beterítette a modell kontextusát azon a csatornán, amit a kliens
+ * ugyanúgy átad neki. Ez itt csak **védőháló**: az elsődleges eszköz a listázók
+ * `limit`/`fields` paramétere (`src/projection.ts`), mert az a kérés oldalán fog,
+ * nem a válasz levágásával.
  */
 export function toolJson(data: unknown): ToolResult {
   const safe = redactSecrets(data);
-  let text = typeof safe === "string" ? safe : JSON.stringify(safe, null, 2) ?? "";
+  const serialized = typeof safe === "string" ? safe : JSON.stringify(safe, null, 2) ?? "";
 
-  if (text.length > CHARACTER_LIMIT) {
-    text =
-      text.slice(0, CHARACTER_LIMIT) +
-      `\n\n... [a válasz csonkolva lett ${text.length} karakterről ${CHARACTER_LIMIT}-re. ` +
-      `Szűkítsd a lekérdezést vagy kérj el konkrét elemet.]`;
+  if (serialized.length > CHARACTER_LIMIT) {
+    const note =
+      `A válasz csonkolva lett ${serialized.length} karakterről ${CHARACTER_LIMIT}-re. ` +
+      `Szűkítsd a lekérdezést (limit / fields: "summary") vagy kérj el konkrét elemet.`;
+    return {
+      content: [{ type: "text", text: `${serialized.slice(0, CHARACTER_LIMIT)}\n\n... [${note}]` }],
+      structuredContent: { truncated: true, originalChars: serialized.length, note },
+    };
   }
 
   const structuredContent =
@@ -38,7 +48,7 @@ export function toolJson(data: unknown): ToolResult {
       ? (safe as Record<string, unknown>)
       : { result: safe };
 
-  return { content: [{ type: "text", text }], structuredContent };
+  return { content: [{ type: "text", text: serialized }], structuredContent };
 }
 
 /** Error tool result with an actionable, Hungarian message. */

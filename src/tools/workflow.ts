@@ -7,6 +7,7 @@ import type { FlexClient } from "../client.js";
 import type { FlexConfig } from "../config.js";
 import { formatDateTime, toolError, toolJson } from "../format.js";
 import { ensureDirInside, resolveDownloadPath, sanitizeFileName, uniquePath } from "../paths.js";
+import { envelope, summarizeWfTask } from "../projection.js";
 
 /**
  * A letöltési könyvtár: a konfigurált `FLEX_DOWNLOAD_DIR`, vagy az OS temp
@@ -124,7 +125,11 @@ export const NO_REQUIRED_MARKER_NOTE =
  * A `flex_workflow_get_template_details` válasza. Külön függvény, hogy a
  * `validation` / `note` logikát teszt tudja fogni élő Flex nélkül.
  */
-export function describeTemplate(templateId: number, raw: unknown): Record<string, unknown> {
+export function describeTemplate(
+  templateId: number,
+  raw: unknown,
+  includeRaw = false,
+): Record<string, unknown> {
   const { fields, allowedLinkedItemTypes, requiredMarkerPresent } = parseTemplateFields(raw);
   const validation: TemplateValidation = requiredMarkerPresent ? "api-flag" : "none";
 
@@ -135,7 +140,11 @@ export function describeTemplate(templateId: number, raw: unknown): Record<strin
     linkedItemRequired: allowedLinkedItemTypes.length > 0,
     validation,
     ...(validation === "none" ? { note: NO_REQUIRED_MARKER_NOTE } : {}),
-    raw,
+    // A `raw` a startDetails teljes válasza — a `fields` ennek a normalizált,
+    // közvetlenül használható kivonata, így a kettő együtt megduplázza a
+    // payloadot. Alapból ezért kimarad; a `raw: true` a hibakeresésé, amikor a
+    // normalizálás elfed valamit.
+    ...(includeRaw ? { raw } : {}),
   };
 }
 
@@ -229,18 +238,25 @@ A "linkedItemRequired" jelzi, kell-e kapcsolt elemet (irat) megadni, az
 
 Bemenet:
   - templateId (number, kötelező): a sablon azonosítója
+  - includeRaw (boolean, alapértelmezett false): tegye-e bele a startDetails nyers
+    válaszát is. A "fields" ennek a normalizált kivonata, ezért a nyers válasz
+    alapból kimarad; csak akkor kérd, ha a normalizálás elfed valamit.
 
 Visszatérés: { templateId, fields: [...], allowedLinkedItemTypes, linkedItemRequired,
-validation, note?, raw }`,
+validation, note?, raw? }`,
       inputSchema: {
         templateId: z.number().int().describe("A sablon azonosítója"),
+        includeRaw: z
+          .boolean()
+          .default(false)
+          .describe("Tegye-e bele a startDetails nyers válaszát is (alapértelmezetten nem)"),
       },
       annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true },
     },
     async (args) => {
       try {
         const raw = await client.request("GET", `/dms/workflow/startDetails/${args.templateId}`);
-        return toolJson(describeTemplate(args.templateId, raw));
+        return toolJson(describeTemplate(args.templateId, raw, args.includeRaw));
       } catch (error) {
         return toolError(error);
       }
@@ -354,23 +370,49 @@ Visszatérés: { id, referenceNumber } az új folyamatról`,
       description: `Lekéri a bejelentkezett felhasználóhoz rendelt munkafolyamat-feladatokat
 (GET /dms/wfTasks/my).
 
+Lapozva ad vissza: alapértelmezés szerint 20 elemet. Szűrő nélkül a lista több
+száz elem is lehet (a lezárt és megszüntetett feladatokkal együtt), ezért ha az
+aktuális teendők kellenek, add meg a statusFilter: "FA_U" értéket.
+
 Bemenet:
   - statusFilter ("" | "FA_U" | "FA_K" | "FA_A" | "FA_M"): állapotszűrő.
     "" = mind, FA_U = új, FA_K = lezárt, FA_A = áthelyezett, FA_M = megszüntetett.
+  - limit (1-100, alapértelmezett 20), offset (alapértelmezett 0): lapozás
+  - fields ("summary" | "full", alapértelmezett "summary"). Ezen a végponton a
+    két mód ma ugyanazokat a mezőket adja — a lista már eleve összefoglaló alakú.
 
-Visszatérés: { success, result: [{ wfTaskId, wfSubject, wfTaskName, status, type, template, templateVersion }] }`,
+Visszatérés: { total, offset, returned, hasMore, fields,
+items: [{ wfTaskId, wfSubject, wfTaskName, status, type, template, templateVersion }] }`,
       inputSchema: {
         statusFilter: z
           .enum(["", "FA_U", "FA_K", "FA_A", "FA_M"])
           .default("")
           .describe("Állapotszűrő: '' mind, FA_U új, FA_K lezárt, FA_A áthelyezett, FA_M megszüntetett"),
+        limit: z
+          .number()
+          .int()
+          .min(1)
+          .max(100)
+          .default(20)
+          .describe("Hány elem jöjjön vissza (alapértelmezett 20)"),
+        offset: z.number().int().min(0).default(0).describe("Hányadik elemtől (alapértelmezett 0)"),
+        fields: z
+          .enum(["summary", "full"])
+          .default("summary")
+          .describe('"summary" a hét ismert mező, "full" a nyers elem'),
       },
       annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true },
     },
     async (args) => {
       try {
         const params = args.statusFilter ? { status: args.statusFilter } : undefined;
-        return toolJson(await client.request("GET", "/dms/wfTasks/my", { params }));
+        const payload = await client.request("GET", "/dms/wfTasks/my", { params });
+        const page = envelope(
+          payload,
+          { offset: args.offset, limit: args.limit, fields: args.fields },
+          summarizeWfTask,
+        );
+        return toolJson(page ?? payload);
       } catch (error) {
         return toolError(error);
       }

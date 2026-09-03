@@ -17,6 +17,13 @@ exportál, amit az [`../index.ts`](../index.ts) hív. Egy eszköz = egy `server.
 (`../index.ts`) ezt explicit módon a modell tudtára adja. Ha egy új eszköz kerül ide, döntsd el
 először, melyik fogalomhoz tartozik.
 
+**Egy kivétel a szétválasztás alól:** a `/dms/news` (`flex_task_list`) **vegyes** listát ad —
+`Task` és `WfTask` elemeket egyaránt, a `type` mező különíti el őket (a mintában 1 Task és 20
+WfTask). A leírás ezt kimondja, mert enélkül a modell Task-ként próbálna lezárni egy WfTask-ot.
+A `taskId` és a `wfTaskId` **továbbra sem cserélhető fel**: a `/dms/news` mindkét fajtát `id`
+kulcson adja vissza, a WfTask-műveletekhez viszont a `flex_workflow_get_my_tasks` `wfTaskId`-ja
+kell.
+
 ## Rögzített szabályok
 
 - **Soha ne állíts össze tool-eredményt kézzel.** Minden handler `toolJson(...)` / `toolError(...)`
@@ -32,11 +39,25 @@ először, melyik fogalomhoz tartozik.
   leírás ott őszinte vagy hamis, ahol a modell olvassa. Ma három ilyen őr fut: a letöltés nem ígér
   tetszőleges útvonalat (WF3), a sablon-részletek nem ígérnek feltétel nélküli kötelezőség-
   ellenőrzést, és a dátumot fogadó eszközök megnevezik a falióra-szemantikát és a `FLEX_TIMEZONE`-t
-  (WF4).
+  (WF4). WF9-ben három továbbival: a listázók leírása kimondja a lapozást és az összefoglaló
+  alapértelmezést (a séma `limit`/`offset`/`fields` mezőjével együtt), a feladatlista megnevezi,
+  mi marad ki és hogy a lista vegyes, a sablon-részletek pedig az `includeRaw` alapértelmezését.
 - **Az annotációk a valós hatást írják le**, nem a szándékot: ami a Flexbe vagy a lemezre ír, az
   nem `readOnlyHint`; ami visszavonhatatlan (`complete_task`, `task_complete`, `workflow_start`),
   az `destructiveHint: true`. A `tools-list.test.ts` a következetességet is fogja (read-only →
   nem destruktív, idempotens).
+- **A listázó eszközök nem adnak vissza nyers listát.** A `flex_task_list` és a
+  `flex_workflow_get_my_tasks` a [`../projection.ts`](../projection.ts) `envelope()`-jén megy át:
+  `limit` (1–100, alap **20**), `offset` (alap 0), `fields` (`summary` | `full`, alap **summary**),
+  boríték `{ total, offset, returned, hasMore, fields, items }`. Ha új listázó eszköz kerül ide,
+  ugyanezt a szerződést kövesse — a modell így egy szótárt tanul meg, nem eszközönként újat.
+  A `summarize*` függvények **engedélyező listák**: egy később hozzáadott Flex-mező magától nem
+  kerül a summary-be, dönteni kell róla.
+- **A részletet a részletező eszköz adja, nem a lista.** Ha egy mező a listában drága (HTML,
+  metaadat-tömb, beágyazott gyűjtemény), a helye a `get_task_details` / `_comments` /
+  `_attachments`, a listában legfeljebb egy darabszám. Ugyanez az elv vitte el a `raw`-ot a
+  `flex_workflow_get_template_details` alapértelmezéséből (`includeRaw: false`): a `fields` már a
+  `raw` normalizált kivonata, a kettő együtt duplázna.
 - **A dátumokat a `formatDateTime(value, config.timeZone)` írja át**, sose kézzel. A Flex
   falióra-időt tárol; a részleteket és a „miért"-et lásd [`../CLAUDE.md`](../CLAUDE.md).
 - **Kötelező mező: best effort, kimondva.** A `workflow.ts` csak akkor szól előre hiányzó mezőről,

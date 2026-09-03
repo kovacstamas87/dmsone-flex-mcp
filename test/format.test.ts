@@ -37,6 +37,31 @@ test("a toolJson tömb esetén a result burkolót használja", () => {
   assert.deepEqual(result.structuredContent, { result: [{ taskId: 1 }] });
 });
 
+/**
+ * A P1-4 lényege: a csonkolás korábban csak a `text`-re hatott, a
+ * `structuredContent` teljes egészében ment tovább — a kliens ugyanúgy a modell
+ * elé teszi, így a méretkorlát nem védett semmit.
+ */
+test("nagy válasznál a structuredContent is csonkolt", () => {
+  const big = { result: Array.from({ length: 4000 }, (_, index) => ({ index, pad: "x".repeat(20) })) };
+  const result = toolJson(big);
+
+  const structured = result.structuredContent as Record<string, unknown>;
+  assert.equal(structured.truncated, true);
+  assert.ok(!("result" in structured), "a nyers adat nem mehet át a strukturált csatornán");
+  assert.equal(typeof structured.originalChars, "number");
+  assert.ok((structured.originalChars as number) > 50000);
+  assert.ok((structured.note as string).includes('fields: "summary"'), "mondja meg, mit tegyen a modell");
+
+  assert.ok(result.content[0].text.length < (structured.originalChars as number));
+  assert.ok(result.content[0].text.includes("csonkolva"));
+});
+
+test("a limit alatti válasz strukturáltan is teljes marad", () => {
+  const data = { result: [{ id: 1 }, { id: 2 }] };
+  assert.deepEqual(toolJson(data).structuredContent, data);
+});
+
 test("a hibatörzs 2000 karakterre csonkolódik", () => {
   const body = "x".repeat(10000);
   const message = formatError(axiosError(500, body));

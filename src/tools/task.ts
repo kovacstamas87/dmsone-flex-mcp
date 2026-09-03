@@ -3,6 +3,7 @@ import { z } from "zod";
 import type { FlexClient } from "../client.js";
 import type { FlexConfig } from "../config.js";
 import { formatDateTime, toolError, toolJson } from "../format.js";
+import { envelope, summarizeTask } from "../projection.js";
 
 /**
  * Task resource — simple DMS tasks (not full workflow processes).
@@ -157,23 +158,54 @@ Visszatérés: { success, result: boolean }`,
       title: "Feladatok listázása",
       description: `Listázza a bejelentkezett felhasználó feladatait állapot szerint (GET /dms/news).
 
+A lista vegyesen tartalmaz egyszerű Task és munkafolyamat-feladat (WfTask)
+elemeket — a "type" mező ("Task" / "WfTask") különíti el őket.
+
+Alapértelmezésben összefoglalót ad, lapozva: 20 elem, elemenként az azonosító,
+a tárgy, az állapot, a határidő, a sablon és a megjegyzések/csatolmányok darabszáma.
+A leírás, a metaadatok, a megjegyzések és a csatolmányok szövege NEM szerepel benne
+— azokhoz a flex_workflow_get_task_details / _comments / _attachments való.
+A fields: "full" a nyers elemeket adja: csak kis limittel (1-2 elem) használd,
+mert egyetlen elem is több ezer karakter lehet.
+
 Bemenet:
   - status ("in-progress" | "completed" | "pending" | "all"): szűrő (alapértelmezett "in-progress").
-    Az "all" esetén nem küld status szűrőt, így a lezárt feladatok is megjelennek.
+    Az "all" esetén nem küld status szűrőt.
+  - limit (1-100, alapértelmezett 20), offset (alapértelmezett 0): lapozás
+  - fields ("summary" | "full", alapértelmezett "summary")
 
-Visszatérés: { success, result } a feladatok adataival (subject, taskName, deadline, id, referenceNumber, stb.)`,
+Visszatérés: { total, offset, returned, hasMore, fields, items }`,
       inputSchema: {
         status: z
           .enum(["in-progress", "completed", "pending", "all"])
           .default("in-progress")
           .describe("Feladatok szűrése állapot szerint"),
+        limit: z
+          .number()
+          .int()
+          .min(1)
+          .max(100)
+          .default(20)
+          .describe("Hány elem jöjjön vissza (alapértelmezett 20)"),
+        offset: z.number().int().min(0).default(0).describe("Hányadik elemtől (alapértelmezett 0)"),
+        fields: z
+          .enum(["summary", "full"])
+          .default("summary")
+          .describe('"summary" a lapos összefoglaló, "full" a nyers elem — a "full" csak 1-2 elemre'),
       },
       annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true },
     },
     async (args) => {
       try {
         const params = args.status !== "all" ? { status: args.status } : undefined;
-        return toolJson(await client.request("GET", "/dms/news", { params }));
+        const payload = await client.request("GET", "/dms/news", { params });
+        const page = envelope(
+          payload,
+          { offset: args.offset, limit: args.limit, fields: args.fields },
+          summarizeTask,
+        );
+        // Váratlan válaszalak esetén a nyers payload megy tovább — lásd `envelope`.
+        return toolJson(page ?? payload);
       } catch (error) {
         return toolError(error);
       }

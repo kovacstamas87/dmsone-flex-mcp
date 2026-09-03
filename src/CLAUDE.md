@@ -10,7 +10,8 @@ TypeScript forrás, `tsc`-vel fordítva `dist/`-be (`npm run build`). Belépési
 | `config.ts` | `loadConfig()` — env változókból (`FLEX_*`) épít `FlexConfig`-ot; a `truthy()` helper a boolean env-parsinghoz. A `downloadDir` **abszolút** (`path.resolve`), mert ez a letöltés sandbox-határa. A `timeZone` (`FLEX_TIMEZONE`, alap `DEFAULT_TIME_ZONE` = `Europe/Budapest`) IANA zónanév; a `resolveTimeZone()` **induláskor egyszer** validálja az `Intl`-lel, és elírás esetén stderr-figyelmeztetéssel visszaesik az alapértelmezettre. `validateConfig(config)` — üres token, publikus URL-en kikapcsolt SSL → hiba; fejlesztői URL-en kikapcsolt SSL, PAT+impersonáció → figyelmeztetés; nem lép ki és nem ír stderr-re, ezt a hívó (`index.ts`) dönti el. |
 | `paths.ts` | A letöltés útvonal-logikája, tiszta függvényekben: `sanitizeFileName` (szerver-fájlnév és GUID tisztítása), `resolveDownloadPath` (a `savePath` feloldása a letöltési könyvtár alá, vagy hiba), `ensureDirInside` (szülőkönyvtár létrehozása + `realpath`-ellenőrzés symlink ellen), `uniquePath` (`-1`, `-2`… utótag). A fejkomment írja le, miért mindkét platform (posix **és** win32) szabályait alkalmazza. |
 | `client.ts` | `FlexClient` — axios-alapú HTTP kliens a Flex API-hoz (auth fejlécek, base URL, SSL-figyelmen-kívül-hagyás). |
-| `format.ts` | `toolJson` / `toolError` / `formatError` — minden tool eredménye ezen megy át; a hibaüzenetek magyarul, HTTP-státusz szerint kategorizálva. A `toolJson` **redaktál, majd szerializál** (a `text` és a `structuredContent` így ugyanazt látja); a `formatError` a hibatörzset redaktálja és 2 000 karakterre csonkolja. `formatDateTime(value, timeZone)` a Flex `YYYY-MM-DD HH:mm:ss` alakjára hoz — falióra-szemantikával, lásd „Kulcsdöntések". |
+| `format.ts` | `toolJson` / `toolError` / `formatError` — minden tool eredménye ezen megy át; a hibaüzenetek magyarul, HTTP-státusz szerint kategorizálva. A `toolJson` **redaktál, majd szerializál** (a `text` és a `structuredContent` így ugyanazt látja), és az 50 000 karakteres korlát fölött **mindkét csatornát** csonkolja (a `structuredContent` helyére `{ truncated, originalChars, note }` kerül); a `formatError` a hibatörzset redaktálja és 2 000 karakterre csonkolja. `formatDateTime(value, timeZone)` a Flex `YYYY-MM-DD HH:mm:ss` alakjára hoz — falióra-szemantikával, lásd „Kulcsdöntések". |
+| `projection.ts` | A két listázó eszköz lista-projekciója és lapozása: `summarizeTask` (`/dms/news` elem), `summarizeWfTask` (`/dms/wfTasks/my` elem), `paginate(items, offset, limit)` és `envelope(payload, options, summarize)`. A fejkomment mérésekkel írja le, **mi és miért** marad ki a summary-ből. |
 | `redact.ts` | `redactSecrets()` — rekurzív titok-szűrő kulcs- és érték-minták alapján; `registerSecretValue()` a konfigurált token literális bejelentésére. A fejkomment írja le a mintákat és a (jelenleg üres) kivétel-listát. |
 | `tools/` | A 19 MCP tool regisztrációja, erőforrásonként — lásd lent. |
 
@@ -40,6 +41,21 @@ annotációk, dátumkezelés) a saját mappa-doksijában: [`tools/CLAUDE.md`](to
   **jelenléte** számít, nem az értéke: csupa `required: false` az API-tól érdemi információ, a kulcs
   hiánya viszont nem. A Flex-oldali kérdés (mi jelöli a kötelezőséget) a P0-6 nyitott fele.
 
+- **A listázás alapból összefoglalót ad, nem teljes adatot.** A `/dms/news` egyetlen hívása a
+  fejlesztői rendszeren 21 elemre **70 645 karaktert** adott vissza, ennek 83%-a olyan mező
+  (`metaItems`, `attachments`, `comments`, HTML leírások), amihez külön részletező eszköz van;
+  a `summarizeTask` ezeket elhagyva ugyanez **7 312 karakter** (11,6%). Miért projekció és nem
+  csak csonkolás: a csonkolás a lista **közepén** vágna el, így a modell nem tudná, mi maradt ki;
+  a projekció minden elemet meghagy, csak soványabban, és a `hasMore` kimondja, ha van folytatás.
+  A kommentek és csatolmányok **darabszámmal** maradnak benne (`commentCount`, `attachmentCount`),
+  hogy látszódjon, érdemes-e megnyitni az elemet.
+- **A `toolJson` méretkorlátja védőháló, nem az elsődleges eszköz.** Az elsődleges a kérés oldalán
+  ható `limit`/`fields`; a csonkolás akkor lép be, ha valami mégis átcsúszna. Korábban csak a
+  `text` csonkolódott, a `structuredContent` teljes egészében ment — ez a P1-4 hibája volt, mert a
+  kliens azt is a modell elé teszi.
+- **Váratlan válaszalak esetén a nyers payload megy tovább.** Ha a Flex `result`-ja nem tömb, az
+  `envelope` `undefined`-et ad, és a hívó a nyers választ küldi el. Miért: egy alakváltozásnál
+  rosszabb csendben elrejteni az adatot, mint kihagyni a lapozást.
 - **Minden tool-válasz a `format.ts` `toolJson`/`toolError`-én át megy** — ez a titok-redakció
   egyetlen beépítési pontja, a `tools/*.ts` fájloknak nem kell egyedileg foglalkozniuk vele.
   A `test/format.test.ts` egy forrás-szintű teszttel őrzi, hogy ne keletkezzen kézzel összeállított

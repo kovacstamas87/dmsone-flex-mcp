@@ -5,18 +5,19 @@ DMS One Flex REST API-t teszi elérhetővé feladatok, munkafolyamatok és felha
 minden hívás a beállított token tulajdonosának a nevében fut. Ugyanazokat a végpontokat fedi, mint
 a közösségi `n8n-nodes-dmsone-flex` node.
 
-**Állapot (2026-09-02):** **v0.1.1** kiadva — a `../flex-mcp-p0-megvalositasi-terv.md` **WF1–WF7**
-végrehajtva (tesztkeret, egyforrású verzió, titok-redakció, letöltési sandbox, dátum/időzóna,
-kötelezőség-jelölés, konfig-validáció, doksi, kiadás). Build/teszt/audit zöld, Inspector-snapshot
-és a friss `.mcpb` ellenőrizve. Nyitva maradt a Flex-oldali P0-2 elküldése, a P0-6 Flex-válasz és
-az opcionális élő/írás-tesztek — lásd lent.
+**Állapot (2026-09-03):** **v0.1.1** kiadva (P0: WF1–WF7), a `../flex-mcp-p1-p2-megvalositasi-terv.md`
+**P1 üteme fut**: a **WF9** (payload-kontroll) kész — a két listázó lapoz és összefoglalót ad, a
+`toolJson` a `structuredContent`-et is csonkolja, a sablon-részletek `raw`-ja opcionális. Build és
+teszt zöld (115 teszt). A következő a **WF10** (`outputSchema`, tömör leírások, `manifest.tools`).
+Nyitva maradt a Flex-oldali P0-2 elküldése, a P0-6 Flex-válasz és az opcionális élő/írás-tesztek —
+lásd lent.
 
 ## Mappa tartalma
 
 | Fájl / mappa | Mi ez | Állapot |
 |---|---|---|
-| [`src/`](src/) | A szerver forráskódja — lásd [`src/CLAUDE.md`](src/CLAUDE.md) | WF5 után (`paths.ts` új WF3-ban, `validateConfig` új WF5-ben) |
-| [`test/`](test/) | `node:test` alapú tesztek, `tsx`-szel futtatva (`npm test`) — lásd [`test/CLAUDE.md`](test/CLAUDE.md) | új WF1-ben, WF2–WF5-ben bővítve (90 teszt) |
+| [`src/`](src/) | A szerver forráskódja — lásd [`src/CLAUDE.md`](src/CLAUDE.md) | WF9 után (`paths.ts` új WF3-ban, `validateConfig` új WF5-ben, `projection.ts` új WF9-ben) |
+| [`test/`](test/) | `node:test` alapú tesztek, `tsx`-szel futtatva (`npm test`) — lásd [`test/CLAUDE.md`](test/CLAUDE.md) | új WF1-ben, WF2–WF5-ben és WF9-ben bővítve (115 teszt); a `test/fixtures/` élő, **anonimizált** minta |
 | [`scripts/sync-manifest.mjs`](scripts/sync-manifest.mjs) | A `manifest.json` verzióját a `package.json`-hoz igazítja, idempotens | **új WF1-ben** |
 | `manifest.json` | `.mcpb` csomag metaadata — a `version` mező innentől **generált**, ne szerkeszd kézzel (a `sync-manifest.mjs` írja) | WF1-ben szinkron-forrás lett; WF3: `flex_download_dir` leírása a sandboxot mondja; WF4: új `flex_timezone` konfig-mező |
 | `package.json` / `package-lock.json` | Függőségek, scriptek (`build`, `test`, `bundle`, `version` lifecycle) | WF1-ben frissítve |
@@ -85,6 +86,12 @@ az opcionális élő/írás-tesztek — lásd lent.
   nem jelöl kötelezőséget (csak `visibility: MT_K`/`MT_M`), a régi kód mégis „ellenőrzött"-nek
   mutatkozott, miközben mindent átengedett (P0-6). Hogy a `MT_K` jelent-e kötelezőséget, az a
   Flex csapatnál nyitott kérdés — addig az érdemi ellenőrzés a szerveré.
+- **A listázó eszközök lapoznak és alapból összefoglalót adnak** (P1-1). Mérés: a `/dms/news`
+  egyetlen hívása 21 elemre **70 645 karakter** volt, a summary ugyanez **7 312** (11,6%). A
+  `limit` (alap 20) / `offset` / `fields` szerződés mindkét listázón azonos, a boríték
+  `{ total, offset, returned, hasMore, fields, items }`. Miért a kérés oldalán és nem csonkolással:
+  a csonkolás a lista közepén vág el, a modell pedig nem tudja, mi maradt ki — a `hasMore`
+  viszont kimondja. Részletek és a mezőnkénti indoklás: [`src/CLAUDE.md`](src/CLAUDE.md).
 - **A konfig-validáció (`validateConfig`) elkülönül a betöltéstől (`loadConfig`).** A `loadConfig()`
   sosem lép ki és nem ír stderr-re — csak a hívó (`index.ts`) dönt arról, hogy egy hiba kilépést
   jelent-e. Miért fontos: üres token, publikus URL-en kikapcsolt SSL-ellenőrzés → **hiba**, kilépés;
@@ -95,6 +102,12 @@ az opcionális élő/írás-tesztek — lásd lent.
 
 ## Nyitva maradt
 
+- **Flex-oldali hiba (WF9-ben találva, 2026-09-03): a `flex_task_list` `status: "all"` 500-at ad.**
+  Ilyenkor a szerver szándékosan nem küld `status` paramétert, a Flex viszont elhasal rajta:
+  `Service_MVP_News::getWorkflowTaskSql(): Argument #2 ($statusFilter) must be of type string,
+  null given`. Az MCP-oldalon nincs mit javítani — a hívás helyes, a hibaüzenet a felhasználóhoz
+  eljut. A jelentés a Flex csapatnak a [`../flex-diag-hibajelentes.md`](../flex-diag-hibajelentes.md)
+  harmadik pontja. Amíg nincs javítva, a három konkrét állapotszűrő működik.
 - **P0-2**: a `/diag` végpont backend-oldali szűrése — a jelentés szövege kész
   (`../flex-diag-hibajelentes.md`), elküldése a Flex csapatnak a felhasználó lépése.
 - **P0-6 Flex-oldali fele**: mi jelöli a kötelezőséget a startDetails válaszában (a `visibility:

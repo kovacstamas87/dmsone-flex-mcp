@@ -1,0 +1,3677 @@
+{
+  "success": true,
+  "result": [
+    {
+      "type": "WfTask",
+      "status": "FA_U",
+      "taskStatus": null,
+      "subject": "Minta szerződés jóváhagyás",
+      "taskStart": "2026-08-17 22:16:37",
+      "taskDeadline": "2026-08-18 23:59:59",
+      "taskName": "Első jóváhagyás",
+      "possibleResults": [
+        {
+          "id": "197",
+          "displayName": "Rendben",
+          "isSelected": true,
+          "isCommentRequired": true
+        }
+      ],
+      "id": 5105,
+      "referenceNumber": "190",
+      "attachments": [],
+      "taskDescription": "<p>Kitalált leírás a fixture-höz. Az eredeti mező HTML-t tartalmaz, ezért ez is azt tesz.</p><p>A <b>szerkezet</b> a lényeg, nem a tartalom.</p>",
+      "metaItems": [
+        {
+          "value": "0",
+          "humanvalue": "Nem",
+          "name": "1. minta mező",
+          "type": "Check",
+          "code": "mezo1",
+          "default": null,
+          "params": null,
+          "visibility": "MT_M",
+          "is_preview": false
+        },
+        {
+          "value": null,
+          "humanvalue": null,
+          "name": "2. minta mező",
+          "type": "Text",
+          "code": "mezo2",
+          "default": null,
+          "params": null,
+          "visibility": "MT_M",
+          "is_preview": false
+        },
+        {
+          "value": null,
+          "humanvalue": null,
+          "name": "3. minta mező",
+          "type": "Number",
+          "code": "mezo3",
+          "default": null,
+          "params": null,
+          "visibility": "MT_M",
+          "is_preview": false
+        },
+        {
+          "value": null,
+          "humanvalue": null,
+          "name": "4. minta mező",
+          "type": "Option",
+          "code": "mezo4",
+          "default": null,
+          "params": "1|Alfa;Béta",
+          "visibility": "MT_M",
+          "is_preview": false
+        },
+        {
+          "value": "1",
+          "humanvalue": "Igen",
+          "name": "5. minta mező",
+          "type": "Text",
+          "code": "mezo5",
+          "default": null,
+          "params": null,
+          "visibility": "MT_M",
+          "is_preview": false
+        },
+        {
+          "value": null,
+          "humanvalue": null,
+          "name": "6. minta mező",
+          "type": "Textarea",
+          "code": "mezo6",
+          "default": null,
+          "params": null,
+          "visibility": "MT_M",
+          "is_preview": false
+        },
+        {
+          "value": null,
+          "humanvalue": null,
+          "name": "7. minta mező",
+          "type": "SzervUser",
+          "code": "mezo7",
+          "default": null,
+          "params": null,
+          "visibility": "MT_M",
+          "is_preview": false
+        },
+        {
+          "value": null,
+          "humanvalue": null,
+          "name": "8. minta mező",
+          "type": "SzervUserAC",
+          "code": "mezo8",
+          "default": null,
+          "params": null,
+          "visibility": "MT_M",
+          "is_preview": false
+        },
+        {
+          "value": null,
+          "humanvalue": null,
+          "name": "9. minta mező",
+          "type": "Link",
+          "code": "mezo9",
+          "default": null,
+          "params": null,
+          "visibility": "MT_M",
+          "is_preview": false
+        }
+      ],
+      "wfDescription": "Kitalált leírás a fixture-höz — nem valós adat.",
+      "comments": [
+        {
+          "comment": "Minta megjegyzés a fixture-höz.",
+          "userName": "Példa Anna",
+          "date": "2026-08-17T22:16:37+02:00",
+          "deputyName": null,
+          "result": null,
+          "color": null
+        }
+      ],
+      "result": null,
+      "isFavorite": false,
+      "icon": "1x_mobiledata_badge",
+      "creator": {
+        "userId": 31,
+        "orgId": null,
+        "userName": "Példa Anna",
+        "orgName": ""
+      },
+      "templateName": {
+        "id": 59,
+        "code": "MINTA_A",
+        "name": "Minta folyamat A",
+        "version": 13
+      },
+      "taskMetaItems": null
+    },
+    {
+      "type": "WfTask",
+      "status": "FA_U",
+      "taskStatus": null,
+      "subject": "Példa beszerzési igény",
+      "taskStart": "2026-07-22 10:48:33",
+      "taskDeadline": "2026-07-27 23:59:59",
+      "taskName": "Második jóváhagyás",
+      "possibleResults": [
+        {
+          "id": "375",
+          "displayName": "Javítást kérek",
+          "isSelected": true,
+          "isCommentRequired": false
+        },
+        {
+          "id": "376",
+          "displayName": "Elutasítom",
+          "isSelected": false,
+          "isCommentRequired": false
+        }
+      ],
+      "id": 5009,
+      "referenceNumber": "189",
+      "attachments": [
+        {
+          "name": "melleklet-a.docx",
+          "creator": "Teszt Csilla",
+          "createDate": "2026-07-29T07:12:52+02:00",
+          "version": 1,
+          "isTorolt": false,
+          "attachmentGuid": "E97E2DA9-0A25-4C6F-820A-46DA2BDD6994",
+          "attachmentType": "minta típus"
+        },
+        {
+          "name": "melleklet-b.pdf",
+          "creator": "Teszt Csilla",
+          "createDate": "2026-07-29T07:12:53+02:00",
+          "version": 1,
+          "isTorolt": false,
+          "attachmentGuid": "F281B800-D622-4B6B-BFEC-E29DA04ADE9B",
+          "attachmentType": "egyéb melléklet"
+        },
+        {
+          "name": "tervezet.docx",
+          "creator": "Teszt Csilla",
+          "createDate": "2026-07-29T07:12:53+02:00",
+          "version": 1,
+          "isTorolt": false,
+          "attachmentGuid": "C5A5DAAE-5D08-4C25-ACA6-0E2A5820098E",
+          "attachmentType": "hivatalos dokumentum"
+        },
+        {
+          "name": "osszesito.xlsx",
+          "creator": "Teszt Csilla",
+          "createDate": "2026-07-29T07:14:33+02:00",
+          "version": 2,
+          "isTorolt": false,
+          "attachmentGuid": "900D31CC-3684-4EF9-8360-F310B3CB1500",
+          "attachmentType": null
+        },
+        {
+          "name": "osszesito.xlsx",
+          "creator": "Teszt Csilla",
+          "createDate": "2026-07-29T07:12:53+02:00",
+          "version": 1,
+          "isTorolt": false,
+          "attachmentGuid": "796498E8-8ADF-41A9-844B-CC30B4C7D7BB",
+          "attachmentType": "minta típus"
+        }
+      ],
+      "taskDescription": "<p>Kitalált leírás a fixture-höz. Az eredeti mező HTML-t tartalmaz, ezért ez is azt tesz.</p><p>A <b>szerkezet</b> a lényeg, nem a tartalom.</p>",
+      "metaItems": [
+        {
+          "value": null,
+          "humanvalue": null,
+          "name": "10. minta mező",
+          "type": "Option",
+          "code": "mezo10",
+          "default": null,
+          "params": "1|Igen;Nem",
+          "visibility": "MT_O",
+          "is_preview": false
+        },
+        {
+          "value": "minta",
+          "humanvalue": "Minta",
+          "name": "11. minta mező",
+          "type": "Money",
+          "code": "mezo11",
+          "default": null,
+          "params": null,
+          "visibility": "MT_O",
+          "is_preview": false
+        },
+        {
+          "value": null,
+          "humanvalue": null,
+          "name": "12. minta mező",
+          "type": "Option",
+          "code": "mezo12",
+          "default": null,
+          "params": "2|Egy;Kettő;Három",
+          "visibility": "MT_O",
+          "is_preview": false
+        },
+        {
+          "value": "minta",
+          "humanvalue": "Minta",
+          "name": "13. minta mező",
+          "type": "Money",
+          "code": "mezo13",
+          "default": null,
+          "params": null,
+          "visibility": "MT_O",
+          "is_preview": false
+        },
+        {
+          "value": null,
+          "humanvalue": "Nem",
+          "name": "14. minta mező",
+          "type": "Check",
+          "code": "mezo14",
+          "default": null,
+          "params": null,
+          "visibility": "MT_O",
+          "is_preview": false
+        },
+        {
+          "value": "minta",
+          "humanvalue": "Minta",
+          "name": "15. minta mező",
+          "type": "Money",
+          "code": "mezo15",
+          "default": null,
+          "params": null,
+          "visibility": "MT_O",
+          "is_preview": false
+        },
+        {
+          "value": null,
+          "humanvalue": null,
+          "name": "16. minta mező",
+          "type": "Option",
+          "code": "mezo16",
+          "default": null,
+          "params": "1|Piros;Zöld;Kék",
+          "visibility": "MT_O",
+          "is_preview": false
+        },
+        {
+          "value": "minta",
+          "humanvalue": "Minta",
+          "name": "17. minta mező",
+          "type": "Money",
+          "code": "mezo17",
+          "default": null,
+          "params": null,
+          "visibility": "MT_O",
+          "is_preview": false
+        },
+        {
+          "value": "minta",
+          "humanvalue": "Minta",
+          "name": "18. minta mező",
+          "type": "Money",
+          "code": "mezo18",
+          "default": null,
+          "params": null,
+          "visibility": "MT_O",
+          "is_preview": false
+        },
+        {
+          "value": "minta",
+          "humanvalue": "Minta",
+          "name": "19. minta mező",
+          "type": "Money",
+          "code": "mezo19",
+          "default": null,
+          "params": null,
+          "visibility": "MT_O",
+          "is_preview": false
+        },
+        {
+          "value": "minta",
+          "humanvalue": "Minta",
+          "name": "20. minta mező",
+          "type": "Money",
+          "code": "mezo20",
+          "default": null,
+          "params": null,
+          "visibility": "MT_O",
+          "is_preview": false
+        },
+        {
+          "value": "minta",
+          "humanvalue": "Minta",
+          "name": "21. minta mező",
+          "type": "Money",
+          "code": "mezo21",
+          "default": null,
+          "params": null,
+          "visibility": "MT_O",
+          "is_preview": false
+        },
+        {
+          "value": "minta",
+          "humanvalue": "Minta",
+          "name": "22. minta mező",
+          "type": "Money",
+          "code": "mezo22",
+          "default": null,
+          "params": null,
+          "visibility": "MT_O",
+          "is_preview": true
+        },
+        {
+          "value": null,
+          "humanvalue": null,
+          "name": "23. minta mező",
+          "type": "Text",
+          "code": "mezo23",
+          "default": null,
+          "params": null,
+          "visibility": "MT_O",
+          "is_preview": true
+        },
+        {
+          "value": null,
+          "humanvalue": null,
+          "name": "24. minta mező",
+          "type": "Text",
+          "code": "mezo24",
+          "default": null,
+          "params": null,
+          "visibility": "MT_O",
+          "is_preview": true
+        },
+        {
+          "value": null,
+          "humanvalue": null,
+          "name": "25. minta mező",
+          "type": "Textarea",
+          "code": "mezo25",
+          "default": null,
+          "params": null,
+          "visibility": "MT_M",
+          "is_preview": false
+        },
+        {
+          "value": "0",
+          "humanvalue": "Nem",
+          "name": "26. minta mező",
+          "type": "Link",
+          "code": "mezo26",
+          "default": null,
+          "params": null,
+          "visibility": "MT_O",
+          "is_preview": false
+        }
+      ],
+      "wfDescription": null,
+      "comments": [],
+      "result": null,
+      "isFavorite": false,
+      "icon": "family_history",
+      "creator": {
+        "userId": 20,
+        "orgId": null,
+        "userName": "Minta Béla",
+        "orgName": ""
+      },
+      "templateName": {
+        "id": 66,
+        "code": "MINTA_B",
+        "name": "Minta folyamat B",
+        "version": 7
+      },
+      "taskMetaItems": null
+    },
+    {
+      "type": "WfTask",
+      "status": "FA_U",
+      "taskStatus": null,
+      "subject": "Teszt projekt indítás",
+      "taskStart": "2026-06-29 14:28:34",
+      "taskDeadline": "2026-07-02 23:59:59",
+      "taskName": "Ellenőrzés",
+      "possibleResults": [
+        {
+          "id": "201",
+          "displayName": "Rendben",
+          "isSelected": true,
+          "isCommentRequired": false
+        },
+        {
+          "id": "202",
+          "displayName": "Elutasítom",
+          "isSelected": false,
+          "isCommentRequired": false
+        }
+      ],
+      "id": 4961,
+      "referenceNumber": "188",
+      "attachments": [
+        {
+          "name": "jegyzokonyv.pdf",
+          "creator": "Fiktív Dániel",
+          "createDate": "2026-06-11T13:09:05+02:00",
+          "version": 1,
+          "isTorolt": false,
+          "attachmentGuid": "8935185A-4579-4731-891D-A8D2B59865BC",
+          "attachmentType": null
+        },
+        {
+          "name": "melleklet-a.docx",
+          "creator": "Fiktív Dániel",
+          "createDate": "2026-07-28T12:52:30+02:00",
+          "version": 1,
+          "isTorolt": false,
+          "attachmentGuid": "CCE63857-47D8-4EE9-9A03-96B47EFBCF33",
+          "attachmentType": "egyéb melléklet"
+        }
+      ],
+      "taskDescription": null,
+      "metaItems": [
+        {
+          "value": null,
+          "humanvalue": null,
+          "name": "10. minta mező",
+          "type": "Option",
+          "code": "mezo10",
+          "default": null,
+          "params": "1|Igen;Nem",
+          "visibility": "MT_O",
+          "is_preview": false
+        },
+        {
+          "value": "minta",
+          "humanvalue": "Minta",
+          "name": "11. minta mező",
+          "type": "Money",
+          "code": "mezo11",
+          "default": null,
+          "params": null,
+          "visibility": "MT_O",
+          "is_preview": false
+        },
+        {
+          "value": null,
+          "humanvalue": null,
+          "name": "12. minta mező",
+          "type": "Option",
+          "code": "mezo12",
+          "default": null,
+          "params": "2|Egy;Kettő;Három",
+          "visibility": "MT_O",
+          "is_preview": false
+        },
+        {
+          "value": "minta",
+          "humanvalue": "Minta",
+          "name": "13. minta mező",
+          "type": "Money",
+          "code": "mezo13",
+          "default": null,
+          "params": null,
+          "visibility": "MT_O",
+          "is_preview": false
+        },
+        {
+          "value": null,
+          "humanvalue": "Nem",
+          "name": "14. minta mező",
+          "type": "Check",
+          "code": "mezo14",
+          "default": null,
+          "params": null,
+          "visibility": "MT_O",
+          "is_preview": false
+        },
+        {
+          "value": "minta",
+          "humanvalue": "Minta",
+          "name": "15. minta mező",
+          "type": "Money",
+          "code": "mezo15",
+          "default": null,
+          "params": null,
+          "visibility": "MT_O",
+          "is_preview": false
+        },
+        {
+          "value": null,
+          "humanvalue": null,
+          "name": "16. minta mező",
+          "type": "Option",
+          "code": "mezo16",
+          "default": null,
+          "params": "1|Piros;Zöld;Kék",
+          "visibility": "MT_O",
+          "is_preview": false
+        },
+        {
+          "value": "minta",
+          "humanvalue": "Minta",
+          "name": "17. minta mező",
+          "type": "Money",
+          "code": "mezo17",
+          "default": null,
+          "params": null,
+          "visibility": "MT_O",
+          "is_preview": false
+        },
+        {
+          "value": "minta",
+          "humanvalue": "Minta",
+          "name": "18. minta mező",
+          "type": "Money",
+          "code": "mezo18",
+          "default": null,
+          "params": null,
+          "visibility": "MT_O",
+          "is_preview": false
+        },
+        {
+          "value": "minta",
+          "humanvalue": "Minta",
+          "name": "19. minta mező",
+          "type": "Money",
+          "code": "mezo19",
+          "default": null,
+          "params": null,
+          "visibility": "MT_O",
+          "is_preview": false
+        },
+        {
+          "value": "minta",
+          "humanvalue": "Minta",
+          "name": "20. minta mező",
+          "type": "Money",
+          "code": "mezo20",
+          "default": null,
+          "params": null,
+          "visibility": "MT_O",
+          "is_preview": false
+        },
+        {
+          "value": "minta",
+          "humanvalue": "Minta",
+          "name": "21. minta mező",
+          "type": "Money",
+          "code": "mezo21",
+          "default": null,
+          "params": null,
+          "visibility": "MT_O",
+          "is_preview": false
+        },
+        {
+          "value": "minta",
+          "humanvalue": "Minta",
+          "name": "22. minta mező",
+          "type": "Money",
+          "code": "mezo22",
+          "default": null,
+          "params": null,
+          "visibility": "MT_O",
+          "is_preview": false
+        },
+        {
+          "value": null,
+          "humanvalue": null,
+          "name": "23. minta mező",
+          "type": "Text",
+          "code": "mezo23",
+          "default": null,
+          "params": null,
+          "visibility": "MT_O",
+          "is_preview": false
+        },
+        {
+          "value": null,
+          "humanvalue": null,
+          "name": "24. minta mező",
+          "type": "Text",
+          "code": "mezo24",
+          "default": null,
+          "params": null,
+          "visibility": "MT_O",
+          "is_preview": false
+        },
+        {
+          "value": null,
+          "humanvalue": null,
+          "name": "25. minta mező",
+          "type": "Textarea",
+          "code": "mezo25",
+          "default": null,
+          "params": null,
+          "visibility": "MT_O",
+          "is_preview": false
+        }
+      ],
+      "wfDescription": null,
+      "comments": [
+        {
+          "comment": "Példa észrevétel, kitalált tartalom.",
+          "userName": "Fiktív Dániel",
+          "date": "2026-07-28T12:52:58+02:00",
+          "deputyName": null,
+          "result": null,
+          "color": null
+        },
+        {
+          "comment": "Teszt hozzászólás — nem valós adat.",
+          "userName": "Példa Anna",
+          "date": "2026-06-29T14:28:34+02:00",
+          "deputyName": null,
+          "result": null,
+          "color": null
+        }
+      ],
+      "result": null,
+      "isFavorite": false,
+      "icon": "family_history",
+      "creator": {
+        "userId": 57,
+        "orgId": null,
+        "userName": "Fiktív Dániel",
+        "orgName": ""
+      },
+      "templateName": {
+        "id": 60,
+        "code": "MINTA_B",
+        "name": "Minta folyamat B",
+        "version": 6
+      },
+      "taskMetaItems": null
+    },
+    {
+      "type": "WfTask",
+      "status": "FA_U",
+      "taskStatus": null,
+      "subject": "Fiktív számla ellenőrzés",
+      "taskStart": "2026-06-11 08:47:56",
+      "taskDeadline": "2026-06-16 23:59:59",
+      "taskName": "Második jóváhagyás",
+      "possibleResults": [
+        {
+          "id": "199",
+          "displayName": "Javítást kérek",
+          "isSelected": true,
+          "isCommentRequired": false
+        },
+        {
+          "id": "200",
+          "displayName": "Elutasítom",
+          "isSelected": false,
+          "isCommentRequired": false
+        }
+      ],
+      "id": 4865,
+      "referenceNumber": "187",
+      "attachments": [],
+      "taskDescription": "<p>Kitalált leírás a fixture-höz. Az eredeti mező HTML-t tartalmaz, ezért ez is azt tesz.</p><p>A <b>szerkezet</b> a lényeg, nem a tartalom.</p>",
+      "metaItems": [
+        {
+          "value": null,
+          "humanvalue": null,
+          "name": "10. minta mező",
+          "type": "Option",
+          "code": "mezo10",
+          "default": null,
+          "params": "1|Igen;Nem",
+          "visibility": "MT_O",
+          "is_preview": false
+        },
+        {
+          "value": "minta",
+          "humanvalue": "Minta",
+          "name": "11. minta mező",
+          "type": "Money",
+          "code": "mezo11",
+          "default": null,
+          "params": null,
+          "visibility": "MT_O",
+          "is_preview": false
+        },
+        {
+          "value": null,
+          "humanvalue": null,
+          "name": "12. minta mező",
+          "type": "Option",
+          "code": "mezo12",
+          "default": null,
+          "params": "2|Egy;Kettő;Három",
+          "visibility": "MT_O",
+          "is_preview": false
+        },
+        {
+          "value": "minta",
+          "humanvalue": "Minta",
+          "name": "13. minta mező",
+          "type": "Money",
+          "code": "mezo13",
+          "default": null,
+          "params": null,
+          "visibility": "MT_O",
+          "is_preview": false
+        },
+        {
+          "value": null,
+          "humanvalue": "Nem",
+          "name": "14. minta mező",
+          "type": "Check",
+          "code": "mezo14",
+          "default": null,
+          "params": null,
+          "visibility": "MT_O",
+          "is_preview": false
+        },
+        {
+          "value": "minta",
+          "humanvalue": "Minta",
+          "name": "15. minta mező",
+          "type": "Money",
+          "code": "mezo15",
+          "default": null,
+          "params": null,
+          "visibility": "MT_O",
+          "is_preview": false
+        },
+        {
+          "value": null,
+          "humanvalue": null,
+          "name": "16. minta mező",
+          "type": "Option",
+          "code": "mezo16",
+          "default": null,
+          "params": "1|Piros;Zöld;Kék",
+          "visibility": "MT_O",
+          "is_preview": false
+        },
+        {
+          "value": "minta",
+          "humanvalue": "Minta",
+          "name": "17. minta mező",
+          "type": "Money",
+          "code": "mezo17",
+          "default": null,
+          "params": null,
+          "visibility": "MT_O",
+          "is_preview": false
+        },
+        {
+          "value": "minta",
+          "humanvalue": "Minta",
+          "name": "18. minta mező",
+          "type": "Money",
+          "code": "mezo18",
+          "default": null,
+          "params": null,
+          "visibility": "MT_O",
+          "is_preview": false
+        },
+        {
+          "value": "minta",
+          "humanvalue": "Minta",
+          "name": "19. minta mező",
+          "type": "Money",
+          "code": "mezo19",
+          "default": null,
+          "params": null,
+          "visibility": "MT_O",
+          "is_preview": false
+        },
+        {
+          "value": "minta",
+          "humanvalue": "Minta",
+          "name": "20. minta mező",
+          "type": "Money",
+          "code": "mezo20",
+          "default": null,
+          "params": null,
+          "visibility": "MT_O",
+          "is_preview": false
+        },
+        {
+          "value": "minta",
+          "humanvalue": "Minta",
+          "name": "21. minta mező",
+          "type": "Money",
+          "code": "mezo21",
+          "default": null,
+          "params": null,
+          "visibility": "MT_O",
+          "is_preview": false
+        },
+        {
+          "value": "minta",
+          "humanvalue": "Minta",
+          "name": "22. minta mező",
+          "type": "Money",
+          "code": "mezo22",
+          "default": null,
+          "params": null,
+          "visibility": "MT_O",
+          "is_preview": true
+        },
+        {
+          "value": null,
+          "humanvalue": null,
+          "name": "23. minta mező",
+          "type": "Text",
+          "code": "mezo23",
+          "default": null,
+          "params": null,
+          "visibility": "MT_O",
+          "is_preview": true
+        },
+        {
+          "value": null,
+          "humanvalue": null,
+          "name": "24. minta mező",
+          "type": "Text",
+          "code": "mezo24",
+          "default": null,
+          "params": null,
+          "visibility": "MT_O",
+          "is_preview": true
+        },
+        {
+          "value": null,
+          "humanvalue": null,
+          "name": "25. minta mező",
+          "type": "Textarea",
+          "code": "mezo25",
+          "default": null,
+          "params": null,
+          "visibility": "MT_M",
+          "is_preview": false
+        }
+      ],
+      "wfDescription": "Kitalált leírás a fixture-höz — nem valós adat.",
+      "comments": [],
+      "result": null,
+      "isFavorite": false,
+      "icon": "family_history",
+      "creator": {
+        "userId": 57,
+        "orgId": null,
+        "userName": "Fiktív Dániel",
+        "orgName": ""
+      },
+      "templateName": {
+        "id": 60,
+        "code": "MINTA_B",
+        "name": "Minta folyamat B",
+        "version": 6
+      },
+      "taskMetaItems": null
+    },
+    {
+      "type": "WfTask",
+      "status": "FA_U",
+      "taskStatus": null,
+      "subject": "Demó eszközigénylés",
+      "taskStart": "2026-04-07 17:30:53",
+      "taskDeadline": "2026-04-08 23:59:59",
+      "taskName": "Kitöltés",
+      "possibleResults": [
+        {
+          "id": "324",
+          "displayName": "Továbbítom",
+          "isSelected": true,
+          "isCommentRequired": false
+        },
+        {
+          "id": "325",
+          "displayName": "Tudomásul vettem",
+          "isSelected": false,
+          "isCommentRequired": false
+        },
+        {
+          "id": "326",
+          "displayName": "Rendben",
+          "isSelected": false,
+          "isCommentRequired": false
+        }
+      ],
+      "id": 4750,
+      "referenceNumber": "177",
+      "attachments": [
+        {
+          "name": "melleklet-b.pdf",
+          "creator": "Példa Anna",
+          "createDate": "2026-04-08T12:54:47+02:00",
+          "version": 1,
+          "isTorolt": false,
+          "attachmentGuid": "DD6D8D9E-F227-48BA-8CB2-82E942E88C6F",
+          "attachmentType": null
+        },
+        {
+          "name": "tervezet.docx",
+          "creator": "Példa Anna",
+          "createDate": "2026-04-07T17:25:55+02:00",
+          "version": 1,
+          "isTorolt": false,
+          "attachmentGuid": "C502209F-D374-4B48-9DD3-C30B8F9FD9A6",
+          "attachmentType": "minta típus"
+        },
+        {
+          "name": "osszesito.xlsx",
+          "creator": "Példa Anna",
+          "createDate": "2026-04-07T17:25:55+02:00",
+          "version": 1,
+          "isTorolt": false,
+          "attachmentGuid": "A6D7E086-BF1F-4ECD-B9E5-2F614638CDDE",
+          "attachmentType": "minta típus"
+        }
+      ],
+      "taskDescription": "<p>Kitalált leírás a fixture-höz. Az eredeti mező HTML-t tartalmaz, ezért ez is azt tesz.</p><p>A <b>szerkezet</b> a lényeg, nem a tartalom.</p>",
+      "metaItems": [
+        {
+          "value": "1",
+          "humanvalue": "Igen",
+          "name": "27. minta mező",
+          "type": "Option",
+          "code": "mezo27",
+          "default": null,
+          "params": "1|Alfa;Béta",
+          "visibility": "MT_O",
+          "is_preview": false
+        },
+        {
+          "value": "minta",
+          "humanvalue": "Minta",
+          "name": "28. minta mező",
+          "type": "SzervUserAC",
+          "code": "mezo28",
+          "default": null,
+          "params": null,
+          "visibility": "MT_O",
+          "is_preview": false
+        },
+        {
+          "value": "0",
+          "humanvalue": "Nem",
+          "name": "29. minta mező",
+          "type": "Partner",
+          "code": "mezo29",
+          "default": null,
+          "params": null,
+          "visibility": "MT_O",
+          "is_preview": false
+        },
+        {
+          "value": "1",
+          "humanvalue": "Igen",
+          "name": "30. minta mező",
+          "type": "Option",
+          "code": "mezo30",
+          "default": null,
+          "params": "1|Igen;Nem",
+          "visibility": "MT_O",
+          "is_preview": false
+        },
+        {
+          "value": "minta",
+          "humanvalue": "Minta",
+          "name": "31. minta mező",
+          "type": "Textarea",
+          "code": "mezo31",
+          "default": null,
+          "params": null,
+          "visibility": "MT_O",
+          "is_preview": false
+        },
+        {
+          "value": "0",
+          "humanvalue": "Nem",
+          "name": "32. minta mező",
+          "type": "Link",
+          "code": "mezo32",
+          "default": null,
+          "params": null,
+          "visibility": "MT_O",
+          "is_preview": false
+        },
+        {
+          "value": "1",
+          "humanvalue": "Igen",
+          "name": "33. minta mező",
+          "type": "Link",
+          "code": "mezo33",
+          "default": null,
+          "params": null,
+          "visibility": "MT_O",
+          "is_preview": false
+        },
+        {
+          "value": "minta",
+          "humanvalue": "Nem",
+          "name": "34. minta mező",
+          "type": "Option",
+          "code": "mezo34",
+          "default": null,
+          "params": "2|Egy;Kettő;Három",
+          "visibility": "MT_O",
+          "is_preview": false
+        },
+        {
+          "value": null,
+          "humanvalue": null,
+          "name": "35. minta mező",
+          "type": "SzervUserAC",
+          "code": "mezo35",
+          "default": null,
+          "params": null,
+          "visibility": "MT_M",
+          "is_preview": false
+        }
+      ],
+      "wfDescription": "<p>Kitalált leírás a fixture-höz. Az eredeti mező HTML-t tartalmaz, ezért ez is azt tesz.</p><p>A <b>szerkezet</b> a lényeg, nem a tartalom.</p>",
+      "comments": [
+        {
+          "comment": "Minta megjegyzés a fixture-höz.",
+          "userName": "Példa Anna",
+          "date": "2026-04-07T17:30:35+02:00",
+          "deputyName": null,
+          "result": null,
+          "color": null
+        },
+        {
+          "comment": "Példa észrevétel, kitalált tartalom.",
+          "userName": "Példa Anna",
+          "date": "2026-04-07T17:29:43+02:00",
+          "deputyName": null,
+          "result": null,
+          "color": null
+        },
+        {
+          "comment": "Teszt hozzászólás — nem valós adat.",
+          "userName": "Példa Anna",
+          "date": "2026-04-07T17:29:04+02:00",
+          "deputyName": null,
+          "result": null,
+          "color": null
+        }
+      ],
+      "result": null,
+      "isFavorite": false,
+      "icon": "family_history",
+      "creator": {
+        "userId": 31,
+        "orgId": null,
+        "userName": "Példa Anna",
+        "orgName": ""
+      },
+      "templateName": {
+        "id": 63,
+        "code": "MINTA_C",
+        "name": "Minta folyamat C",
+        "version": 2
+      },
+      "taskMetaItems": null
+    },
+    {
+      "type": "WfTask",
+      "status": "FA_U",
+      "taskStatus": null,
+      "subject": "Demó eszközigénylés",
+      "taskStart": "2026-04-07 17:24:32",
+      "taskDeadline": "2026-04-08 23:59:59",
+      "taskName": "Visszaküldés javításra",
+      "possibleResults": [
+        {
+          "id": "358",
+          "displayName": "Javítást kérek",
+          "isSelected": true,
+          "isCommentRequired": false
+        }
+      ],
+      "id": 4738,
+      "referenceNumber": "176",
+      "attachments": [],
+      "taskDescription": "<p>Kitalált leírás a fixture-höz. Az eredeti mező HTML-t tartalmaz, ezért ez is azt tesz.</p><p>A <b>szerkezet</b> a lényeg, nem a tartalom.</p>",
+      "metaItems": [
+        {
+          "value": null,
+          "humanvalue": null,
+          "name": "27. minta mező",
+          "type": "Option",
+          "code": "mezo27",
+          "default": null,
+          "params": "1|Piros;Zöld;Kék",
+          "visibility": "MT_K",
+          "is_preview": false
+        },
+        {
+          "value": null,
+          "humanvalue": null,
+          "name": "28. minta mező",
+          "type": "SzervUserAC",
+          "code": "mezo28",
+          "default": null,
+          "params": null,
+          "visibility": "MT_K",
+          "is_preview": false
+        },
+        {
+          "value": null,
+          "humanvalue": null,
+          "name": "29. minta mező",
+          "type": "Partner",
+          "code": "mezo29",
+          "default": null,
+          "params": null,
+          "visibility": "MT_K",
+          "is_preview": false
+        },
+        {
+          "value": null,
+          "humanvalue": null,
+          "name": "30. minta mező",
+          "type": "Option",
+          "code": "mezo30",
+          "default": null,
+          "params": "1|Alfa;Béta",
+          "visibility": "MT_K",
+          "is_preview": false
+        },
+        {
+          "value": null,
+          "humanvalue": null,
+          "name": "36. minta mező",
+          "type": "Option",
+          "code": "mezo36",
+          "default": null,
+          "params": "1|Igen;Nem",
+          "visibility": "MT_K",
+          "is_preview": false
+        },
+        {
+          "value": "0",
+          "humanvalue": "Minta",
+          "name": "31. minta mező",
+          "type": "Textarea",
+          "code": "mezo31",
+          "default": null,
+          "params": null,
+          "visibility": "MT_M",
+          "is_preview": false
+        },
+        {
+          "value": null,
+          "humanvalue": null,
+          "name": "32. minta mező",
+          "type": "Link",
+          "code": "mezo32",
+          "default": null,
+          "params": null,
+          "visibility": "MT_K",
+          "is_preview": false
+        },
+        {
+          "value": null,
+          "humanvalue": null,
+          "name": "33. minta mező",
+          "type": "Link",
+          "code": "mezo33",
+          "default": null,
+          "params": null,
+          "visibility": "MT_K",
+          "is_preview": false
+        },
+        {
+          "value": null,
+          "humanvalue": null,
+          "name": "34. minta mező",
+          "type": "Option",
+          "code": "mezo34",
+          "default": null,
+          "params": "2|Egy;Kettő;Három",
+          "visibility": "MT_M",
+          "is_preview": false
+        },
+        {
+          "value": null,
+          "humanvalue": null,
+          "name": "37. minta mező",
+          "type": "Option",
+          "code": "mezo37",
+          "default": null,
+          "params": "2|Egy;Kettő;Három",
+          "visibility": "MT_M",
+          "is_preview": false
+        },
+        {
+          "value": null,
+          "humanvalue": null,
+          "name": "38. minta mező",
+          "type": "Option",
+          "code": "mezo38",
+          "default": null,
+          "params": "1|Piros;Zöld;Kék",
+          "visibility": "MT_K",
+          "is_preview": false
+        },
+        {
+          "value": null,
+          "humanvalue": null,
+          "name": "39. minta mező",
+          "type": "Option",
+          "code": "mezo39",
+          "default": null,
+          "params": "1|Igen;Nem",
+          "visibility": "MT_K",
+          "is_preview": false
+        }
+      ],
+      "wfDescription": null,
+      "comments": [],
+      "result": null,
+      "isFavorite": false,
+      "icon": "family_history",
+      "creator": {
+        "userId": 31,
+        "orgId": null,
+        "userName": "Példa Anna",
+        "orgName": ""
+      },
+      "templateName": {
+        "id": 63,
+        "code": "MINTA_C",
+        "name": "Minta folyamat C",
+        "version": 2
+      },
+      "taskMetaItems": null
+    },
+    {
+      "type": "WfTask",
+      "status": "FA_U",
+      "taskStatus": null,
+      "subject": "Próba belső folyamat",
+      "taskStart": "2026-04-07 17:15:29",
+      "taskDeadline": "2026-04-08 23:59:59",
+      "taskName": "Lezárás",
+      "possibleResults": [
+        {
+          "id": "264",
+          "displayName": "Elutasítom",
+          "isSelected": true,
+          "isCommentRequired": false
+        }
+      ],
+      "id": 4737,
+      "referenceNumber": "175",
+      "attachments": [
+        {
+          "name": "jegyzokonyv.pdf",
+          "creator": "Teszt Csilla",
+          "createDate": "2026-04-13T09:44:02+02:00",
+          "version": 2,
+          "isTorolt": false,
+          "attachmentGuid": "B0D77682-0357-4D53-B78D-F8442D8496EE",
+          "attachmentType": null
+        },
+        {
+          "name": "jegyzokonyv.pdf",
+          "creator": "Példa Anna",
+          "createDate": "2026-04-07T17:11:00+02:00",
+          "version": 1,
+          "isTorolt": false,
+          "attachmentGuid": "1D7027DA-91A4-46C6-943A-BB637E546224",
+          "attachmentType": "minta típus"
+        },
+        {
+          "name": "tervezet.docx",
+          "creator": "Teszt Csilla",
+          "createDate": "2026-04-13T10:22:43+02:00",
+          "version": 2,
+          "isTorolt": false,
+          "attachmentGuid": "814A2225-C292-425E-8EE2-5D857267390C",
+          "attachmentType": null
+        },
+        {
+          "name": "tervezet.docx",
+          "creator": "Teszt Csilla",
+          "createDate": "2026-04-13T10:22:23+02:00",
+          "version": 1,
+          "isTorolt": false,
+          "attachmentGuid": "C2A48C2D-6D01-43A8-85EB-3F16CEDC89D9",
+          "attachmentType": null
+        },
+        {
+          "name": "melleklet-a.docx",
+          "creator": "Példa Anna",
+          "createDate": "2026-04-08T12:54:32+02:00",
+          "version": 1,
+          "isTorolt": false,
+          "attachmentGuid": "E5247674-1FAC-4802-A2F7-A1C3DE7502AF",
+          "attachmentType": null
+        }
+      ],
+      "taskDescription": "<p>Kitalált leírás a fixture-höz. Az eredeti mező HTML-t tartalmaz, ezért ez is azt tesz.</p><p>A <b>szerkezet</b> a lényeg, nem a tartalom.</p>",
+      "metaItems": [
+        {
+          "value": "1",
+          "humanvalue": "Igen",
+          "name": "27. minta mező",
+          "type": "Option",
+          "code": "mezo27",
+          "default": null,
+          "params": "1|Alfa;Béta",
+          "visibility": "MT_O",
+          "is_preview": false
+        },
+        {
+          "value": "1",
+          "humanvalue": "Nem",
+          "name": "28. minta mező",
+          "type": "SzervUserAC",
+          "code": "mezo28",
+          "default": null,
+          "params": null,
+          "visibility": "MT_O",
+          "is_preview": false
+        },
+        {
+          "value": "minta",
+          "humanvalue": "Igen",
+          "name": "29. minta mező",
+          "type": "Partner",
+          "code": "mezo29",
+          "default": null,
+          "params": null,
+          "visibility": "MT_O",
+          "is_preview": false
+        },
+        {
+          "value": "1",
+          "humanvalue": "Minta",
+          "name": "30. minta mező",
+          "type": "Option",
+          "code": "mezo30",
+          "default": null,
+          "params": "1|Alfa;Béta",
+          "visibility": "MT_O",
+          "is_preview": false
+        },
+        {
+          "value": "0",
+          "humanvalue": "Minta",
+          "name": "31. minta mező",
+          "type": "Textarea",
+          "code": "mezo31",
+          "default": null,
+          "params": null,
+          "visibility": "MT_O",
+          "is_preview": false
+        },
+        {
+          "value": "0",
+          "humanvalue": "Nem",
+          "name": "32. minta mező",
+          "type": "Link",
+          "code": "mezo32",
+          "default": null,
+          "params": null,
+          "visibility": "MT_O",
+          "is_preview": false
+        },
+        {
+          "value": "1",
+          "humanvalue": "Igen",
+          "name": "37. minta mező",
+          "type": "Option",
+          "code": "mezo37",
+          "default": null,
+          "params": "1|Igen;Nem",
+          "visibility": "MT_O",
+          "is_preview": false
+        },
+        {
+          "value": "1",
+          "humanvalue": "Minta",
+          "name": "38. minta mező",
+          "type": "Option",
+          "code": "mezo38",
+          "default": null,
+          "params": "1|Piros;Zöld;Kék",
+          "visibility": "MT_O",
+          "is_preview": false
+        }
+      ],
+      "wfDescription": "<p>Kitalált leírás a fixture-höz. Az eredeti mező HTML-t tartalmaz, ezért ez is azt tesz.</p><p>A <b>szerkezet</b> a lényeg, nem a tartalom.</p>",
+      "comments": [
+        {
+          "comment": "Minta megjegyzés a fixture-höz.",
+          "userName": "Példa Anna",
+          "date": "2026-04-07T17:14:24+02:00",
+          "deputyName": null,
+          "result": null,
+          "color": null
+        },
+        {
+          "comment": "Példa észrevétel, kitalált tartalom.",
+          "userName": "Példa Anna",
+          "date": "2026-04-07T17:13:41+02:00",
+          "deputyName": null,
+          "result": null,
+          "color": null
+        },
+        {
+          "comment": "Teszt hozzászólás — nem valós adat.",
+          "userName": "Példa Anna",
+          "date": "2026-04-07T17:13:18+02:00",
+          "deputyName": null,
+          "result": null,
+          "color": null
+        },
+        {
+          "comment": "Minta megjegyzés a fixture-höz.",
+          "userName": "Példa Anna",
+          "date": "2026-04-07T17:12:44+02:00",
+          "deputyName": null,
+          "result": null,
+          "color": null
+        }
+      ],
+      "result": null,
+      "isFavorite": false,
+      "icon": "family_history",
+      "creator": {
+        "userId": 31,
+        "orgId": null,
+        "userName": "Példa Anna",
+        "orgName": ""
+      },
+      "templateName": {
+        "id": 62,
+        "code": "MINTA_C",
+        "name": "Minta folyamat C",
+        "version": 1
+      },
+      "taskMetaItems": null
+    },
+    {
+      "type": "WfTask",
+      "status": "FA_U",
+      "taskStatus": null,
+      "subject": "Kitalált ügyfél megrendelés",
+      "taskStart": "2026-03-23 09:48:24",
+      "taskDeadline": "2026-03-26 23:59:59",
+      "taskName": "Második jóváhagyás",
+      "possibleResults": [
+        {
+          "id": "199",
+          "displayName": "Javítást kérek",
+          "isSelected": true,
+          "isCommentRequired": false
+        },
+        {
+          "id": "200",
+          "displayName": "Elutasítom",
+          "isSelected": false,
+          "isCommentRequired": false
+        }
+      ],
+      "id": 4714,
+      "referenceNumber": "174",
+      "attachments": [
+        {
+          "name": "melleklet-b.pdf",
+          "creator": "Példa Anna",
+          "createDate": "2026-03-23T10:01:03+01:00",
+          "version": 1,
+          "isTorolt": false,
+          "attachmentGuid": "62AD24A8-C6BC-4C1E-874F-379471926CAB",
+          "attachmentType": null
+        }
+      ],
+      "taskDescription": "<p>Kitalált leírás a fixture-höz. Az eredeti mező HTML-t tartalmaz, ezért ez is azt tesz.</p><p>A <b>szerkezet</b> a lényeg, nem a tartalom.</p>",
+      "metaItems": [
+        {
+          "value": null,
+          "humanvalue": null,
+          "name": "10. minta mező",
+          "type": "Option",
+          "code": "mezo10",
+          "default": null,
+          "params": "1|Igen;Nem",
+          "visibility": "MT_O",
+          "is_preview": false
+        },
+        {
+          "value": "minta",
+          "humanvalue": "Minta",
+          "name": "11. minta mező",
+          "type": "Money",
+          "code": "mezo11",
+          "default": null,
+          "params": null,
+          "visibility": "MT_O",
+          "is_preview": false
+        },
+        {
+          "value": null,
+          "humanvalue": null,
+          "name": "12. minta mező",
+          "type": "Option",
+          "code": "mezo12",
+          "default": null,
+          "params": "2|Egy;Kettő;Három",
+          "visibility": "MT_O",
+          "is_preview": false
+        },
+        {
+          "value": "minta",
+          "humanvalue": "Minta",
+          "name": "13. minta mező",
+          "type": "Money",
+          "code": "mezo13",
+          "default": null,
+          "params": null,
+          "visibility": "MT_O",
+          "is_preview": false
+        },
+        {
+          "value": null,
+          "humanvalue": "Nem",
+          "name": "14. minta mező",
+          "type": "Check",
+          "code": "mezo14",
+          "default": null,
+          "params": null,
+          "visibility": "MT_O",
+          "is_preview": false
+        },
+        {
+          "value": "minta",
+          "humanvalue": "Minta",
+          "name": "15. minta mező",
+          "type": "Money",
+          "code": "mezo15",
+          "default": null,
+          "params": null,
+          "visibility": "MT_O",
+          "is_preview": false
+        },
+        {
+          "value": null,
+          "humanvalue": null,
+          "name": "16. minta mező",
+          "type": "Option",
+          "code": "mezo16",
+          "default": null,
+          "params": "1|Piros;Zöld;Kék",
+          "visibility": "MT_O",
+          "is_preview": false
+        },
+        {
+          "value": "minta",
+          "humanvalue": "Minta",
+          "name": "17. minta mező",
+          "type": "Money",
+          "code": "mezo17",
+          "default": null,
+          "params": null,
+          "visibility": "MT_O",
+          "is_preview": false
+        },
+        {
+          "value": "minta",
+          "humanvalue": "Minta",
+          "name": "18. minta mező",
+          "type": "Money",
+          "code": "mezo18",
+          "default": null,
+          "params": null,
+          "visibility": "MT_O",
+          "is_preview": false
+        },
+        {
+          "value": "minta",
+          "humanvalue": "Minta",
+          "name": "19. minta mező",
+          "type": "Money",
+          "code": "mezo19",
+          "default": null,
+          "params": null,
+          "visibility": "MT_O",
+          "is_preview": false
+        },
+        {
+          "value": "minta",
+          "humanvalue": "Minta",
+          "name": "20. minta mező",
+          "type": "Money",
+          "code": "mezo20",
+          "default": null,
+          "params": null,
+          "visibility": "MT_O",
+          "is_preview": false
+        },
+        {
+          "value": "minta",
+          "humanvalue": "Minta",
+          "name": "21. minta mező",
+          "type": "Money",
+          "code": "mezo21",
+          "default": null,
+          "params": null,
+          "visibility": "MT_O",
+          "is_preview": false
+        },
+        {
+          "value": "minta",
+          "humanvalue": "Minta",
+          "name": "22. minta mező",
+          "type": "Money",
+          "code": "mezo22",
+          "default": null,
+          "params": null,
+          "visibility": "MT_O",
+          "is_preview": true
+        },
+        {
+          "value": null,
+          "humanvalue": null,
+          "name": "23. minta mező",
+          "type": "Text",
+          "code": "mezo23",
+          "default": null,
+          "params": null,
+          "visibility": "MT_O",
+          "is_preview": true
+        },
+        {
+          "value": null,
+          "humanvalue": null,
+          "name": "24. minta mező",
+          "type": "Text",
+          "code": "mezo24",
+          "default": null,
+          "params": null,
+          "visibility": "MT_O",
+          "is_preview": true
+        },
+        {
+          "value": null,
+          "humanvalue": null,
+          "name": "25. minta mező",
+          "type": "Textarea",
+          "code": "mezo25",
+          "default": null,
+          "params": null,
+          "visibility": "MT_M",
+          "is_preview": false
+        }
+      ],
+      "wfDescription": "<p>Kitalált leírás a fixture-höz. Az eredeti mező HTML-t tartalmaz, ezért ez is azt tesz.</p><p>A <b>szerkezet</b> a lényeg, nem a tartalom.</p>",
+      "comments": [],
+      "result": null,
+      "isFavorite": true,
+      "icon": "family_history",
+      "creator": {
+        "userId": 57,
+        "orgId": null,
+        "userName": "Fiktív Dániel",
+        "orgName": ""
+      },
+      "templateName": {
+        "id": 60,
+        "code": "MINTA_B",
+        "name": "Minta folyamat B",
+        "version": 6
+      },
+      "taskMetaItems": null
+    },
+    {
+      "type": "WfTask",
+      "status": "FA_U",
+      "taskStatus": null,
+      "subject": "Minta keretszerződés",
+      "taskStart": "2026-03-23 09:20:38",
+      "taskDeadline": "2026-03-24 23:59:59",
+      "taskName": "Első jóváhagyás",
+      "possibleResults": [
+        {
+          "id": "197",
+          "displayName": "Rendben",
+          "isSelected": true,
+          "isCommentRequired": true
+        }
+      ],
+      "id": 4665,
+      "referenceNumber": "169",
+      "attachments": [],
+      "taskDescription": "<p>Kitalált leírás a fixture-höz. Az eredeti mező HTML-t tartalmaz, ezért ez is azt tesz.</p><p>A <b>szerkezet</b> a lényeg, nem a tartalom.</p>",
+      "metaItems": [
+        {
+          "value": null,
+          "humanvalue": "Nem",
+          "name": "1. minta mező",
+          "type": "Check",
+          "code": "mezo1",
+          "default": null,
+          "params": null,
+          "visibility": "MT_M",
+          "is_preview": false
+        },
+        {
+          "value": null,
+          "humanvalue": null,
+          "name": "2. minta mező",
+          "type": "Text",
+          "code": "mezo2",
+          "default": null,
+          "params": null,
+          "visibility": "MT_M",
+          "is_preview": false
+        },
+        {
+          "value": null,
+          "humanvalue": null,
+          "name": "3. minta mező",
+          "type": "Number",
+          "code": "mezo3",
+          "default": null,
+          "params": null,
+          "visibility": "MT_M",
+          "is_preview": false
+        },
+        {
+          "value": "1",
+          "humanvalue": "Nem",
+          "name": "4. minta mező",
+          "type": "Option",
+          "code": "mezo4",
+          "default": null,
+          "params": "2|Egy;Kettő;Három",
+          "visibility": "MT_M",
+          "is_preview": false
+        },
+        {
+          "value": "1",
+          "humanvalue": "Igen",
+          "name": "5. minta mező",
+          "type": "Text",
+          "code": "mezo5",
+          "default": null,
+          "params": null,
+          "visibility": "MT_M",
+          "is_preview": false
+        },
+        {
+          "value": null,
+          "humanvalue": null,
+          "name": "6. minta mező",
+          "type": "Textarea",
+          "code": "mezo6",
+          "default": null,
+          "params": null,
+          "visibility": "MT_M",
+          "is_preview": false
+        },
+        {
+          "value": null,
+          "humanvalue": null,
+          "name": "7. minta mező",
+          "type": "SzervUser",
+          "code": "mezo7",
+          "default": null,
+          "params": null,
+          "visibility": "MT_M",
+          "is_preview": false
+        },
+        {
+          "value": "1",
+          "humanvalue": "Igen",
+          "name": "8. minta mező",
+          "type": "SzervUserAC",
+          "code": "mezo8",
+          "default": null,
+          "params": null,
+          "visibility": "MT_M",
+          "is_preview": false
+        },
+        {
+          "value": "minta",
+          "humanvalue": "Minta",
+          "name": "9. minta mező",
+          "type": "Link",
+          "code": "mezo9",
+          "default": null,
+          "params": null,
+          "visibility": "MT_M",
+          "is_preview": false
+        }
+      ],
+      "wfDescription": "<p>Kitalált leírás a fixture-höz. Az eredeti mező HTML-t tartalmaz, ezért ez is azt tesz.</p><p>A <b>szerkezet</b> a lényeg, nem a tartalom.</p>",
+      "comments": [],
+      "result": null,
+      "isFavorite": false,
+      "icon": "1x_mobiledata_badge",
+      "creator": {
+        "userId": 57,
+        "orgId": null,
+        "userName": "Fiktív Dániel",
+        "orgName": ""
+      },
+      "templateName": {
+        "id": 59,
+        "code": "MINTA_A",
+        "name": "Minta folyamat A",
+        "version": 13
+      },
+      "taskMetaItems": null
+    },
+    {
+      "type": "WfTask",
+      "status": "FA_U",
+      "taskStatus": null,
+      "subject": "Példa dokumentum jóváhagyás",
+      "taskStart": "2026-03-23 09:09:39",
+      "taskDeadline": "2026-03-24 23:59:59",
+      "taskName": "Első jóváhagyás",
+      "possibleResults": [
+        {
+          "id": "195",
+          "displayName": "Rendben",
+          "isSelected": true,
+          "isCommentRequired": true
+        }
+      ],
+      "id": 4618,
+      "referenceNumber": "168",
+      "attachments": [],
+      "taskDescription": "<p>Kitalált leírás a fixture-höz. Az eredeti mező HTML-t tartalmaz, ezért ez is azt tesz.</p><p>A <b>szerkezet</b> a lényeg, nem a tartalom.</p>",
+      "metaItems": [
+        {
+          "value": null,
+          "humanvalue": "Nem",
+          "name": "1. minta mező",
+          "type": "Check",
+          "code": "mezo1",
+          "default": null,
+          "params": null,
+          "visibility": "MT_M",
+          "is_preview": false
+        },
+        {
+          "value": "0",
+          "humanvalue": "Nem",
+          "name": "2. minta mező",
+          "type": "Text",
+          "code": "mezo2",
+          "default": null,
+          "params": null,
+          "visibility": "MT_M",
+          "is_preview": false
+        },
+        {
+          "value": "1",
+          "humanvalue": "Igen",
+          "name": "3. minta mező",
+          "type": "Number",
+          "code": "mezo3",
+          "default": null,
+          "params": null,
+          "visibility": "MT_M",
+          "is_preview": false
+        },
+        {
+          "value": "1",
+          "humanvalue": "Nem",
+          "name": "4. minta mező",
+          "type": "Option",
+          "code": "mezo4",
+          "default": null,
+          "params": "2|Egy;Kettő;Három",
+          "visibility": "MT_M",
+          "is_preview": false
+        },
+        {
+          "value": "1",
+          "humanvalue": "Igen",
+          "name": "5. minta mező",
+          "type": "Text",
+          "code": "mezo5",
+          "default": null,
+          "params": null,
+          "visibility": "MT_M",
+          "is_preview": false
+        },
+        {
+          "value": "minta",
+          "humanvalue": "Minta",
+          "name": "6. minta mező",
+          "type": "Textarea",
+          "code": "mezo6",
+          "default": null,
+          "params": null,
+          "visibility": "MT_M",
+          "is_preview": false
+        }
+      ],
+      "wfDescription": "<p>Kitalált leírás a fixture-höz. Az eredeti mező HTML-t tartalmaz, ezért ez is azt tesz.</p><p>A <b>szerkezet</b> a lényeg, nem a tartalom.</p>",
+      "comments": [],
+      "result": null,
+      "isFavorite": false,
+      "icon": "1x_mobiledata_badge",
+      "creator": {
+        "userId": 57,
+        "orgId": null,
+        "userName": "Fiktív Dániel",
+        "orgName": ""
+      },
+      "templateName": {
+        "id": 58,
+        "code": "MINTA_A",
+        "name": "Minta folyamat A",
+        "version": 12
+      },
+      "taskMetaItems": null
+    },
+    {
+      "type": "WfTask",
+      "status": "FA_U",
+      "taskStatus": null,
+      "subject": "Teszt havi elszámolás",
+      "taskStart": "2026-02-26 11:40:37",
+      "taskDeadline": "2026-02-27 23:59:59",
+      "taskName": "Első jóváhagyás",
+      "possibleResults": [
+        {
+          "id": "53",
+          "displayName": "Rendben",
+          "isSelected": true,
+          "isCommentRequired": true
+        }
+      ],
+      "id": 4554,
+      "referenceNumber": "80",
+      "attachments": [
+        {
+          "name": "tervezet.docx",
+          "creator": "Teszt Csilla",
+          "createDate": "2025-06-25T14:05:21+02:00",
+          "version": 1,
+          "isTorolt": false,
+          "attachmentGuid": "5AA5F606-DA0D-4054-B38F-41D356B8BF59",
+          "attachmentType": null
+        },
+        {
+          "name": "tervezet.docx",
+          "creator": "Teszt Csilla",
+          "createDate": "2025-06-25T14:05:06+02:00",
+          "version": 1,
+          "isTorolt": false,
+          "attachmentGuid": "28D74804-AE28-444E-BCDA-670D855F0737",
+          "attachmentType": null
+        },
+        {
+          "name": "osszesito.xlsx",
+          "creator": "Teszt Csilla",
+          "createDate": "2025-07-22T15:29:28+02:00",
+          "version": 1,
+          "isTorolt": false,
+          "attachmentGuid": "70DC18F9-54B2-497C-B5B0-CD92B8EA3A3A",
+          "attachmentType": "minta típus"
+        }
+      ],
+      "taskDescription": "<p>Kitalált leírás a fixture-höz. Az eredeti mező HTML-t tartalmaz, ezért ez is azt tesz.</p><p>A <b>szerkezet</b> a lényeg, nem a tartalom.</p>",
+      "metaItems": [
+        {
+          "value": "0",
+          "humanvalue": "Nem",
+          "name": "1. minta mező",
+          "type": "Check",
+          "code": "mezo1",
+          "default": null,
+          "params": null,
+          "visibility": "MT_M",
+          "is_preview": false
+        },
+        {
+          "value": null,
+          "humanvalue": null,
+          "name": "2. minta mező",
+          "type": "Text",
+          "code": "mezo2",
+          "default": null,
+          "params": null,
+          "visibility": "MT_M",
+          "is_preview": false
+        },
+        {
+          "value": null,
+          "humanvalue": null,
+          "name": "3. minta mező",
+          "type": "Number",
+          "code": "mezo3",
+          "default": null,
+          "params": null,
+          "visibility": "MT_M",
+          "is_preview": false
+        },
+        {
+          "value": null,
+          "humanvalue": null,
+          "name": "4. minta mező",
+          "type": "Option",
+          "code": "mezo4",
+          "default": null,
+          "params": "1|Alfa;Béta",
+          "visibility": "MT_M",
+          "is_preview": false
+        },
+        {
+          "value": "1",
+          "humanvalue": "Igen",
+          "name": "5. minta mező",
+          "type": "Text",
+          "code": "mezo5",
+          "default": null,
+          "params": null,
+          "visibility": "MT_M",
+          "is_preview": false
+        },
+        {
+          "value": null,
+          "humanvalue": null,
+          "name": "6. minta mező",
+          "type": "Textarea",
+          "code": "mezo6",
+          "default": null,
+          "params": null,
+          "visibility": "MT_M",
+          "is_preview": false
+        }
+      ],
+      "wfDescription": null,
+      "comments": [
+        {
+          "comment": "Példa észrevétel, kitalált tartalom.",
+          "userName": "Álnév Ferenc",
+          "date": "2026-02-26T11:40:37+01:00",
+          "deputyName": null,
+          "result": null,
+          "color": null
+        },
+        {
+          "comment": "Teszt hozzászólás — nem valós adat.",
+          "userName": "Fiktív Dániel",
+          "date": "2025-06-24T08:38:05+02:00",
+          "deputyName": null,
+          "result": null,
+          "color": null
+        }
+      ],
+      "result": null,
+      "isFavorite": false,
+      "icon": "1x_mobiledata_badge",
+      "creator": {
+        "userId": 64,
+        "orgId": null,
+        "userName": "Kitalált Emese",
+        "orgName": ""
+      },
+      "templateName": {
+        "id": 40,
+        "code": "MINTA_A",
+        "name": "Minta folyamat A",
+        "version": 11
+      },
+      "taskMetaItems": null
+    },
+    {
+      "type": "WfTask",
+      "status": "FA_U",
+      "taskStatus": null,
+      "subject": "Minta szerződés jóváhagyás",
+      "taskStart": "2025-11-13 15:57:48",
+      "taskDeadline": "2025-11-18 23:59:59",
+      "taskName": "Aláírás",
+      "possibleResults": [
+        {
+          "id": "140",
+          "displayName": "Rendben",
+          "isSelected": true,
+          "isCommentRequired": false
+        }
+      ],
+      "id": 3799,
+      "referenceNumber": "139",
+      "attachments": [],
+      "taskDescription": "<p>Kitalált leírás a fixture-höz. Az eredeti mező HTML-t tartalmaz, ezért ez is azt tesz.</p><p>A <b>szerkezet</b> a lényeg, nem a tartalom.</p>",
+      "metaItems": [
+        {
+          "value": "1",
+          "humanvalue": "Nem",
+          "name": "40. minta mező",
+          "type": "Option",
+          "code": "mezo40",
+          "default": null,
+          "params": "1|Piros;Zöld;Kék",
+          "visibility": "MT_O",
+          "is_preview": false
+        },
+        {
+          "value": "1",
+          "humanvalue": "Igen",
+          "name": "1. minta mező",
+          "type": "Text",
+          "code": "mezo1",
+          "default": null,
+          "params": null,
+          "visibility": "MT_O",
+          "is_preview": false
+        },
+        {
+          "value": "1",
+          "humanvalue": "Igen",
+          "name": "2. minta mező",
+          "type": "Text",
+          "code": "mezo2",
+          "default": null,
+          "params": null,
+          "visibility": "MT_O",
+          "is_preview": false
+        },
+        {
+          "value": "1",
+          "humanvalue": "Igen",
+          "name": "3. minta mező",
+          "type": "Text",
+          "code": "mezo3",
+          "default": null,
+          "params": null,
+          "visibility": "MT_O",
+          "is_preview": false
+        },
+        {
+          "value": "1",
+          "humanvalue": "Igen",
+          "name": "4. minta mező",
+          "type": "Text",
+          "code": "mezo4",
+          "default": null,
+          "params": null,
+          "visibility": "MT_O",
+          "is_preview": false
+        },
+        {
+          "value": "1",
+          "humanvalue": "Igen",
+          "name": "5. minta mező",
+          "type": "Text",
+          "code": "mezo5",
+          "default": null,
+          "params": null,
+          "visibility": "MT_O",
+          "is_preview": false
+        },
+        {
+          "value": null,
+          "humanvalue": null,
+          "name": "6. minta mező",
+          "type": "Option",
+          "code": "mezo6",
+          "default": null,
+          "params": "1|Alfa;Béta",
+          "visibility": "MT_K",
+          "is_preview": false
+        }
+      ],
+      "wfDescription": "Kitalált leírás a fixture-höz — nem valós adat.",
+      "comments": [],
+      "result": null,
+      "isFavorite": false,
+      "icon": "family_history",
+      "creator": {
+        "userId": 31,
+        "orgId": null,
+        "userName": "Példa Anna",
+        "orgName": ""
+      },
+      "templateName": {
+        "id": 47,
+        "code": "MINTA_D",
+        "name": "Minta folyamat D",
+        "version": 5
+      },
+      "taskMetaItems": null
+    },
+    {
+      "type": "WfTask",
+      "status": "FA_U",
+      "taskStatus": null,
+      "subject": "Példa beszerzési igény",
+      "taskStart": "2025-11-12 10:07:54",
+      "taskDeadline": "2025-11-17 23:59:59",
+      "taskName": "Második jóváhagyás",
+      "possibleResults": [
+        {
+          "id": "134",
+          "displayName": "Javítást kérek",
+          "isSelected": true,
+          "isCommentRequired": false
+        },
+        {
+          "id": "135",
+          "displayName": "Elutasítom",
+          "isSelected": false,
+          "isCommentRequired": false
+        }
+      ],
+      "id": 3791,
+      "referenceNumber": "138",
+      "attachments": [
+        {
+          "name": "jegyzokonyv.pdf",
+          "creator": "Demó Gábor",
+          "createDate": "2025-12-18T13:33:52+01:00",
+          "version": 1,
+          "isTorolt": false,
+          "attachmentGuid": "CF5EB5EE-DE7B-4146-988E-B8101199EDDD",
+          "attachmentType": null
+        },
+        {
+          "name": "melleklet-a.docx",
+          "creator": "Demó Gábor",
+          "createDate": "2025-11-17T13:16:21+01:00",
+          "version": 1,
+          "isTorolt": false,
+          "attachmentGuid": "F815ED48-70EA-4A77-9FF3-5BFB7EBB0F5E",
+          "attachmentType": null
+        },
+        {
+          "name": "melleklet-b.pdf",
+          "creator": "Demó Gábor",
+          "createDate": "2025-12-18T13:51:28+01:00",
+          "version": 5,
+          "isTorolt": false,
+          "attachmentGuid": "31919456-A8D6-4C4E-9FA8-3F39C1865B6D",
+          "attachmentType": "minta típus"
+        },
+        {
+          "name": "melleklet-b.pdf",
+          "creator": "Demó Gábor",
+          "createDate": "2025-12-18T13:33:29+01:00",
+          "version": 4,
+          "isTorolt": false,
+          "attachmentGuid": "DA5A1ADD-5915-4F39-998D-CAE11A5D49AB",
+          "attachmentType": null
+        },
+        {
+          "name": "melleklet-b.pdf",
+          "creator": "Demó Gábor",
+          "createDate": "2025-12-18T13:33:15+01:00",
+          "version": 3,
+          "isTorolt": false,
+          "attachmentGuid": "12077605-DBF0-4DDC-8F4B-A6E96382AC3A",
+          "attachmentType": null
+        },
+        {
+          "name": "melleklet-b.pdf",
+          "creator": "Demó Gábor",
+          "createDate": "2025-12-18T13:33:04+01:00",
+          "version": 2,
+          "isTorolt": false,
+          "attachmentGuid": "1C63699C-7E81-444D-926A-21BF9860E369",
+          "attachmentType": "minta típus"
+        },
+        {
+          "name": "melleklet-b.pdf",
+          "creator": "Demó Gábor",
+          "createDate": "2025-12-18T13:32:47+01:00",
+          "version": 1,
+          "isTorolt": false,
+          "attachmentGuid": "4635C87A-B2E5-46A9-8A3E-D0DD894A0FEC",
+          "attachmentType": null
+        }
+      ],
+      "taskDescription": "<p>Kitalált leírás a fixture-höz. Az eredeti mező HTML-t tartalmaz, ezért ez is azt tesz.</p><p>A <b>szerkezet</b> a lényeg, nem a tartalom.</p>",
+      "metaItems": [
+        {
+          "value": null,
+          "humanvalue": null,
+          "name": "10. minta mező",
+          "type": "Option",
+          "code": "mezo10",
+          "default": null,
+          "params": "1|Igen;Nem",
+          "visibility": "MT_O",
+          "is_preview": false
+        },
+        {
+          "value": "minta",
+          "humanvalue": "Minta",
+          "name": "11. minta mező",
+          "type": "Money",
+          "code": "mezo11",
+          "default": null,
+          "params": null,
+          "visibility": "MT_O",
+          "is_preview": false
+        },
+        {
+          "value": null,
+          "humanvalue": null,
+          "name": "12. minta mező",
+          "type": "Option",
+          "code": "mezo12",
+          "default": null,
+          "params": "2|Egy;Kettő;Három",
+          "visibility": "MT_O",
+          "is_preview": false
+        },
+        {
+          "value": "minta",
+          "humanvalue": "Minta",
+          "name": "13. minta mező",
+          "type": "Money",
+          "code": "mezo13",
+          "default": null,
+          "params": null,
+          "visibility": "MT_O",
+          "is_preview": false
+        },
+        {
+          "value": null,
+          "humanvalue": "Nem",
+          "name": "14. minta mező",
+          "type": "Check",
+          "code": "mezo14",
+          "default": null,
+          "params": null,
+          "visibility": "MT_O",
+          "is_preview": false
+        },
+        {
+          "value": "minta",
+          "humanvalue": "Minta",
+          "name": "15. minta mező",
+          "type": "Money",
+          "code": "mezo15",
+          "default": null,
+          "params": null,
+          "visibility": "MT_O",
+          "is_preview": false
+        },
+        {
+          "value": null,
+          "humanvalue": null,
+          "name": "16. minta mező",
+          "type": "Option",
+          "code": "mezo16",
+          "default": null,
+          "params": "1|Piros;Zöld;Kék",
+          "visibility": "MT_O",
+          "is_preview": false
+        },
+        {
+          "value": "minta",
+          "humanvalue": "Minta",
+          "name": "17. minta mező",
+          "type": "Money",
+          "code": "mezo17",
+          "default": null,
+          "params": null,
+          "visibility": "MT_O",
+          "is_preview": false
+        },
+        {
+          "value": "minta",
+          "humanvalue": "Minta",
+          "name": "18. minta mező",
+          "type": "Money",
+          "code": "mezo18",
+          "default": null,
+          "params": null,
+          "visibility": "MT_O",
+          "is_preview": false
+        },
+        {
+          "value": "minta",
+          "humanvalue": "Minta",
+          "name": "19. minta mező",
+          "type": "Money",
+          "code": "mezo19",
+          "default": null,
+          "params": null,
+          "visibility": "MT_O",
+          "is_preview": false
+        },
+        {
+          "value": "minta",
+          "humanvalue": "Minta",
+          "name": "20. minta mező",
+          "type": "Money",
+          "code": "mezo20",
+          "default": null,
+          "params": null,
+          "visibility": "MT_O",
+          "is_preview": false
+        },
+        {
+          "value": "minta",
+          "humanvalue": "Minta",
+          "name": "21. minta mező",
+          "type": "Money",
+          "code": "mezo21",
+          "default": null,
+          "params": null,
+          "visibility": "MT_O",
+          "is_preview": false
+        },
+        {
+          "value": "minta",
+          "humanvalue": "Minta",
+          "name": "22. minta mező",
+          "type": "Money",
+          "code": "mezo22",
+          "default": null,
+          "params": null,
+          "visibility": "MT_O",
+          "is_preview": true
+        },
+        {
+          "value": null,
+          "humanvalue": null,
+          "name": "23. minta mező",
+          "type": "Text",
+          "code": "mezo23",
+          "default": null,
+          "params": null,
+          "visibility": "MT_O",
+          "is_preview": true
+        },
+        {
+          "value": null,
+          "humanvalue": null,
+          "name": "24. minta mező",
+          "type": "Text",
+          "code": "mezo24",
+          "default": null,
+          "params": null,
+          "visibility": "MT_O",
+          "is_preview": true
+        },
+        {
+          "value": null,
+          "humanvalue": null,
+          "name": "25. minta mező",
+          "type": "Textarea",
+          "code": "mezo25",
+          "default": null,
+          "params": null,
+          "visibility": "MT_M",
+          "is_preview": false
+        }
+      ],
+      "wfDescription": null,
+      "comments": [],
+      "result": null,
+      "isFavorite": false,
+      "icon": "family_history",
+      "creator": {
+        "userId": 55,
+        "orgId": null,
+        "userName": "Álnév Ferenc",
+        "orgName": ""
+      },
+      "templateName": {
+        "id": 46,
+        "code": "MINTA_B",
+        "name": "Minta folyamat B",
+        "version": 4
+      },
+      "taskMetaItems": null
+    },
+    {
+      "type": "WfTask",
+      "status": "FA_U",
+      "taskStatus": null,
+      "subject": "Teszt projekt indítás",
+      "taskStart": "2025-09-16 08:46:16",
+      "taskDeadline": "2025-09-19 23:59:59",
+      "taskName": "Második jóváhagyás",
+      "possibleResults": [
+        {
+          "id": "134",
+          "displayName": "Javítást kérek",
+          "isSelected": true,
+          "isCommentRequired": false
+        },
+        {
+          "id": "135",
+          "displayName": "Elutasítom",
+          "isSelected": false,
+          "isCommentRequired": false
+        }
+      ],
+      "id": 3644,
+      "referenceNumber": "131",
+      "attachments": [
+        {
+          "name": "melleklet-b.pdf",
+          "creator": "Demó Gábor",
+          "createDate": "2025-10-28T12:28:37+01:00",
+          "version": 1,
+          "isTorolt": false,
+          "attachmentGuid": "8184F14F-B55E-42F2-BB17-F6E38BB1797D",
+          "attachmentType": null
+        },
+        {
+          "name": "tervezet.docx",
+          "creator": "Demó Gábor",
+          "createDate": "2025-10-27T10:27:00+01:00",
+          "version": 2,
+          "isTorolt": false,
+          "attachmentGuid": "43714437-DBEE-45D5-9671-F97A2DD84B58",
+          "attachmentType": null
+        },
+        {
+          "name": "tervezet.docx",
+          "creator": "Példa Anna",
+          "createDate": "2025-09-16T08:46:17+02:00",
+          "version": 1,
+          "isTorolt": false,
+          "attachmentGuid": "5C6279F8-F5EB-4440-AF47-A72038AD31CB",
+          "attachmentType": null
+        }
+      ],
+      "taskDescription": "<p>Kitalált leírás a fixture-höz. Az eredeti mező HTML-t tartalmaz, ezért ez is azt tesz.</p><p>A <b>szerkezet</b> a lényeg, nem a tartalom.</p>",
+      "metaItems": [
+        {
+          "value": null,
+          "humanvalue": null,
+          "name": "10. minta mező",
+          "type": "Option",
+          "code": "mezo10",
+          "default": null,
+          "params": "1|Igen;Nem",
+          "visibility": "MT_O",
+          "is_preview": false
+        },
+        {
+          "value": "minta",
+          "humanvalue": "Minta",
+          "name": "11. minta mező",
+          "type": "Money",
+          "code": "mezo11",
+          "default": null,
+          "params": null,
+          "visibility": "MT_O",
+          "is_preview": false
+        },
+        {
+          "value": null,
+          "humanvalue": null,
+          "name": "12. minta mező",
+          "type": "Option",
+          "code": "mezo12",
+          "default": null,
+          "params": "2|Egy;Kettő;Három",
+          "visibility": "MT_O",
+          "is_preview": false
+        },
+        {
+          "value": "minta",
+          "humanvalue": "Minta",
+          "name": "13. minta mező",
+          "type": "Money",
+          "code": "mezo13",
+          "default": null,
+          "params": null,
+          "visibility": "MT_O",
+          "is_preview": false
+        },
+        {
+          "value": null,
+          "humanvalue": "Nem",
+          "name": "14. minta mező",
+          "type": "Check",
+          "code": "mezo14",
+          "default": null,
+          "params": null,
+          "visibility": "MT_O",
+          "is_preview": false
+        },
+        {
+          "value": "minta",
+          "humanvalue": "Minta",
+          "name": "15. minta mező",
+          "type": "Money",
+          "code": "mezo15",
+          "default": null,
+          "params": null,
+          "visibility": "MT_O",
+          "is_preview": false
+        },
+        {
+          "value": null,
+          "humanvalue": null,
+          "name": "16. minta mező",
+          "type": "Option",
+          "code": "mezo16",
+          "default": null,
+          "params": "1|Piros;Zöld;Kék",
+          "visibility": "MT_O",
+          "is_preview": false
+        },
+        {
+          "value": "minta",
+          "humanvalue": "Minta",
+          "name": "17. minta mező",
+          "type": "Money",
+          "code": "mezo17",
+          "default": null,
+          "params": null,
+          "visibility": "MT_O",
+          "is_preview": false
+        },
+        {
+          "value": "minta",
+          "humanvalue": "Minta",
+          "name": "18. minta mező",
+          "type": "Money",
+          "code": "mezo18",
+          "default": null,
+          "params": null,
+          "visibility": "MT_O",
+          "is_preview": false
+        },
+        {
+          "value": "minta",
+          "humanvalue": "Minta",
+          "name": "19. minta mező",
+          "type": "Money",
+          "code": "mezo19",
+          "default": null,
+          "params": null,
+          "visibility": "MT_O",
+          "is_preview": false
+        },
+        {
+          "value": "minta",
+          "humanvalue": "Minta",
+          "name": "20. minta mező",
+          "type": "Money",
+          "code": "mezo20",
+          "default": null,
+          "params": null,
+          "visibility": "MT_O",
+          "is_preview": false
+        },
+        {
+          "value": "minta",
+          "humanvalue": "Minta",
+          "name": "21. minta mező",
+          "type": "Money",
+          "code": "mezo21",
+          "default": null,
+          "params": null,
+          "visibility": "MT_O",
+          "is_preview": false
+        },
+        {
+          "value": "minta",
+          "humanvalue": "Minta",
+          "name": "22. minta mező",
+          "type": "Money",
+          "code": "mezo22",
+          "default": null,
+          "params": null,
+          "visibility": "MT_O",
+          "is_preview": true
+        },
+        {
+          "value": null,
+          "humanvalue": null,
+          "name": "23. minta mező",
+          "type": "Text",
+          "code": "mezo23",
+          "default": null,
+          "params": null,
+          "visibility": "MT_O",
+          "is_preview": true
+        },
+        {
+          "value": null,
+          "humanvalue": null,
+          "name": "24. minta mező",
+          "type": "Text",
+          "code": "mezo24",
+          "default": null,
+          "params": null,
+          "visibility": "MT_O",
+          "is_preview": true
+        },
+        {
+          "value": null,
+          "humanvalue": null,
+          "name": "25. minta mező",
+          "type": "Textarea",
+          "code": "mezo25",
+          "default": null,
+          "params": null,
+          "visibility": "MT_M",
+          "is_preview": false
+        }
+      ],
+      "wfDescription": "<p>Kitalált leírás a fixture-höz. Az eredeti mező HTML-t tartalmaz, ezért ez is azt tesz.</p><p>A <b>szerkezet</b> a lényeg, nem a tartalom.</p>",
+      "comments": [],
+      "result": null,
+      "isFavorite": false,
+      "icon": "family_history",
+      "creator": {
+        "userId": 31,
+        "orgId": null,
+        "userName": "Példa Anna",
+        "orgName": ""
+      },
+      "templateName": {
+        "id": 46,
+        "code": "MINTA_B",
+        "name": "Minta folyamat B",
+        "version": 4
+      },
+      "taskMetaItems": null
+    },
+    {
+      "type": "WfTask",
+      "status": "FA_U",
+      "taskStatus": null,
+      "subject": "Fiktív számla ellenőrzés",
+      "taskStart": "2025-06-25 12:08:33",
+      "taskDeadline": "2025-06-26 23:59:59",
+      "taskName": "Első jóváhagyás",
+      "possibleResults": [
+        {
+          "id": "53",
+          "displayName": "Rendben",
+          "isSelected": true,
+          "isCommentRequired": true
+        }
+      ],
+      "id": 3481,
+      "referenceNumber": "105",
+      "attachments": [
+        {
+          "name": "osszesito.xlsx",
+          "creator": "Álnév Ferenc",
+          "createDate": "2025-08-18T14:30:54+02:00",
+          "version": 1,
+          "isTorolt": false,
+          "attachmentGuid": "80A536CF-D971-4294-92BB-7D39149E91B5",
+          "attachmentType": null
+        },
+        {
+          "name": "jegyzokonyv.pdf",
+          "creator": "Álnév Ferenc",
+          "createDate": "2025-08-18T14:30:53+02:00",
+          "version": 1,
+          "isTorolt": false,
+          "attachmentGuid": "CC239726-BDDD-47DF-9DFD-93EB632912FB",
+          "attachmentType": "hivatalos dokumentum"
+        },
+        {
+          "name": "melleklet-a.docx",
+          "creator": "Álnév Ferenc",
+          "createDate": "2025-10-28T13:23:14+01:00",
+          "version": 1,
+          "isTorolt": false,
+          "attachmentGuid": "41543EC9-4490-407D-A58F-082EBAF77F16",
+          "attachmentType": null
+        },
+        {
+          "name": "melleklet-b.pdf",
+          "creator": "Álnév Ferenc",
+          "createDate": "2025-10-28T13:24:23+01:00",
+          "version": 1,
+          "isTorolt": false,
+          "attachmentGuid": "891E8139-D8AB-4376-AC90-D64B3E2B2540",
+          "attachmentType": null
+        }
+      ],
+      "taskDescription": "<p>Kitalált leírás a fixture-höz. Az eredeti mező HTML-t tartalmaz, ezért ez is azt tesz.</p><p>A <b>szerkezet</b> a lényeg, nem a tartalom.</p>",
+      "metaItems": [
+        {
+          "value": "0",
+          "humanvalue": "Nem",
+          "name": "1. minta mező",
+          "type": "Check",
+          "code": "mezo1",
+          "default": null,
+          "params": null,
+          "visibility": "MT_M",
+          "is_preview": false
+        },
+        {
+          "value": null,
+          "humanvalue": null,
+          "name": "2. minta mező",
+          "type": "Text",
+          "code": "mezo2",
+          "default": null,
+          "params": null,
+          "visibility": "MT_M",
+          "is_preview": false
+        },
+        {
+          "value": null,
+          "humanvalue": null,
+          "name": "3. minta mező",
+          "type": "Number",
+          "code": "mezo3",
+          "default": null,
+          "params": null,
+          "visibility": "MT_M",
+          "is_preview": false
+        },
+        {
+          "value": null,
+          "humanvalue": null,
+          "name": "4. minta mező",
+          "type": "Option",
+          "code": "mezo4",
+          "default": null,
+          "params": "1|Alfa;Béta",
+          "visibility": "MT_M",
+          "is_preview": false
+        },
+        {
+          "value": "1",
+          "humanvalue": "Igen",
+          "name": "5. minta mező",
+          "type": "Text",
+          "code": "mezo5",
+          "default": null,
+          "params": null,
+          "visibility": "MT_M",
+          "is_preview": false
+        },
+        {
+          "value": null,
+          "humanvalue": null,
+          "name": "6. minta mező",
+          "type": "Textarea",
+          "code": "mezo6",
+          "default": null,
+          "params": null,
+          "visibility": "MT_M",
+          "is_preview": false
+        }
+      ],
+      "wfDescription": null,
+      "comments": [
+        {
+          "comment": "Minta megjegyzés a fixture-höz.",
+          "userName": "Álnév Ferenc",
+          "date": "2025-10-28T11:06:19+01:00",
+          "deputyName": null,
+          "result": null,
+          "color": null
+        },
+        {
+          "comment": "Minta megjegyzés a fixture-höz.",
+          "userName": "Álnév Ferenc",
+          "date": "2025-10-28T11:05:54+01:00",
+          "deputyName": null,
+          "result": null,
+          "color": null
+        }
+      ],
+      "result": null,
+      "isFavorite": false,
+      "icon": "1x_mobiledata_badge",
+      "creator": {
+        "userId": 23,
+        "orgId": null,
+        "userName": "Proba Hanna",
+        "orgName": ""
+      },
+      "templateName": {
+        "id": 40,
+        "code": "MINTA_A",
+        "name": "Minta folyamat A",
+        "version": 11
+      },
+      "taskMetaItems": null
+    },
+    {
+      "type": "WfTask",
+      "status": "FA_U",
+      "taskStatus": null,
+      "subject": "Demó eszközigénylés",
+      "taskStart": "2024-10-28 16:18:53",
+      "taskDeadline": "2024-10-29 23:59:59",
+      "taskName": "Első jóváhagyás",
+      "possibleResults": [
+        {
+          "id": "47",
+          "displayName": "Rendben",
+          "isSelected": true,
+          "isCommentRequired": false
+        }
+      ],
+      "id": 2349,
+      "referenceNumber": "67",
+      "attachments": [
+        {
+          "name": "tervezet.docx",
+          "creator": "Minta Béla",
+          "createDate": "2024-12-09T10:19:41+01:00",
+          "version": 1,
+          "isTorolt": false,
+          "attachmentGuid": "E36B3098-4404-4837-8E09-0C5C3043CBA8",
+          "attachmentType": null
+        },
+        {
+          "name": "osszesito.xlsx",
+          "creator": "Fiktív Dániel",
+          "createDate": "2025-01-09T15:12:15+01:00",
+          "version": 1,
+          "isTorolt": false,
+          "attachmentGuid": "6658F158-90B7-45DB-9E04-19655472A9AD",
+          "attachmentType": null
+        }
+      ],
+      "taskDescription": null,
+      "metaItems": [
+        {
+          "value": null,
+          "humanvalue": "Nem",
+          "name": "1. minta mező",
+          "type": "Check",
+          "code": "mezo1",
+          "default": null,
+          "params": null,
+          "visibility": "MT_M",
+          "is_preview": false
+        }
+      ],
+      "wfDescription": null,
+      "comments": [
+        {
+          "comment": "Példa észrevétel, kitalált tartalom.",
+          "userName": "Fiktív Dániel",
+          "date": "2025-01-17T08:29:38+01:00",
+          "deputyName": null,
+          "result": null,
+          "color": null
+        },
+        {
+          "comment": "Teszt hozzászólás — nem valós adat.",
+          "userName": "Fiktív Dániel",
+          "date": "2025-01-15T14:00:38+01:00",
+          "deputyName": null,
+          "result": null,
+          "color": null
+        },
+        {
+          "comment": "Minta megjegyzés a fixture-höz.",
+          "userName": "Fiktív Dániel",
+          "date": "2025-01-13T14:13:35+01:00",
+          "deputyName": null,
+          "result": null,
+          "color": null
+        }
+      ],
+      "result": null,
+      "isFavorite": false,
+      "icon": "1x_mobiledata_badge",
+      "creator": {
+        "userId": 57,
+        "orgId": null,
+        "userName": "Fiktív Dániel",
+        "orgName": ""
+      },
+      "templateName": {
+        "id": 34,
+        "code": "MINTA_A",
+        "name": "Minta folyamat A",
+        "version": 5
+      },
+      "taskMetaItems": null
+    },
+    {
+      "type": "WfTask",
+      "status": "FA_U",
+      "taskStatus": null,
+      "subject": "Próba belső folyamat",
+      "taskStart": "2024-10-28 16:12:55",
+      "taskDeadline": "2024-10-29 23:59:59",
+      "taskName": "Első jóváhagyás",
+      "possibleResults": [
+        {
+          "id": "44",
+          "displayName": "Rendben",
+          "isSelected": true,
+          "isCommentRequired": false
+        }
+      ],
+      "id": 2235,
+      "referenceNumber": "64",
+      "attachments": [
+        {
+          "name": "jegyzokonyv.pdf",
+          "creator": "Fiktív Dániel",
+          "createDate": "2026-01-30T14:51:05+01:00",
+          "version": 1,
+          "isTorolt": false,
+          "attachmentGuid": "DAF891D0-A9EC-49B4-B24C-B937CC98F39E",
+          "attachmentType": "egyéb melléklet"
+        }
+      ],
+      "taskDescription": null,
+      "metaItems": [
+        {
+          "value": null,
+          "humanvalue": "Nem",
+          "name": "1. minta mező",
+          "type": "Check",
+          "code": "mezo1",
+          "default": null,
+          "params": null,
+          "visibility": "MT_M",
+          "is_preview": false
+        }
+      ],
+      "wfDescription": null,
+      "comments": [],
+      "result": null,
+      "isFavorite": false,
+      "icon": "1x_mobiledata_badge",
+      "creator": {
+        "userId": 57,
+        "orgId": null,
+        "userName": "Fiktív Dániel",
+        "orgName": ""
+      },
+      "templateName": {
+        "id": 31,
+        "code": "MINTA_A",
+        "name": "Minta folyamat A",
+        "version": 2
+      },
+      "taskMetaItems": null
+    },
+    {
+      "type": "WfTask",
+      "status": "FA_U",
+      "taskStatus": null,
+      "subject": "Kitalált ügyfél megrendelés",
+      "taskStart": "2024-10-28 16:09:42",
+      "taskDeadline": "2024-10-29 23:59:59",
+      "taskName": "Első jóváhagyás",
+      "possibleResults": [
+        {
+          "id": "43",
+          "displayName": "Rendben",
+          "isSelected": true,
+          "isCommentRequired": false
+        }
+      ],
+      "id": 2197,
+      "referenceNumber": "63",
+      "attachments": [],
+      "taskDescription": null,
+      "metaItems": [
+        {
+          "value": "1",
+          "humanvalue": "Minta",
+          "name": "1. minta mező",
+          "type": "Check",
+          "code": "mezo1",
+          "default": null,
+          "params": null,
+          "visibility": "MT_K",
+          "is_preview": false
+        }
+      ],
+      "wfDescription": null,
+      "comments": [],
+      "result": null,
+      "isFavorite": false,
+      "icon": "1x_mobiledata_badge",
+      "creator": {
+        "userId": 57,
+        "orgId": null,
+        "userName": "Fiktív Dániel",
+        "orgName": ""
+      },
+      "templateName": {
+        "id": 30,
+        "code": "MINTA_A",
+        "name": "Minta folyamat A",
+        "version": 1
+      },
+      "taskMetaItems": null
+    },
+    {
+      "type": "WfTask",
+      "status": "FA_U",
+      "taskStatus": null,
+      "subject": "Minta keretszerződés",
+      "taskStart": "2024-07-29 11:18:12",
+      "taskDeadline": "2024-08-01 23:59:59",
+      "taskName": "Iktatás",
+      "possibleResults": [
+        {
+          "id": "13",
+          "displayName": "Rendben",
+          "isSelected": true,
+          "isCommentRequired": false
+        },
+        {
+          "id": "63",
+          "displayName": "Elutasítom",
+          "isSelected": false,
+          "isCommentRequired": false
+        }
+      ],
+      "id": 1712,
+      "referenceNumber": "20",
+      "attachments": [
+        {
+          "name": "melleklet-a.docx",
+          "creator": "Nemvalós István",
+          "createDate": "2024-04-18T15:05:14+02:00",
+          "version": 1,
+          "isTorolt": false,
+          "attachmentGuid": "399744A1-8910-4A4B-95EE-8A8DCE86E2E1",
+          "attachmentType": null
+        },
+        {
+          "name": "melleklet-b.pdf",
+          "creator": "Nemvalós István",
+          "createDate": "2024-04-18T15:05:14+02:00",
+          "version": 1,
+          "isTorolt": false,
+          "attachmentGuid": "C478BE7B-E042-473E-9BB4-F431088D62BB",
+          "attachmentType": null
+        }
+      ],
+      "taskDescription": null,
+      "metaItems": [
+        {
+          "value": "0",
+          "humanvalue": "Nem",
+          "name": "6. minta mező",
+          "type": "Option",
+          "code": "mezo6",
+          "default": null,
+          "params": "1|Igen;Nem",
+          "visibility": "MT_O",
+          "is_preview": false
+        },
+        {
+          "value": "1",
+          "humanvalue": "Igen",
+          "name": "3. minta mező",
+          "type": "Text",
+          "code": "mezo3",
+          "default": null,
+          "params": null,
+          "visibility": "MT_O",
+          "is_preview": false
+        },
+        {
+          "value": "1",
+          "humanvalue": "Igen",
+          "name": "2. minta mező",
+          "type": "Text",
+          "code": "mezo2",
+          "default": null,
+          "params": null,
+          "visibility": "MT_O",
+          "is_preview": false
+        },
+        {
+          "value": "1",
+          "humanvalue": "Igen",
+          "name": "1. minta mező",
+          "type": "Text",
+          "code": "mezo1",
+          "default": null,
+          "params": null,
+          "visibility": "MT_O",
+          "is_preview": false
+        },
+        {
+          "value": "1",
+          "humanvalue": "Igen",
+          "name": "4. minta mező",
+          "type": "Text",
+          "code": "mezo4",
+          "default": null,
+          "params": null,
+          "visibility": "MT_O",
+          "is_preview": false
+        },
+        {
+          "value": "1",
+          "humanvalue": "Igen",
+          "name": "5. minta mező",
+          "type": "Text",
+          "code": "mezo5",
+          "default": null,
+          "params": null,
+          "visibility": "MT_O",
+          "is_preview": false
+        },
+        {
+          "value": "minta",
+          "humanvalue": "Igen",
+          "name": "40. minta mező",
+          "type": "Option",
+          "code": "mezo40",
+          "default": null,
+          "params": "2|Egy;Kettő;Három",
+          "visibility": "MT_O",
+          "is_preview": false
+        }
+      ],
+      "wfDescription": null,
+      "comments": [
+        {
+          "comment": "Példa észrevétel, kitalált tartalom.",
+          "userName": "Példa Anna",
+          "date": "2024-08-26T16:52:41+02:00",
+          "deputyName": null,
+          "result": null,
+          "color": null
+        },
+        {
+          "comment": "Teszt hozzászólás — nem valós adat.",
+          "userName": "Minta Béla",
+          "date": "2024-07-29T11:17:52+02:00",
+          "deputyName": null,
+          "result": null,
+          "color": null
+        },
+        {
+          "comment": "Minta megjegyzés a fixture-höz.",
+          "userName": "Nemvalós István",
+          "date": "2024-07-08T09:56:42+02:00",
+          "deputyName": null,
+          "result": null,
+          "color": null
+        },
+        {
+          "comment": "Példa észrevétel, kitalált tartalom.",
+          "userName": "Teszt Csilla",
+          "date": "2024-07-04T09:16:32+02:00",
+          "deputyName": null,
+          "result": null,
+          "color": null
+        }
+      ],
+      "result": null,
+      "isFavorite": true,
+      "icon": "family_history",
+      "creator": {
+        "userId": 26,
+        "orgId": null,
+        "userName": "Nemvalós István",
+        "orgName": ""
+      },
+      "templateName": {
+        "id": 5,
+        "code": "MINTA_D",
+        "name": "Minta folyamat D",
+        "version": 3
+      },
+      "taskMetaItems": null
+    },
+    {
+      "type": "WfTask",
+      "status": "FA_U",
+      "taskStatus": null,
+      "subject": "Példa dokumentum jóváhagyás",
+      "taskStart": "2024-04-02 15:02:20",
+      "taskDeadline": "2024-04-01 23:59:59",
+      "taskName": "Első jóváhagyás",
+      "possibleResults": [
+        {
+          "id": "82",
+          "displayName": "Továbbítom",
+          "isSelected": false,
+          "isCommentRequired": false
+        }
+      ],
+      "id": 592,
+      "referenceNumber": "14",
+      "attachments": [],
+      "taskDescription": null,
+      "metaItems": [
+        {
+          "value": "minta",
+          "humanvalue": "Igen",
+          "name": "10. minta mező",
+          "type": "Option",
+          "code": "mezo10",
+          "default": null,
+          "params": "1|Piros;Zöld;Kék",
+          "visibility": "MT_O",
+          "is_preview": false
+        },
+        {
+          "value": "1",
+          "humanvalue": "Igen",
+          "name": "11. minta mező",
+          "type": "Money",
+          "code": "mezo11",
+          "default": null,
+          "params": null,
+          "visibility": "MT_O",
+          "is_preview": false
+        },
+        {
+          "value": "minta",
+          "humanvalue": "Minta",
+          "name": "12. minta mező",
+          "type": "Option",
+          "code": "mezo12",
+          "default": null,
+          "params": "1|Alfa;Béta",
+          "visibility": "MT_O",
+          "is_preview": false
+        },
+        {
+          "value": "0",
+          "humanvalue": "Nem",
+          "name": "13. minta mező",
+          "type": "Money",
+          "code": "mezo13",
+          "default": null,
+          "params": null,
+          "visibility": "MT_O",
+          "is_preview": false
+        },
+        {
+          "value": "1",
+          "humanvalue": "Minta",
+          "name": "14. minta mező",
+          "type": "Check",
+          "code": "mezo14",
+          "default": null,
+          "params": null,
+          "visibility": "MT_O",
+          "is_preview": false
+        },
+        {
+          "value": "1",
+          "humanvalue": "Igen",
+          "name": "15. minta mező",
+          "type": "Money",
+          "code": "mezo15",
+          "default": null,
+          "params": null,
+          "visibility": "MT_O",
+          "is_preview": false
+        },
+        {
+          "value": "minta",
+          "humanvalue": "Igen",
+          "name": "16. minta mező",
+          "type": "Option",
+          "code": "mezo16",
+          "default": null,
+          "params": "1|Igen;Nem",
+          "visibility": "MT_O",
+          "is_preview": false
+        },
+        {
+          "value": "1",
+          "humanvalue": "Igen",
+          "name": "17. minta mező",
+          "type": "Money",
+          "code": "mezo17",
+          "default": null,
+          "params": null,
+          "visibility": "MT_O",
+          "is_preview": false
+        },
+        {
+          "value": "1",
+          "humanvalue": "Minta",
+          "name": "18. minta mező",
+          "type": "Money",
+          "code": "mezo18",
+          "default": null,
+          "params": null,
+          "visibility": "MT_O",
+          "is_preview": false
+        },
+        {
+          "value": "1",
+          "humanvalue": "Igen",
+          "name": "19. minta mező",
+          "type": "Money",
+          "code": "mezo19",
+          "default": null,
+          "params": null,
+          "visibility": "MT_O",
+          "is_preview": false
+        },
+        {
+          "value": "1",
+          "humanvalue": "Igen",
+          "name": "20. minta mező",
+          "type": "Money",
+          "code": "mezo20",
+          "default": null,
+          "params": null,
+          "visibility": "MT_O",
+          "is_preview": false
+        },
+        {
+          "value": "1",
+          "humanvalue": "Igen",
+          "name": "21. minta mező",
+          "type": "Money",
+          "code": "mezo21",
+          "default": null,
+          "params": null,
+          "visibility": "MT_O",
+          "is_preview": false
+        },
+        {
+          "value": "1",
+          "humanvalue": "Igen",
+          "name": "22. minta mező",
+          "type": "Money",
+          "code": "mezo22",
+          "default": null,
+          "params": null,
+          "visibility": "MT_O",
+          "is_preview": false
+        },
+        {
+          "value": "minta",
+          "humanvalue": "Nem",
+          "name": "23. minta mező",
+          "type": "Text",
+          "code": "mezo23",
+          "default": null,
+          "params": null,
+          "visibility": "MT_O",
+          "is_preview": false
+        },
+        {
+          "value": "0",
+          "humanvalue": "Igen",
+          "name": "24. minta mező",
+          "type": "Text",
+          "code": "mezo24",
+          "default": null,
+          "params": null,
+          "visibility": "MT_O",
+          "is_preview": false
+        }
+      ],
+      "wfDescription": null,
+      "comments": [
+        {
+          "comment": "Teszt hozzászólás — nem valós adat.",
+          "userName": "Minta Béla",
+          "date": "2024-03-27T13:41:40+01:00",
+          "deputyName": null,
+          "result": null,
+          "color": null
+        },
+        {
+          "comment": "Minta megjegyzés a fixture-höz.",
+          "userName": "Képzelt Júlia",
+          "date": "2024-03-13T16:16:31+01:00",
+          "deputyName": null,
+          "result": null,
+          "color": null
+        }
+      ],
+      "result": null,
+      "isFavorite": false,
+      "icon": "family_history",
+      "creator": {
+        "userId": 26,
+        "orgId": null,
+        "userName": "Nemvalós István",
+        "orgName": ""
+      },
+      "templateName": {
+        "id": 6,
+        "code": "MINTA_B",
+        "name": "Minta folyamat B",
+        "version": 1
+      },
+      "taskMetaItems": null
+    },
+    {
+      "type": "Task",
+      "status": "1_elfogadva",
+      "taskStatus": "Folyamatban",
+      "subject": "Teszt havi elszámolás",
+      "taskStart": "2024-02-26 17:00:49",
+      "taskDeadline": "2024-02-26 16:59:24",
+      "taskName": null,
+      "possibleResults": [
+        {
+          "id": "1_elutasitva",
+          "displayName": "Tudomásul vettem",
+          "isSelected": false,
+          "isCommentRequired": false
+        },
+        {
+          "id": "1_lezarva",
+          "displayName": "Rendben",
+          "isSelected": false,
+          "isCommentRequired": false
+        }
+      ],
+      "id": 104,
+      "referenceNumber": "6-1/2024",
+      "attachments": [
+        {
+          "name": "tervezet.docx",
+          "creator": "Példa Anna",
+          "createDate": "2024-02-26T17:00:47+01:00",
+          "version": 1,
+          "isTorolt": false,
+          "attachmentGuid": "7FA65614-6DC5-4920-8800-13028DE7AFB3",
+          "attachmentType": null
+        },
+        {
+          "name": "melleklet-a.docx",
+          "creator": "Példa Anna",
+          "createDate": "2024-02-26T17:00:47+01:00",
+          "version": 1,
+          "isTorolt": false,
+          "attachmentGuid": "2557BAE3-EC1F-40E3-9641-225A1F33E083",
+          "attachmentType": null
+        }
+      ],
+      "taskDescription": "Kitalált leírás a fixture-höz — nem valós adat.",
+      "metaItems": [],
+      "wfDescription": null,
+      "comments": [
+        {
+          "comment": "Példa észrevétel, kitalált tartalom.",
+          "userName": "Minta Béla",
+          "date": "2024-04-24T12:01:34+02:00",
+          "deputyName": "Minta Béla"
+        },
+        {
+          "comment": "Teszt hozzászólás — nem valós adat.",
+          "userName": "Minta Béla",
+          "date": "2024-04-24T12:01:01+02:00",
+          "deputyName": "Minta Béla"
+        },
+        {
+          "comment": "Minta megjegyzés a fixture-höz.",
+          "userName": "Proba Hanna",
+          "date": "2024-04-15T10:21:33+02:00",
+          "deputyName": "Proba Hanna"
+        },
+        {
+          "comment": "Példa észrevétel, kitalált tartalom.",
+          "userName": "Nemvalós István",
+          "date": "2024-02-27T11:08:37+01:00",
+          "deputyName": "Nemvalós István"
+        },
+        {
+          "comment": "Példa észrevétel, kitalált tartalom.",
+          "userName": "Teszt Csilla",
+          "date": "2024-02-27T11:08:19+01:00",
+          "deputyName": "Teszt Csilla"
+        },
+        {
+          "comment": "Teszt hozzászólás — nem valós adat.",
+          "userName": "Fiktív Dániel",
+          "date": "2024-02-27T11:08:03+01:00",
+          "deputyName": "Fiktív Dániel"
+        },
+        {
+          "comment": "Minta megjegyzés a fixture-höz.",
+          "userName": "Teszt Csilla",
+          "date": "2024-02-27T11:07:55+01:00",
+          "deputyName": "Teszt Csilla"
+        },
+        {
+          "comment": "Példa észrevétel, kitalált tartalom.",
+          "userName": "Teszt Csilla",
+          "date": "2024-02-27T11:07:16+01:00",
+          "deputyName": "Teszt Csilla"
+        },
+        {
+          "comment": "Minta megjegyzés a fixture-höz.",
+          "userName": "Teszt Csilla",
+          "date": "2024-02-27T11:06:44+01:00",
+          "deputyName": "Teszt Csilla"
+        }
+      ],
+      "result": null,
+      "isFavorite": false,
+      "icon": "task",
+      "creator": {
+        "userId": 28,
+        "orgId": 1,
+        "userName": "Példa Anna",
+        "orgName": "MINTA"
+      },
+      "templateName": null,
+      "taskMetaItems": {
+        "internalDeadline": null
+      }
+    }
+  ]
+}

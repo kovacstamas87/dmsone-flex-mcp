@@ -115,7 +115,16 @@ describe("describeTemplate", () => {
     assert.equal(described.note, NO_REQUIRED_MARKER_NOTE);
     assert.equal(described.templateId, 66);
     assert.equal(described.linkedItemRequired, true);
-    assert.equal(described.raw, TEMPLATE_66, "a nyers válasz is elérhető marad");
+  });
+
+  test("a nyers válasz alapból kimarad, includeRaw-val jön vissza", () => {
+    const lean = describeTemplate(66, TEMPLATE_66);
+    assert.ok(!("raw" in lean), "a raw megduplázná a payloadot, ezért alapból nincs benne");
+
+    const verbose = describeTemplate(66, TEMPLATE_66, true);
+    assert.equal(verbose.raw, TEMPLATE_66);
+    // A többi mező mindkét módban ugyanaz — a raw csak hozzáadódik.
+    assert.deepEqual(Object.keys(lean), Object.keys(verbose).filter((key) => key !== "raw"));
   });
 
   test('jelöléssel validation: "api-flag", note nélkül', () => {

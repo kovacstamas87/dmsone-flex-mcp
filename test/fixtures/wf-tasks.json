@@ -1,0 +1,230 @@
+{
+  "success": true,
+  "result": [
+    {
+      "wfTaskId": 100,
+      "wfSubject": "Minta szerződés jóváhagyás",
+      "wfTaskName": "Első jóváhagyás",
+      "status": "FA_M",
+      "type": "FT_V",
+      "template": "Minta folyamat A",
+      "templateVersion": 6
+    },
+    {
+      "wfTaskId": 137,
+      "wfSubject": "Példa beszerzési igény",
+      "wfTaskName": "Második jóváhagyás",
+      "status": "FA_U",
+      "type": "FT_F",
+      "template": "Minta folyamat B",
+      "templateVersion": 7
+    },
+    {
+      "wfTaskId": 174,
+      "wfSubject": "Teszt projekt indítás",
+      "wfTaskName": "Ellenőrzés",
+      "status": "FA_K",
+      "type": "FT_F",
+      "template": "Minta folyamat C",
+      "templateVersion": 13
+    },
+    {
+      "wfTaskId": 211,
+      "wfSubject": "Fiktív számla ellenőrzés",
+      "wfTaskName": "Kitöltés",
+      "status": "FA_A",
+      "type": "FT_F",
+      "template": "Minta folyamat D",
+      "templateVersion": 2
+    },
+    {
+      "wfTaskId": 248,
+      "wfSubject": "Demó eszközigénylés",
+      "wfTaskName": "Visszaküldés javításra",
+      "status": "FA_M",
+      "type": "FT_F",
+      "template": "Minta folyamat A",
+      "templateVersion": 6
+    },
+    {
+      "wfTaskId": 285,
+      "wfSubject": "Próba belső folyamat",
+      "wfTaskName": "Lezárás",
+      "status": "FA_U",
+      "type": "FT_V",
+      "template": "Minta folyamat B",
+      "templateVersion": 7
+    },
+    {
+      "wfTaskId": 322,
+      "wfSubject": "Minta szerződés jóváhagyás",
+      "wfTaskName": "Aláírás",
+      "status": "FA_K",
+      "type": "FT_F",
+      "template": "Minta folyamat C",
+      "templateVersion": 13
+    },
+    {
+      "wfTaskId": 359,
+      "wfSubject": "Példa beszerzési igény",
+      "wfTaskName": "Iktatás",
+      "status": "FA_A",
+      "type": "FT_F",
+      "template": "Minta folyamat D",
+      "templateVersion": 2
+    },
+    {
+      "wfTaskId": 396,
+      "wfSubject": "Teszt projekt indítás",
+      "wfTaskName": "Első jóváhagyás",
+      "status": "FA_M",
+      "type": "FT_F",
+      "template": "Minta folyamat A",
+      "templateVersion": 6
+    },
+    {
+      "wfTaskId": 433,
+      "wfSubject": "Fiktív számla ellenőrzés",
+      "wfTaskName": "Második jóváhagyás",
+      "status": "FA_U",
+      "type": "FT_F",
+      "template": "Minta folyamat B",
+      "templateVersion": 7
+    },
+    {
+      "wfTaskId": 470,
+      "wfSubject": "Demó eszközigénylés",
+      "wfTaskName": "Ellenőrzés",
+      "status": "FA_K",
+      "type": "FT_V",
+      "template": "Minta folyamat C",
+      "templateVersion": 13
+    },
+    {
+      "wfTaskId": 507,
+      "wfSubject": "Próba belső folyamat",
+      "wfTaskName": "Kitöltés",
+      "status": "FA_A",
+      "type": "FT_F",
+      "template": "Minta folyamat D",
+      "templateVersion": 2
+    },
+    {
+      "wfTaskId": 544,
+      "wfSubject": "Minta szerződés jóváhagyás",
+      "wfTaskName": "Visszaküldés javításra",
+      "status": "FA_M",
+      "type": "FT_F",
+      "template": "Minta folyamat A",
+      "templateVersion": 6
+    },
+    {
+      "wfTaskId": 581,
+      "wfSubject": "Példa beszerzési igény",
+      "wfTaskName": "Lezárás",
+      "status": "FA_U",
+      "type": "FT_F",
+      "template": "Minta folyamat B",
+      "templateVersion": 7
+    },
+    {
+      "wfTaskId": 618,
+      "wfSubject": "Teszt projekt indítás",
+      "wfTaskName": "Aláírás",
+      "status": "FA_K",
+      "type": "FT_F",
+      "template": "Minta folyamat C",
+      "templateVersion": 13
+    },
+    {
+      "wfTaskId": 655,
+      "wfSubject": "Fiktív számla ellenőrzés",
+      "wfTaskName": "Iktatás",
+      "status": "FA_A",
+      "type": "FT_V",
+      "template": "Minta folyamat D",
+      "templateVersion": 2
+    },
+    {
+      "wfTaskId": 692,
+      "wfSubject": "Demó eszközigénylés",
+      "wfTaskName": "Első jóváhagyás",
+      "status": "FA_M",
+      "type": "FT_F",
+      "template": "Minta folyamat A",
+      "templateVersion": 6
+    },
+    {
+      "wfTaskId": 729,
+      "wfSubject": "Próba belső folyamat",
+      "wfTaskName": "Második jóváhagyás",
+      "status": "FA_U",
+      "type": "FT_F",
+      "template": "Minta folyamat B",
+      "templateVersion": 7
+    },
+    {
+      "wfTaskId": 766,
+      "wfSubject": "Minta szerződés jóváhagyás",
+      "wfTaskName": "Ellenőrzés",
+      "status": "FA_K",
+      "type": "FT_F",
+      "template": "Minta folyamat C",
+      "templateVersion": 13
+    },
+    {
+      "wfTaskId": 803,
+      "wfSubject": "Példa beszerzési igény",
+      "wfTaskName": "Kitöltés",
+      "status": "FA_A",
+      "type": "FT_F",
+      "template": "Minta folyamat D",
+      "templateVersion": 2
+    },
+    {
+      "wfTaskId": 840,
+      "wfSubject": "Teszt projekt indítás",
+      "wfTaskName": "Visszaküldés javításra",
+      "status": "FA_M",
+      "type": "FT_V",
+      "template": "Minta folyamat A",
+      "templateVersion": 6
+    },
+    {
+      "wfTaskId": 877,
+      "wfSubject": "Fiktív számla ellenőrzés",
+      "wfTaskName": "Lezárás",
+      "status": "FA_U",
+      "type": "FT_F",
+      "template": "Minta folyamat B",
+      "templateVersion": 7
+    },
+    {
+      "wfTaskId": 914,
+      "wfSubject": "Demó eszközigénylés",
+      "wfTaskName": "Aláírás",
+      "status": "FA_K",
+      "type": "FT_F",
+      "template": "Minta folyamat C",
+      "templateVersion": 13
+    },
+    {
+      "wfTaskId": 951,
+      "wfSubject": "Próba belső folyamat",
+      "wfTaskName": "Iktatás",
+      "status": "FA_A",
+      "type": "FT_F",
+      "template": "Minta folyamat D",
+      "templateVersion": 2
+    },
+    {
+      "wfTaskId": 988,
+      "wfSubject": "Minta szerződés jóváhagyás",
+      "wfTaskName": "Első jóváhagyás",
+      "status": "FA_M",
+      "type": "FT_F",
+      "template": "Minta folyamat A",
+      "templateVersion": 6
+    }
+  ]
+}

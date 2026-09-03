@@ -21,7 +21,16 @@ type Annotations = {
   idempotentHint?: boolean;
   openWorldHint?: boolean;
 };
-type Tool = { name: string; description?: string; annotations?: Annotations };
+/** Csak az a rész, amit itt ellenőrzünk — a JSON Schema teljes alakja nem kell. */
+type InputSchema = {
+  properties?: Record<string, { default?: unknown; enum?: unknown[] }>;
+};
+type Tool = {
+  name: string;
+  description?: string;
+  annotations?: Annotations;
+  inputSchema?: InputSchema;
+};
 
 let client: Client;
 let tools: Map<string, Tool>;
@@ -49,6 +58,14 @@ const annotationsOf = (name: string): Annotations => {
   assert.ok(tool, `hiányzik az eszköz: ${name}`);
   assert.ok(tool.annotations, `${name}: nincs annotáció`);
   return tool.annotations;
+};
+
+/** A `tools/list`-ben látszó JSON Schema — a modell ebből olvassa ki az alapértelmezéseket. */
+const schemaOf = (name: string): InputSchema => {
+  const tool = tools.get(name);
+  assert.ok(tool, `hiányzik az eszköz: ${name}`);
+  assert.ok(tool.inputSchema, `${name}: nincs inputSchema`);
+  return tool.inputSchema;
 };
 
 test("19 eszköz van regisztrálva", () => {
@@ -127,6 +144,48 @@ test("az indítás leírása kimondja, hogy az ellenőrzés best-effort", () => 
     description.includes("Flex\nszerver érvényesíti") || description.includes("Flex szerver érvényesíti"),
     "a leírás nem mondja ki, hogy az érdemi ellenőrzés a szerveré",
   );
+});
+
+/**
+ * WF9: a két listázó alapból **szűrt és lapozott** választ ad. Ha a leírás
+ * ezt elhallgatná, a modell teljes listát hinne, és a hiányzó elemeket a
+ * rendszer hibájának venné a lapozás helyett.
+ */
+test("a listázók leírása kimondja a lapozást és az összefoglaló alapértelmezést", () => {
+  for (const name of ["flex_task_list", "flex_workflow_get_my_tasks"]) {
+    const description = tools.get(name)?.description ?? "";
+    const schema = schemaOf(name);
+
+    assert.ok(/lapoz/i.test(description), `${name}: a leírás nem mondja ki a lapozást`);
+    assert.ok(description.includes("20"), `${name}: nincs megnevezve az alapértelmezett limit`);
+    assert.ok(description.includes("hasMore"), `${name}: a boríték nincs leírva`);
+
+    for (const key of ["limit", "offset", "fields"]) {
+      assert.ok(key in (schema.properties ?? {}), `${name}: hiányzik a ${key} paraméter`);
+    }
+    assert.deepEqual(schema.properties?.fields?.enum, ["summary", "full"], `${name}: fields enum`);
+    assert.equal(schema.properties?.limit?.default, 20, `${name}: a limit alapértelmezése`);
+  }
+});
+
+test("a feladatlista leírása megmondja, mi marad ki az összefoglalóból", () => {
+  const description = tools.get("flex_task_list")?.description ?? "";
+  assert.ok(/NEM szerepel/.test(description), "nem mondja ki, hogy a részletek kimaradnak");
+  assert.ok(
+    description.includes("flex_workflow_get_task_details"),
+    "nem mutat rá, honnan jönnek a részletek",
+  );
+  // A `/dms/news` vegyes listát ad — ha ezt elhallgatjuk, a modell Task-ként
+  // próbálna lezárni egy WfTask-ot.
+  assert.ok(description.includes("WfTask"), "nem jelzi, hogy a lista vegyes");
+});
+
+test("a sablon-részletek leírása jelzi, hogy a nyers válasz opcionális", () => {
+  const description = tools.get("flex_workflow_get_template_details")?.description ?? "";
+  const schema = schemaOf("flex_workflow_get_template_details");
+
+  assert.ok(description.includes("includeRaw"), "az includeRaw nincs a leírásban");
+  assert.equal(schema.properties?.includeRaw?.default, false, "az includeRaw alapból hamis");
 });
 
 test("a dátumot fogadó eszközök leírása a falióra-szemantikát mondja", () => {
