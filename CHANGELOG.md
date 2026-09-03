@@ -3,6 +3,58 @@
 A jelölés a [Keep a Changelog](https://keepachangelog.com/) és a
 [SemVer](https://semver.org/) ajánlásait követi.
 
+## [0.2.0] – 2026-09-03
+
+### Added
+- **P1-1**: a két listázó eszköz (`flex_task_list`, `flex_workflow_get_my_tasks`) lapoz és
+  alapból összefoglalót ad — `limit` (1–100, alap 20), `offset`, `fields: "summary" | "full"`,
+  egységes boríték (`{ total, offset, returned, hasMore, fields, items }`).
+- **P1-4**: `flex_workflow_get_template_details` `includeRaw` paramétere (alap `false`) — a
+  normalizált `fields` mellett a teljes `raw` csak kérésre jön vissza.
+- **P1-2**: `outputSchema` öt szerver-épített válaszon (`flex_diag`, `flex_task_list`,
+  `flex_workflow_get_my_tasks`, `flex_workflow_get_template_details`,
+  `flex_workflow_download_attachment`) — szándékosan laza séma, lásd `src/schema.ts`.
+- **P1-8/P1-9**: minőség-infrastruktúra — eslint (flat config) + Prettier, `tsc --noEmit`,
+  handler-tesztek egy fake `FlexHttp` klienssel (`test/handlers.test.ts`), CI Node 20/22
+  mátrixon `npm audit`-tal, heti Dependabot.
+- **P1-10**: a `.mcpb` egyfájlos esbuild-bundle-ből készül, `node_modules` nélkül.
+- **P1-11**: `manifest.json` `manifest_version: "0.3"`, `repository`/`homepage`/`documentation`/
+  `support` mezőkkel.
+- **P1-14**: LLM-eval kérdéssor rögzített válaszokkal (`../flex-mcp-eval/evaluation.xml`,
+  10 read-only kérdés) — a `../flex-mcp-eval/CLAUDE.md` írja le a futtatás módját. A tool-leírások
+  fix, munkamenetenkénti terhe mérve: **4 484 karakter** (11 936-ról, −62 %), `initialize`
+  `instructions` 2 331 karakter, a teljes `tools/list` JSON 25 996 karakter. A `startDetails/66`
+  válasza `includeRaw` nélkül 2 304 karakter az 5 370 helyett (−57 %); a `/dms/news` egy 21 elemes
+  hívása 70 645 karakterről 7 312-re (−89,6 %) csökkent. A tíz kérdés két Claude Desktop-mérése
+  (v0.1.1 vs. ez a kiadás) **felhasználói lépés, még nem futott le** — a kérdéssor és a mérőtábla
+  készen áll a `../flex-mcp-eval/meresek.md`-ben.
+
+### Changed
+- **Áttörő változás a hívó modellnek**: a `performerOrgId` (`flex_task_create`) és a
+  `responsibleOrgId` (`flex_workflow_start`) mostantól **kötelező** — korábban meg nem adva
+  csendben `1`-re esett vissza, ami rossz szervezeti egységhez rendelt feladatot okozhatott
+  észrevétlenül (P1-5/P1-6).
+- **P1-3**: tömör tool-leírások — a „Bemenet:/Visszatérés:" blokkok kikerültek, a
+  paraméter-magyarázat a Zod `.describe()`-ba, a válasz alakja az `outputSchema`-ba került.
+- A két listázó eszköz **alapértelmezett módja `summary`**, nem a Flex nyers válasza — a részletet
+  a részletező eszközök adják.
+- `flex_task_list` minden eleme explicit `idKind`-ot (`"taskId"` / `"wfTaskId"`) is ad, hogy a
+  modellnek ne kelljen a `type` mezőt eszköznévre fordítania.
+- A verzió emelése egyetlen paranccsal (`npm version`) történik — a README „Kiadás készítése"
+  fejezete a korábbi kézi, kétszeres verzióemelésről erre javítva.
+
+### Fixed
+- `toolJson` mostantól a `structuredContent`-et is csonkolja az 50 000 karakteres korlát fölött,
+  nem csak a `text`-et — korábban a kliens a csonkolatlan `structuredContent`-et is megkapta.
+- A `flex_user_get_by_username` leírása és a hozzá mutató `orgId` paraméterek javítva: a
+  `/dms/ac/user` **nem ad** `orgId`-t (élő mintavétel, WF14), a korábbi leírás mégis oda küldte a
+  modellt. A leírás most a valódi forrást (`flex_task_list` `orgId` mezője, illetve
+  `wfDetails.responsibleUser.orgId`) mondja, és jelzi az ékezet-érzékeny keresést.
+
+### Security
+- **B11**: a csatolmány-letöltésnek felső mérethatára van (`FLEX_MAX_DOWNLOAD_MB`, alap 50 MB) —
+  a `client.download()` korábban korlát nélkül olvasott memóriába; a túllépés hiba, nem csonkolás.
+
 ## [0.1.1] – 2026-09-02
 
 ### Security

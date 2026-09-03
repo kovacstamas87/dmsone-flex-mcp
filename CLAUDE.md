@@ -5,19 +5,17 @@ DMS One Flex REST API-t teszi elérhetővé feladatok, munkafolyamatok és felha
 minden hívás a beállított token tulajdonosának a nevében fut. Ugyanazokat a végpontokat fedi, mint
 a közösségi `n8n-nodes-dmsone-flex` node.
 
-**Állapot (2026-09-03):** **v0.1.1** kiadva (P0: WF1–WF7), a `../flex-mcp-p1-p2-megvalositasi-terv.md`
-**P1 üteme fut**: a **WF9** (payload-kontroll), a **WF10** (`outputSchema`, tömör leírások,
-generált `manifest.tools`), a **WF11** (Task/WfTask `idKind`, `orgId` alapértelmezés kivezetése), a
-**WF12** (minőség-infrastruktúra) és a **WF13** (egyfájlos bundle, manifest 0.3, letöltési
-méretkorlát) kész — a két listázó lapoz és összefoglalót ad, a `toolJson` a `structuredContent`-et is
-csonkolja, öt eszköz `outputSchema`-t ad, az összleírás 11 936-ról 4 500 alá fogyott, a
-`flex_task_list` minden eleme explicit `idKind`-ot (`taskId`/`wfTaskId`) is ad, a
-`performerOrgId`/`responsibleOrgId`-nak nincs többé néma `1` alapértelmezése, a szerver eslint +
-prettier + typecheck alatt fut CI-mátrixszal (Node 20/22, `npm audit`) és handler-tesztekkel egy fake
-`FlexHttp` kliensen, a `.mcpb` pedig 3,79 MB-ról **212 kB**-ra fogyott, `node_modules` nélkül. Build
-és teszt zöld (154 teszt). A **WF14** kérdéssora is kész (`../flex-mcp-eval/`), és élő
-mintavétellel egy leírás-őszinteségi hibát is talált (`orgId` forrása) — javítva. A következő a
-**WF15** (doksi + v0.2.0 kiadás).
+**Állapot (2026-09-03):** **v0.2.0** kiadva — a `../flex-mcp-p1-p2-megvalositasi-terv.md` **P0 és
+P1 üteme kész** (WF1–WF15). A két listázó lapoz és összefoglalót ad, a `toolJson` a
+`structuredContent`-et is csonkolja, öt eszköz `outputSchema`-t ad, az összleírás 11 936-ról
+4 484 karakterre fogyott, a `flex_task_list` minden eleme explicit `idKind`-ot (`taskId`/`wfTaskId`)
+is ad, a `performerOrgId`/`responsibleOrgId`-nak nincs többé néma `1` alapértelmezése (**áttörő
+változás a hívó modellnek**), a szerver eslint + prettier + typecheck alatt fut CI-mátrixszal
+(Node 20/22, `npm audit`) és handler-tesztekkel egy fake `FlexHttp` kliensen, a `.mcpb` pedig
+3,79 MB-ról **212 kB**-ra fogyott, `node_modules` nélkül. Build és teszt zöld. Az eval-kérdéssor
+(`../flex-mcp-eval/`) kész és élő mintavétellel egy leírás-őszinteségi hibát is talált (`orgId`
+forrása) — javítva; a két Claude Desktop-mérés felhasználói lépésre vár. A következő ütem a P2
+(`v1.0.0`), kapu-döntéssel a WF16-ban.
 Nyitva maradt a Flex-oldali P0-2 elküldése, a P0-6 Flex-válasz, a WF14 két Claude Desktop-mérése
 és az opcionális élő/írás-tesztek — lásd lent.
 
@@ -35,7 +33,7 @@ Nyitva maradt a Flex-oldali P0-2 elküldése, a P0-6 Flex-válasz, a WF14 két C
 | `.github/dependabot.yml` | Heti `npm` és `github-actions` függőségfrissítés-figyelés | **új WF12-ben** |
 | `INSTALL-WINDOWS.md`, `INSTALL-MACOS.md` | Végfelhasználói telepítési útmutatók | WF1-ben Node 20+ -ra igazítva; WF3: letöltési könyvtár leírása; WF4: „Időzóna" mező a konfig-űrlapon; WF5: SSL-tiltás a publikus URL-en; WF13: letöltés a **Releases** oldalról (nincs hardcode-olt verzió), új „Letöltési méretkorlát” mező a konfig-űrlapon |
 | `README.md` | Fejlesztői doksi | WF3: `FLEX_DOWNLOAD_DIR`, WF4: `FLEX_TIMEZONE`, WF5: SSL-tiltás; WF13: `FLEX_MAX_DOWNLOAD_MB`, és a „Kiadás készítése” fejezet az `npm version`-re javítva |
-| `CHANGELOG.md` | Kiadási napló | **WF6-ban megírva** a `[0.1.1]` bejegyzés (Security/Fixed/Changed, P0-hivatkozásokkal) |
+| `CHANGELOG.md` | Kiadási napló | **WF6**: `[0.1.1]` (Security/Fixed/Changed, P0-hivatkozásokkal); **WF15**: `[0.2.0]` (Added/Changed/Fixed/Security, P1-hivatkozásokkal, eval-mérésekkel) |
 | `.env.example` | Env változók mintája (`FLEX_TOKEN`, `FLEX_BASE_URL`, …) | WF3: `FLEX_DOWNLOAD_DIR` megjegyzés (abszolút út, sandbox); WF4: `FLEX_TIMEZONE`; WF13: `FLEX_MAX_DOWNLOAD_MB` |
 | `dist/`, `build/`, `*.mcpb`, `node_modules/` | **Build-artefaktum** — ne szerkeszd, `npm run build` / `npm run bundle` állítja elő | generált |
 
