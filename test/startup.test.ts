@@ -8,7 +8,9 @@ import { checkTokenOnStart } from "../src/tools/diagnostic.js";
  * `checkTokenOnStart` (P2-5, `FLEX_CHECK_ON_START`) fake `FlexHttp`-en: nem hív
  * hálózatot, ugyanaz az elv, mint a `handlers.test.ts` fake klienseinél.
  */
-function fakeHttp(request: (method: "GET" | "POST", url: string, opts?: RequestOptions) => unknown): FlexHttp {
+function fakeHttp(
+  request: (method: "GET" | "POST", url: string, opts?: RequestOptions) => unknown,
+): FlexHttp {
   return {
     async request<T>(method: "GET" | "POST", url: string, opts?: RequestOptions): Promise<T> {
       return request(method, url, opts) as T;
