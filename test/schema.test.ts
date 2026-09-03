@@ -48,7 +48,7 @@ function fixture(name: string): { success: boolean; result: Record<string, unkno
 const NEWS = fixture("task-list");
 const WF_TASKS = fixture("wf-tasks");
 
-/** A 66-os sablon alakja: mezőkódokkal kulcsolt `metadata`, kötelezőség-jelölés nélkül. */
+/** A 66-os sablon alakja: mezőkódokkal kulcsolt `metadata`, csak `visibility` jelöléssel. */
 const TEMPLATE_66 = {
   success: true,
   result: {
@@ -97,8 +97,12 @@ describe("diagOutput", () => {
 });
 
 describe("templateDetailsOutput", () => {
-  test('a "none" ág (note-tal) és az includeRaw ág is átmegy', () => {
-    expectValid(templateDetailsOutput, structured(describeTemplate(66, TEMPLATE_66)), "validation: none");
+  test('a "visibility-flag" ág (note-tal) és az includeRaw ág is átmegy', () => {
+    expectValid(
+      templateDetailsOutput,
+      structured(describeTemplate(66, TEMPLATE_66)),
+      "validation: visibility-flag",
+    );
     expectValid(
       templateDetailsOutput,
       structured(describeTemplate(66, TEMPLATE_66, true)),

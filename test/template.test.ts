@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 
 import {
   NO_REQUIRED_MARKER_NOTE,
+  VISIBILITY_MARKER_NOTE,
   describeTemplate,
   missingRequiredMessage,
   parseTemplateFields,
@@ -11,8 +12,9 @@ import {
 /**
  * A 66-os sablon `startDetails` válaszának alakja: a `metadata` mezőkódokkal
  * kulcsolt objektum, a mezőkön **nincs** `required` (és `mandatory`) kulcs —
- * csak `visibility: MT_K` / `MT_M`, amiről a P0-6 nyitott kérdése szól: nem
- * tudjuk, hogy a `MT_K` kötelezőséget jelent-e.
+ * csak `visibility: MT_K` / `MT_M`. A P0-6 lezárva (2026-09-03, élő
+ * UI-egyeztetés a "Belső projekt jóváhagyás (v6)" sablonnal, 6/6 egyezés):
+ * a `MT_K` kötelezőséget jelent, a `MT_M` nem.
  */
 const TEMPLATE_66 = {
   success: true,
@@ -52,20 +54,31 @@ const TEMPLATE_WITH_FLAGS = {
 };
 
 describe("parseTemplateFields", () => {
-  test("kötelezőség-jelölés nélküli sablonnál requiredMarkerPresent: false", () => {
+  test("explicit jelölés nélküli, de visibility-t hordozó sablonnál a MT_K a kötelező", () => {
     const parsed = parseTemplateFields(TEMPLATE_66);
 
     assert.equal(parsed.requiredMarkerPresent, false);
+    assert.equal(parsed.visibilityMarkerPresent, true);
     assert.equal(parsed.fields.length, 3);
     assert.deepEqual(
       parsed.fields.map((field) => field.required),
-      [false, false, false],
-      "jelölés nélkül nem állítunk kötelezőséget",
+      [true, true, false],
+      "MT_K → kötelező, MT_M → nem",
     );
     assert.deepEqual(parsed.allowedLinkedItemTypes, ["alszam", "foszam"]);
     // A meglévő feldolgozás nem sérült: az Option értékei és a visibility megmarad.
     assert.deepEqual(parsed.fields[2].options, ["atutalas", "keszpenz", "kartya"]);
     assert.equal(parsed.fields[0].visibility, "MT_K");
+  });
+
+  test("sem required/mandatory, sem visibility kulcs nélkül nem állítunk kötelezőséget", () => {
+    const parsed = parseTemplateFields({
+      result: { metadata: [{ code: "MEGJEGYZES", type: "Text" }] },
+    });
+
+    assert.equal(parsed.requiredMarkerPresent, false);
+    assert.equal(parsed.visibilityMarkerPresent, false);
+    assert.equal(parsed.fields[0].required, false);
   });
 
   test("required jelöléssel requiredMarkerPresent: true", () => {
@@ -108,13 +121,20 @@ describe("parseTemplateFields", () => {
 });
 
 describe("describeTemplate", () => {
-  test('jelölés nélkül validation: "none" és magyarázó note', () => {
+  test('visibility-jelöléssel validation: "visibility-flag" és magyarázó note', () => {
     const described = describeTemplate(66, TEMPLATE_66);
+
+    assert.equal(described.validation, "visibility-flag");
+    assert.equal(described.note, VISIBILITY_MARKER_NOTE);
+    assert.equal(described.templateId, 66);
+    assert.equal(described.linkedItemRequired, true);
+  });
+
+  test('semmilyen jelölés nélkül validation: "none" és magyarázó note', () => {
+    const described = describeTemplate(1, { result: { metadata: [{ code: "X", type: "Text" }] } });
 
     assert.equal(described.validation, "none");
     assert.equal(described.note, NO_REQUIRED_MARKER_NOTE);
-    assert.equal(described.templateId, 66);
-    assert.equal(described.linkedItemRequired, true);
   });
 
   test("a nyers válasz alapból kimarad, includeRaw-val jön vissza", () => {
@@ -140,11 +160,17 @@ describe("describeTemplate", () => {
 });
 
 describe("missingRequiredMessage", () => {
-  test("jelölés nélküli sablonnál nem futtatunk ellenőrzést", () => {
-    // Ez a P0-6 lényege: a régi kód itt „ellenőrizve" átengedett mindent, mert a
-    // required mindig false volt — most nyíltan nem ellenőrzünk.
-    const message = missingRequiredMessage(66, parseTemplateFields(TEMPLATE_66), {});
+  test("semmilyen jelölés nélküli sablonnál nem futtatunk ellenőrzést", () => {
+    const parsed = parseTemplateFields({ result: { metadata: [{ code: "X", type: "Text" }] } });
+    const message = missingRequiredMessage(1, parsed, {});
     assert.equal(message, undefined);
+  });
+
+  test("visibility-jelöléssel a kitöltetlen MT_K mezőkről is jön hibaszöveg", () => {
+    const message = missingRequiredMessage(66, parseTemplateFields(TEMPLATE_66), {});
+    assert.ok(message, "kellene hibaszöveg — a P0-6 lezárása óta a MT_K is kötelezőnek számít");
+    assert.ok(message.includes("partnerNev"));
+    assert.ok(!message.includes("fizetesiMod"), "MT_M nem kötelező");
   });
 
   test("jelölt, de kitöltetlen mezőről hibaszöveg jön a kóddal és az opciókkal", () => {

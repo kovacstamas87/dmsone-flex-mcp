@@ -3,6 +3,16 @@
 A jelölés a [Keep a Changelog](https://keepachangelog.com/) és a
 [SemVer](https://semver.org/) ajánlásait követi.
 
+## [1.0.1] – 2026-09-03
+
+### Fixed
+- **P0-6 lezárva**: a `flex_workflow_get_template_details` és a `flex_workflow_start` mostantól a
+  `visibility: "MT_K"` mezőt is kötelezőségi jelzésnek veszi, ha a sablon nem hordoz explicit
+  `required`/`mandatory` kulcsot (`visibility-flag` új `validation` érték, `VISIBILITY_MARKER_NOTE`).
+  A forrás: élő UI-egyeztetés (2026-09-03, "Belső projekt jóváhagyás (v6)" sablon) 6/6 mezőn
+  igazolta, hogy a Flex "Létrehozás" dialógusa pontosan a `MT_K` mezőket jelöli kötelezőnek. Az
+  explicit `required`/`mandatory` kulcs (`api-flag`) továbbra is elsőbbséget élvez, ha jelen van.
+
 ## [1.0.0] – 2026-09-03
 
 ### Added

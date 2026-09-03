@@ -11,11 +11,12 @@ a közösségi `n8n-nodes-dmsone-flex` node.
 (`CHANGELOG.md`) — **WF20** SDK v2 (`@modelcontextprotocol/sdk@1.30` → `server@2.0.0`, `zod@3` →
 `zod@4`; a `tools/list` a kliens felé változatlan), **WF17** prompt-injection jelölés (P2-4/B9),
 **WF18** Resources + Prompts (P2-2/P2-3): három resource, három vezetett prompt,
-`templateId`-completion, **WF19** induláskori token-ellenőrzés (`FLEX_CHECK_ON_START`, opt-in). 214
+`templateId`-completion, **WF19** induláskori token-ellenőrzés (`FLEX_CHECK_ON_START`, opt-in). 217
 teszt zöld. A `../flex-mcp-kiertekelesi-terv.md` 8. fejezete (lezárási feltételek) és a 3.5
-pontozás a WF21-ben lezárva/újramérve. Nyitva: a Flex-oldali P0-2 (a `/diag` a WF21 ellenőrzésekor
-is még tükrözi a Bearer tokent — jelentve, a Flex csapatnál), a P0-6 Flex-válasz, és a teljes
-Claude Desktop UX-mérés (hívásszám/token) — lásd lent és `../flex-mcp-eval/meresek.md` 4. szakasza.
+pontozás a WF21-ben lezárva/újramérve. **P0-6 lezárva** (2026-09-03, kiadás után, élő
+UI-egyeztetéssel — lásd lent „Kulcsdöntések"). Nyitva: a Flex-oldali P0-2 (a `/diag` a WF21
+ellenőrzésekor is még tükrözi a Bearer tokent — jelentve), és a teljes Claude Desktop UX-mérés
+(hívásszám/token) — lásd lent és `../flex-mcp-eval/meresek.md` 4. szakasza.
 
 ## Mappa tartalma
 
@@ -96,12 +97,14 @@ Claude Desktop UX-mérés (hívásszám/token) — lásd lent és `../flex-mcp-e
   bemenetet változatlanul hagy, és csak offsettel megadott értéket számol át a `FLEX_TIMEZONE`
   zónájára. Miért fontos: a korábbi `toISOString()` mindig UTC-re konvertált, így egy nyári
   `…+02:00` határidő két órával korábbra ment be (P0-5). Részletek: [`src/CLAUDE.md`](src/CLAUDE.md).
-- **A kötelező-mező ellenőrzés nyíltan best-effort.** Csak akkor fut, ha a sablon mezői egyáltalán
-  hordoznak `required`/`mandatory` jelölést; a `flex_workflow_get_template_details` ezt a
-  `validation: "api-flag" | "none"` mezőben mondja ki. Miért: a Flex startDetails a 66-os sablonnál
-  nem jelöl kötelezőséget (csak `visibility: MT_K`/`MT_M`), a régi kód mégis „ellenőrzött"-nek
-  mutatkozott, miközben mindent átengedett (P0-6). Hogy a `MT_K` jelent-e kötelezőséget, az a
-  Flex csapatnál nyitott kérdés — addig az érdemi ellenőrzés a szerveré.
+- **A kötelező-mező ellenőrzés nyíltan best-effort, két forrással.** Elsősorban a
+  `required`/`mandatory` jelölést nézi; ha az hiányzik, a `visibility: "MT_K"`-ra esik vissza — a
+  `flex_workflow_get_template_details` ezt a `validation: "api-flag" | "visibility-flag" | "none"`
+  mezőben mondja ki. **P0-6 lezárva (2026-09-03):** élő UI-egyeztetés (a "Belső projekt jóváhagyás
+  (v6)" sablon "Létrehozás" dialógusa, 6/6 mezőn) igazolta, hogy a Flex a `MT_K` mezőket jelöli
+  kötelezőnek a `visibility: MT_M`-mel szemben — korábban a régi kód ezt `required: false`-ra
+  fordítva „ellenőrzött"-nek mutatkozott, miközben mindent átengedett. Ez nincs írott Flex-doksiban,
+  ezért a `"visibility-flag"` gyengébb forrásnak számít, mint egy explicit kulcs (`"api-flag"`).
 - **A `/dms/news` (`flex_task_list`) vegyes listájának minden eleme explicit `idKind`-ot kap**
   (P1-5/P1-6, WF11): `"taskId"` vagy `"wfTaskId"`, a `type` mezőből származtatva. Miért nem elég a
   `type`: a modellnek konkrét eszköznevet kell választania (`flex_task_*` vagy `flex_workflow_*`),
@@ -177,10 +180,10 @@ Claude Desktop UX-mérés (hívásszám/token) — lásd lent és `../flex-mcp-e
   `pending`/`completed` bájtra azonos választ ad. MCP-oldalon nincs mit javítani; mindkettőt
   **kimondja a `flex_task_list` leírása**. Reprodukció:
   [`../flex-diag-hibajelentes.md`](../flex-diag-hibajelentes.md) 2. és 3. pontja.
-- **P0-2 és P0-6 Flex-oldali fele**: a `/diag` végpont backend-oldali szűrése, és mi jelöli a
-  kötelezőséget a startDetails válaszában (a `visibility: MT_K` az?) — mindkettő a
-  `../flex-diag-hibajelentes.md`-ben, elküldése a Flex csapatnak a felhasználó lépése. Amíg nincs
-  válasz, a `validation: "none"` a 66-os sablonnál a helyes, őszinte állapot.
+- **P0-2**: a `/diag` végpont backend-oldali szűrése — a `../flex-diag-hibajelentes.md`-ben,
+  elküldése a Flex csapatnak a felhasználó lépése. **P0-6 lezárva** (élő UI-egyeztetés,
+  2026-09-03): a `MT_K` kötelezőséget jelent, nincs rá szükség hivatalos Flex-válaszra — a
+  `flex-diag-hibajelentes.md` erről szóló kérdése törölhető, ha a jelentés még nincs elküldve.
 - **A dátumjavítás írás-tesztje** (flex-dev, tesztfeladat) — a `datetime.test.ts` a konverziót Flex
   nélkül lefedi; ami hiányzik, az annak élő igazolása, hogy a Flex **tényleg** faliórát tárol.
 - **A teljes Claude Desktop UX-mérés** (hívásszám/token, friss `.mcpb`-vel telepítve, 10 beszélgetés

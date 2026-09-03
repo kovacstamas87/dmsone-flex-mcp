@@ -72,7 +72,9 @@ const templateFieldSchema = z
     name: z.string().optional().describe("A mező neve"),
     label: z.string().optional().describe("A mező felirata"),
     type: z.string().optional().describe("Text, Option, Date, Number, Money, Partner, Check, …"),
-    required: z.boolean().describe('Kötelező-e — csak validation: "api-flag" esetén érdemi'),
+    required: z
+      .boolean()
+      .describe('Kötelező-e — validation: "api-flag" vagy "visibility-flag" esetén érdemi'),
     default: z.unknown().optional().describe("Alapértelmezett érték, ha van"),
     visibility: z.string().optional().describe("A mező láthatósági kódja (MT_K / MT_M)"),
     options: z.array(z.string()).optional().describe("Option típusnál a választható értékek"),
@@ -86,9 +88,12 @@ export const templateDetailsOutput = looseOutput({
   allowedLinkedItemTypes: z.array(z.string()).describe("Megengedett kapcsolt elem típusok"),
   linkedItemRequired: z.boolean().describe("Kell-e kapcsolt elemet (iratot) megadni"),
   validation: z
-    .enum(["api-flag", "none"])
-    .describe('"api-flag": a required értékek érdemiek; "none": a sablon nem jelöl kötelezőséget'),
-  note: z.string().describe('Magyarázat, ha validation: "none"'),
+    .enum(["api-flag", "visibility-flag", "none"])
+    .describe(
+      '"api-flag": explicit required/mandatory kulcs; "visibility-flag": ' +
+        'visibility: "MT_K" élő UI-egyeztetés alapján; "none": a sablon nem jelöl kötelezőséget',
+    ),
+  note: z.string().describe('Magyarázat, ha validation: "none" vagy "visibility-flag"'),
   raw: z.unknown().describe("A startDetails nyers válasza, csak includeRaw: true esetén"),
 });
 

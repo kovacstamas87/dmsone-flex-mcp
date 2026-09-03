@@ -106,11 +106,12 @@ hogy a modellnek ne kelljen a `type` stringet eszköznévre fordítania.
   a keresés a **megjelenített névre** illeszkedik és **ékezet-érzékeny** (`"ková"` talál,
   `"kovacs"` nem) — ez is bekerült a leírásba, mert enélkül egy üres találat úgy néz ki, mintha a
   felhasználó nem létezne. Az őr: `test/tools-list.test.ts`.
-- **Kötelező mező: best effort, kimondva.** A `workflow.ts` csak akkor szól előre hiányzó mezőről,
-  ha a sablon egyáltalán hordoz `required`/`mandatory` jelölést (`requiredMarkerPresent`); az
-  érdemi ellenőrzés a Flex szerveré. A `validation: "api-flag" | "none"` mező ezt a modellnek is
-  megmondja. Miért: a 66-os sablon mezőin nincs jelölés, csak `visibility: MT_K`/`MT_M`, és a régi
-  kód ezt `required: false`-ra fordítva „ellenőrzött"-nek látszott, miközben mindent átengedett.
+- **Kötelező mező: best effort, kimondva, két forrással.** A `workflow.ts` előre szól hiányzó
+  mezőről, ha a sablon `required`/`mandatory` kulcsot hordoz (`requiredMarkerPresent`, `"api-flag"`),
+  ennek hiányában a `visibility: "MT_K"`-ra esik vissza (`visibilityMarkerPresent`,
+  `"visibility-flag"`) — **P0-6 lezárva** (2026-09-03, élő UI-egyeztetés). Sem jelölés, sem
+  visibility esetén (`"none"`) az érdemi ellenőrzés a Flex szerveré. A `validation` mező ezt a
+  modellnek is megmondja, lásd [`../CLAUDE.md`](../CLAUDE.md) „Kulcsdöntések".
 
 
 - **A leírásnak költségvetése van: az összleírás < 4 700 karakter** (`tools-list.test.ts`).

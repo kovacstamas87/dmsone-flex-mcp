@@ -36,14 +36,17 @@ annotációk, dátumkezelés) a saját mappa-doksijában: [`tools/CLAUDE.md`](to
 - **A mintára illő, de nem létező dátum (`2026-13-45`, `2026-02-30`) változatlanul megy vissza**,
   nem alakul át. Miért: egy elírásból nem szabad hihető kinézetű, de hamis értéket küldeni a
   Flexbe — így a felhasználó a Flex saját hibaüzenetét kapja, ahogy a javítás előtt is.
-- **A kötelezőség-validáció csak akkor fut, ha az API egyáltalán jelöl kötelezőséget**
-  (`parseTemplateFields` → `requiredMarkerPresent`). Miért: a 66-os sablon mezőin nincs
-  `required`/`mandatory` kulcs, csak `visibility: MT_K`/`MT_M` — a régi kód ezt `required: false`-ra
-  fordította, így az ellenőrzés mindent átengedett, miközben a leírás azt ígérte, hogy ellenőriz.
-  Most a `describeTemplate` a `validation: "api-flag" | "none"` mezőben (és `"none"` esetén egy
-  `note`-ban) kimondja, mit tudunk, a `flex_workflow_start` pedig nyíltan best-effort. A jelölés
-  **jelenléte** számít, nem az értéke: csupa `required: false` az API-tól érdemi információ, a kulcs
-  hiánya viszont nem. A Flex-oldali kérdés (mi jelöli a kötelezőséget) a P0-6 nyitott fele.
+- **A kötelezőség-validáció explicit `required`/`mandatory` kulcsra fut, ennek hiányában
+  `visibility: "MT_K"`-ra esik vissza** (`parseTemplateFields` → `requiredMarkerPresent` /
+  `visibilityMarkerPresent`). A 66-os sablon mezőin nincs `required`/`mandatory` kulcs, csak
+  `visibility: MT_K`/`MT_M` — a régi kód ezt `required: false`-ra fordította, így az ellenőrzés
+  mindent átengedett, miközben a leírás azt ígérte, hogy ellenőriz. **P0-6 lezárva (2026-09-03):**
+  élő UI-egyeztetés (a "Belső projekt jóváhagyás (v6)" sablon "Létrehozás" dialógusa, 6/6 mezőn)
+  igazolta, hogy a Flex pontosan a `MT_K` mezőket jelöli kötelezőnek — ez nincs írott Flex-doksiban,
+  ezért gyengébb forrás, mint egy explicit kulcs. A `describeTemplate` ezt a
+  `validation: "api-flag" | "visibility-flag" | "none"` mezőben (és `"none"`/`"visibility-flag"`
+  esetén egy `note`-ban) mondja ki, a `flex_workflow_start` pedig a `visibility-flag` ágon is
+  előre jelez hiányzó mezőt, nem csak `api-flag`-nél.
 
 - **A listázás alapból összefoglalót ad, nem teljes adatot.** A `/dms/news` egyetlen hívása a
   fejlesztői rendszeren 21 elemre **70 645 karaktert** adott vissza, ennek 83%-a olyan mező

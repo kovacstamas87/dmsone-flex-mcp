@@ -44,8 +44,17 @@ function parseOptionParams(params: unknown): string[] | undefined {
   return options.length > 0 ? options : undefined;
 }
 
-/** A sablon-mezők kötelezőség-jelölésének két állapota. Lásd `parseTemplateFields`. */
-export type TemplateValidation = "api-flag" | "none";
+/**
+ * A sablon-mezők kötelezőség-jelölésének három állapota. Lásd `parseTemplateFields`.
+ *
+ * A `"visibility-flag"` a P0-6 lezárása: élő megfigyelés (2026-09-03, a "Belső
+ * projekt jóváhagyás (v6)" sablon, screenshot-egyeztetéssel) igazolta, hogy a Flex
+ * UI pontosan a `visibility: "MT_K"` mezőket jelöli kötelezőnek a "Létrehozás"
+ * dialógusban — 6/6 egyezés. Nincs erre írott Flex-dokumentáció, ezért ez gyengébb
+ * forrás, mint egy explicit `required`/`mandatory` kulcs (`"api-flag"`); ha az
+ * utóbbi is jelen van, azt vesszük figyelembe.
+ */
+export type TemplateValidation = "api-flag" | "visibility-flag" | "none";
 
 export interface ParsedTemplate {
   fields: ParsedField[];
@@ -59,6 +68,8 @@ export interface ParsedTemplate {
    * (különben minden indítást átengedne, és közben azt sugallná, hogy ellenőrzött).
    */
   requiredMarkerPresent: boolean;
+  /** Volt-e **bármely** mezőn `visibility` kulcs — lásd `TemplateValidation` "visibility-flag" ága. */
+  visibilityMarkerPresent: boolean;
 }
 
 /** A `metadata` egy mezőjének nyers alakja jelöl-e egyáltalán kötelezőséget. */
@@ -74,26 +85,34 @@ function hasRequiredMarker(info: Record<string, unknown>): boolean {
  * directly. Handles both the array and the object-keyed-by-code shapes the API
  * may return for `metadata`.
  *
- * A kötelezőséget a `required` **vagy** a `mandatory` kulcs adja (a Flex melyiket
- * használja, az a P0-6 nyitott kérdése) — és a hívó megkapja azt is, hogy a
- * válasz egyáltalán hordozott-e ilyen jelölést.
+ * A kötelezőséget elsősorban a `required` **vagy** a `mandatory` kulcs adja (a
+ * Flex melyiket használja, sablononként eltérhet — mindkettőt olvassuk). Ha
+ * egyik sem jelen, a `visibility: "MT_K"` a tartalék jelzés (lásd
+ * `TemplateValidation`) — a hívó mindkét jelenlétről infót kap.
  */
 export function parseTemplateFields(startDetails: unknown): ParsedTemplate {
   const result = (startDetails as { result?: Record<string, unknown> } | undefined)?.result ?? {};
   const metadata = (result as { metadata?: unknown }).metadata;
 
   let requiredMarkerPresent = false;
+  let visibilityMarkerPresent = false;
   const toField = (fallbackCode: string, info: Record<string, unknown>): ParsedField => {
     const type = info.type as string | undefined;
-    if (hasRequiredMarker(info)) requiredMarkerPresent = true;
+    const explicitMarker = hasRequiredMarker(info);
+    if (explicitMarker) requiredMarkerPresent = true;
+    const visibility = info.visibility as string | undefined;
+    if (visibility !== undefined) visibilityMarkerPresent = true;
+    const required = explicitMarker
+      ? info.required === true || info.mandatory === true
+      : visibility === "MT_K";
     return {
       code: (info.code as string) ?? fallbackCode,
       name: info.name as string | undefined,
       label: info.label as string | undefined,
       type,
-      required: info.required === true || info.mandatory === true,
+      required,
       default: info.default,
-      visibility: info.visibility as string | undefined,
+      visibility,
       ...(type === "Option" ? { options: parseOptionParams(info.params) } : {}),
     };
   };
@@ -115,6 +134,7 @@ export function parseTemplateFields(startDetails: unknown): ParsedTemplate {
     fields,
     allowedLinkedItemTypes: Array.isArray(allowed) ? (allowed as string[]) : [],
     requiredMarkerPresent,
+    visibilityMarkerPresent,
   };
 }
 
@@ -122,6 +142,11 @@ export function parseTemplateFields(startDetails: unknown): ParsedTemplate {
 export const NO_REQUIRED_MARKER_NOTE =
   "A sablon mezői nem hordoznak kötelezőség-jelölést; a kötelezőséget a Flex szerver " +
   "ellenőrzi indításkor. A flex_workflow_start ilyenkor nem tud előre hiányzó mezőt jelezni.";
+
+/** Az a szöveg, amit a `validation: "visibility-flag"` mellé teszünk — honnan ered a jelölés. */
+export const VISIBILITY_MARKER_NOTE =
+  '"required"/"mandatory" kulcs nincs a sablonon; a kötelezőség a visibility: "MT_K" mezőkből ' +
+  "származik, élő UI-egyeztetés alapján (2026-09-03), nem hivatalos Flex-dokumentációból.";
 
 /**
  * A `flex_workflow_get_template_details` válasza. Külön függvény, hogy a
@@ -132,8 +157,13 @@ export function describeTemplate(
   raw: unknown,
   includeRaw = false,
 ): Record<string, unknown> {
-  const { fields, allowedLinkedItemTypes, requiredMarkerPresent } = parseTemplateFields(raw);
-  const validation: TemplateValidation = requiredMarkerPresent ? "api-flag" : "none";
+  const { fields, allowedLinkedItemTypes, requiredMarkerPresent, visibilityMarkerPresent } =
+    parseTemplateFields(raw);
+  const validation: TemplateValidation = requiredMarkerPresent
+    ? "api-flag"
+    : visibilityMarkerPresent
+      ? "visibility-flag"
+      : "none";
 
   return {
     templateId,
@@ -142,6 +172,7 @@ export function describeTemplate(
     linkedItemRequired: allowedLinkedItemTypes.length > 0,
     validation,
     ...(validation === "none" ? { note: NO_REQUIRED_MARKER_NOTE } : {}),
+    ...(validation === "visibility-flag" ? { note: VISIBILITY_MARKER_NOTE } : {}),
     // A `raw` a startDetails teljes válasza — a `fields` ennek a normalizált,
     // közvetlenül használható kivonata, így a kettő együtt megduplázza a
     // payloadot. Alapból ezért kimarad; a `raw: true` a hibakeresésé, amikor a
@@ -161,7 +192,7 @@ export function missingRequiredMessage(
   template: ParsedTemplate,
   provided: Record<string, unknown>,
 ): string | undefined {
-  if (!template.requiredMarkerPresent) return undefined;
+  if (!template.requiredMarkerPresent && !template.visibilityMarkerPresent) return undefined;
 
   const missing = template.fields
     .filter((field) => field.required)
@@ -219,9 +250,9 @@ Visszatérés: sablonok id, code, name és description mezőkkel.`,
 Mikor használd: a flex_workflow_start előtt. A "fields" elemek "code" mezője az,
 amit a start "metadata" objektumában kell megadni.
 
-A "validation" mondja meg, mennyit érnek a "required" értékek: "api-flag" esetén
-az API jelöli a kötelezőséget, "none" esetén nem: a required: false csak annyit
-tesz, hogy nem tudjuk, a kötelezőséget egyedül a Flex érvényesíti.`,
+A "validation" mondja meg, mennyit érnek a "required" értékek: "api-flag" =
+explicit required/mandatory kulcs; "visibility-flag" = nincs ilyen kulcs, de
+visibility: "MT_K" = kötelező; "none" = egyik jelzés sincs, a Flex ellenőriz.`,
       inputSchema: z.object({
         templateId: z.number().int().describe("A sablon azonosítója"),
         includeRaw: z
