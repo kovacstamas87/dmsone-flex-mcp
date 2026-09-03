@@ -77,8 +77,11 @@ cd "DMS MCP/Flex"
 npm run bundle
 ```
 
-Ez lefordít, staging mappába másol csak production függőségekkel, és előállítja a
-`dmsone-flex-<verzió>.mcpb` fájlt a hivatalos `@anthropic-ai/mcpb` csomagolóval.
+Ez lefordít, a `manifest.json` `version` és `tools` mezőit a lefordított szerverből
+szinkronizálja (`npm run sync-manifest`), staging mappába másol csak production
+függőségekkel, majd előállítja a `dmsone-flex-<verzió>.mcpb` fájlt a hivatalos
+`@anthropic-ai/mcpb` csomagolóval. A `manifest.json` `tools` tömbjét **ne szerkeszd
+kézzel** — a következő szinkron felülírja.
 (A csomag tiszta JavaScript, nincs benne platform-specifikus natív bináris, ezért
 egyszer kell előállítani, és minden platformon működik.)
 

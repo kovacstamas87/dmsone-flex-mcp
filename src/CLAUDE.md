@@ -12,6 +12,7 @@ TypeScript forrás, `tsc`-vel fordítva `dist/`-be (`npm run build`). Belépési
 | `client.ts` | `FlexClient` — axios-alapú HTTP kliens a Flex API-hoz (auth fejlécek, base URL, SSL-figyelmen-kívül-hagyás). |
 | `format.ts` | `toolJson` / `toolError` / `formatError` — minden tool eredménye ezen megy át; a hibaüzenetek magyarul, HTTP-státusz szerint kategorizálva. A `toolJson` **redaktál, majd szerializál** (a `text` és a `structuredContent` így ugyanazt látja), és az 50 000 karakteres korlát fölött **mindkét csatornát** csonkolja (a `structuredContent` helyére `{ truncated, originalChars, note }` kerül); a `formatError` a hibatörzset redaktálja és 2 000 karakterre csonkolja. `formatDateTime(value, timeZone)` a Flex `YYYY-MM-DD HH:mm:ss` alakjára hoz — falióra-szemantikával, lásd „Kulcsdöntések". |
 | `projection.ts` | A két listázó eszköz lista-projekciója és lapozása: `summarizeTask` (`/dms/news` elem), `summarizeWfTask` (`/dms/wfTasks/my` elem), `paginate(items, offset, limit)` és `envelope(payload, options, summarize)`. A fejkomment mérésekkel írja le, **mi és miért** marad ki a summary-ből. |
+| `schema.ts` | A szerver által épített válaszok `outputSchema`-i (`diagOutput`, `templateDetailsOutput`, `downloadOutput`, `taskListOutput`, `wfTaskListOutput`). A `looseOutput(shape)` helper minden mezőt opcionálissá tesz, hozzáadja a csonkolás-ág (`truncated`/`originalChars`/`note`) mezőit, és `passthrough()`-ol. A fejkomment írja le, miért **laza** a séma és miért csak öt eszközön van. |
 | `redact.ts` | `redactSecrets()` — rekurzív titok-szűrő kulcs- és érték-minták alapján; `registerSecretValue()` a konfigurált token literális bejelentésére. A fejkomment írja le a mintákat és a (jelenleg üres) kivétel-listát. |
 | `tools/` | A 19 MCP tool regisztrációja, erőforrásonként — lásd lent. |
 
@@ -49,6 +50,14 @@ annotációk, dátumkezelés) a saját mappa-doksijában: [`tools/CLAUDE.md`](to
   a projekció minden elemet meghagy, csak soványabban, és a `hasMore` kimondja, ha van folytatás.
   A kommentek és csatolmányok **darabszámmal** maradnak benne (`commentCount`, `attachmentCount`),
   hogy látszódjon, érdemes-e megnyitni az elemet.
+- **`outputSchema` csak a szerver által épített válaszokon van, és szándékosan laza.** Az SDK a
+  `structuredContent`-et **validálja** a sémára, és hibára az egész tool-hívás `InvalidParams`-szal
+  elszáll — a modell nem a Flex adatát kapja, hanem protokollhibát. Ezért (1) a Flex válaszát
+  változatlanul továbbadó eszközökön nincs séma (az ő alakjukra nincs szerződésünk), (2) a
+  meglévő öt sémában minden mező opcionális és `passthrough()` van, mert három valós ág más
+  alakot ad: a `toolJson` csonkolása, a listázók nem-tömb `result`-ra vett fallbackje, és maga a
+  Flex, ha egy mező máshogy jön. A séma haszna így nem az őrzés, hanem hogy a modell a
+  `tools/list`-ben **látja a válasz kulcsait** — ez tette lehetővé a leírások rövidítését (WF10).
 - **A `toolJson` méretkorlátja védőháló, nem az elsődleges eszköz.** Az elsődleges a kérés oldalán
   ható `limit`/`fields`; a csonkolás akkor lép be, ha valami mégis átcsúszna. Korábban csak a
   `text` csonkolódott, a `structuredContent` teljes egészében ment — ez a P1-4 hibája volt, mert a

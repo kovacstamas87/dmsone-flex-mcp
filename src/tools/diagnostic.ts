@@ -2,6 +2,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 import type { FlexClient } from "../client.js";
 import { toolError, toolJson } from "../format.js";
+import { diagOutput } from "../schema.js";
 
 /**
  * A `/diag` válaszából csak az ártalmatlan mezőket tartja meg.
@@ -36,17 +37,12 @@ export function registerDiagnosticTools(server: McpServer, client: FlexClient): 
     "flex_diag",
     {
       title: "Kapcsolat ellenőrzése",
-      description: `Diagnosztikai hívás a Flex API felé (GET /diag). A kapcsolatot és a
-token érvényességét ellenőrzi. A szerver fejléceit és környezeti változóit
-nem adja vissza.
-
-Bemenet:
-  - greeting (string): opcionális üdvözlő szöveg, amit a szerver visszatükröz
-
-Visszatérés: { ok: true, method, uri, qs } — hibás vagy lejárt token esetén hibaüzenet`,
+      description: `Diagnosztikai hívás a Flex API felé (GET /diag): a kapcsolatot és a
+token érvényességét ellenőrzi. A szerver fejléceit és környezeti változóit nem adja vissza.`,
       inputSchema: {
-        greeting: z.string().optional().describe("Opcionális üdvözlő szöveg"),
+        greeting: z.string().optional().describe("Opcionális üdvözlő szöveg, amit a szerver visszatükröz"),
       },
+      outputSchema: diagOutput,
       annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true },
     },
     async (args) => {

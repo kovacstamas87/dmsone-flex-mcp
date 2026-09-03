@@ -6,9 +6,11 @@ minden hívás a beállított token tulajdonosának a nevében fut. Ugyanazokat 
 a közösségi `n8n-nodes-dmsone-flex` node.
 
 **Állapot (2026-09-03):** **v0.1.1** kiadva (P0: WF1–WF7), a `../flex-mcp-p1-p2-megvalositasi-terv.md`
-**P1 üteme fut**: a **WF9** (payload-kontroll) kész — a két listázó lapoz és összefoglalót ad, a
-`toolJson` a `structuredContent`-et is csonkolja, a sablon-részletek `raw`-ja opcionális. Build és
-teszt zöld (115 teszt). A következő a **WF10** (`outputSchema`, tömör leírások, `manifest.tools`).
+**P1 üteme fut**: a **WF9** (payload-kontroll) és a **WF10** (`outputSchema`, tömör leírások,
+generált `manifest.tools`) kész — a két listázó lapoz és összefoglalót ad, a `toolJson` a
+`structuredContent`-et is csonkolja, öt eszköz `outputSchema`-t ad, az összleírás 11 936-ról
+4 365 karakterre fogyott, és a `manifest.tools` a lefordított szerverből generált. Build és
+teszt zöld (129 teszt). A következő a **WF11** (Task/WfTask tisztázás, `orgId`).
 Nyitva maradt a Flex-oldali P0-2 elküldése, a P0-6 Flex-válasz és az opcionális élő/írás-tesztek —
 lásd lent.
 
@@ -16,11 +18,11 @@ lásd lent.
 
 | Fájl / mappa | Mi ez | Állapot |
 |---|---|---|
-| [`src/`](src/) | A szerver forráskódja — lásd [`src/CLAUDE.md`](src/CLAUDE.md) | WF9 után (`paths.ts` új WF3-ban, `validateConfig` új WF5-ben, `projection.ts` új WF9-ben) |
-| [`test/`](test/) | `node:test` alapú tesztek, `tsx`-szel futtatva (`npm test`) — lásd [`test/CLAUDE.md`](test/CLAUDE.md) | új WF1-ben, WF2–WF5-ben és WF9-ben bővítve (115 teszt); a `test/fixtures/` élő, **anonimizált** minta |
-| [`scripts/sync-manifest.mjs`](scripts/sync-manifest.mjs) | A `manifest.json` verzióját a `package.json`-hoz igazítja, idempotens | **új WF1-ben** |
-| `manifest.json` | `.mcpb` csomag metaadata — a `version` mező innentől **generált**, ne szerkeszd kézzel (a `sync-manifest.mjs` írja) | WF1-ben szinkron-forrás lett; WF3: `flex_download_dir` leírása a sandboxot mondja; WF4: új `flex_timezone` konfig-mező |
-| `package.json` / `package-lock.json` | Függőségek, scriptek (`build`, `test`, `bundle`, `version` lifecycle) | WF1-ben frissítve |
+| [`src/`](src/) | A szerver forráskódja — lásd [`src/CLAUDE.md`](src/CLAUDE.md) | WF10 után (`paths.ts` új WF3-ban, `validateConfig` új WF5-ben, `projection.ts` új WF9-ben, `schema.ts` új WF10-ben) |
+| [`test/`](test/) | `node:test` alapú tesztek, `tsx`-szel futtatva (`npm test`) — lásd [`test/CLAUDE.md`](test/CLAUDE.md) | új WF1-ben, WF2–WF5-ben, WF9-ben és WF10-ben bővítve (129 teszt); a `test/fixtures/` élő, **anonimizált** minta |
+| [`scripts/sync-manifest.mjs`](scripts/sync-manifest.mjs) | A `manifest.json`-t a kódhoz igazítja, idempotens: a `version` a `package.json`-ból, a `tools[]` a **lefordított** `dist/index.js` `tools/list` válaszából. `dist/` hiányában a `tools`-t érintetlenül hagyja és figyelmeztet | **új WF1-ben**; WF10: `tools[]`-generálás |
+| `manifest.json` | `.mcpb` csomag metaadata — a `version` **és WF10-től a `tools[]` is generált**, ne szerkeszd kézzel (a `sync-manifest.mjs` írja) | WF1-ben szinkron-forrás lett; WF3: `flex_download_dir` leírása a sandboxot mondja; WF4: új `flex_timezone` konfig-mező; WF10: generált `tools[]` |
+| `package.json` / `package-lock.json` | Függőségek, scriptek (`build`, `test`, `bundle`, `sync-manifest`, `version` lifecycle) | WF1-ben frissítve; WF10: új `sync-manifest` script, és a `bundle` **build után** szinkronizál |
 | `INSTALL-WINDOWS.md`, `INSTALL-MACOS.md` | Végfelhasználói telepítési útmutatók | WF1-ben Node 20+ -ra igazítva; WF3: letöltési könyvtár leírása; WF4: „Időzóna" mező a konfig-űrlapon; WF5: SSL-tiltás a publikus URL-en |
 | `README.md` | Fejlesztői doksi | WF3: `FLEX_DOWNLOAD_DIR`, WF4: `FLEX_TIMEZONE`, WF5: SSL-tiltás megjegyzése a konfig-táblában |
 | `CHANGELOG.md` | Kiadási napló | **WF6-ban megírva** a `[0.1.1]` bejegyzés (Security/Fixed/Changed, P0-hivatkozásokkal) |
@@ -33,6 +35,8 @@ lásd lent.
 |---|---|
 | Szerver **verziója** (futásidőben, `initialize` válasz) | `package.json` `version` — a `src/index.ts` `createRequire(import.meta.url)("../package.json")`-ból olvassa, nincs hardcode |
 | `manifest.json` **verziója** | generált, a `scripts/sync-manifest.mjs` írja (a `version` npm lifecycle és a `bundle` script hívja); kézi szerkesztés a következő szinkronig felülíródik |
+| `manifest.json` **`tools[]` tömbje** | generált: a `sync-manifest.mjs` a lefordított `dist/index.js`-t elindítja stdio-n, és a `tools/list` `name` + a leírás **első mondata** párokból írja. Egyetlen forrás a kód (`src/tools/*.ts`) |
+| Egy eszköz **válaszának alakja** | `src/schema.ts` `outputSchema`-ja, ahol a választ a szerver építi (öt eszköz); a passthrough eszközöknél a Flex válasza az egyetlen forrás — ezért ott nincs séma |
 | Szerver kódja | `src/` — lásd [`src/CLAUDE.md`](src/CLAUDE.md) |
 | Tesztek | `test/*.test.ts`, futtatás: `npm test` (`node --import tsx --test`) |
 | CI | `.github/workflows/ci.yml` — `npm ci && npm run build && npm test` |
@@ -46,6 +50,12 @@ lásd lent.
 - **A `manifest.json` `version` mezője generált, nem kézzel írt** — a `sync-manifest.mjs`
   idempotens (kétszer futtatva ugyanazt adja), és az `npm version` / `npm run bundle` elé van
   kötve, hogy a kiadás sose maradjon szinkronon kívül.
+- **A `manifest.tools[]` is generált, a *lefordított* szerverből** (WF10). Korábban kézzel
+  duplikálta a kód leírásait, szinkron-őr nélkül — így a manifest olyan eszközt is ígérhetett
+  volna, amit a csomagolt szerver nem regisztrál. Miért a `dist/index.js`-ből és nem a forrásból:
+  pontosan azt a szervert kérdezzük meg, ami a `.mcpb`-be kerül. Ezért a `bundle` **először
+  fordít, utána szinkronizál** (a WF10 előtt fordítva volt), és a `dist/` hiányában a szkript a
+  `tools` tömböt érintetlenül hagyja, figyelmeztetéssel — üres tool-listát írni rosszabb lenne.
 - **`node:test` a tesztkerethez, nem Jest/Vitest** — miért: zéró új futásidejű függőség, a `tsx`
   amúgy is dev-függőség volt. Futtatás közvetlenül a `.ts` forrásból, nem a `dist`-ből.
 - **Node 20 minimum** (`engines`, `manifest.json` `compatibility.runtimes.node`, mindkét

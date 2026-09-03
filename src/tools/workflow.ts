@@ -8,6 +8,7 @@ import type { FlexConfig } from "../config.js";
 import { formatDateTime, toolError, toolJson } from "../format.js";
 import { ensureDirInside, resolveDownloadPath, sanitizeFileName, uniquePath } from "../paths.js";
 import { envelope, summarizeWfTask } from "../projection.js";
+import { downloadOutput, templateDetailsOutput, wfTaskListOutput } from "../schema.js";
 
 /**
  * A letöltési könyvtár: a konfigurált `FLEX_DOWNLOAD_DIR`, vagy az OS temp
@@ -193,12 +194,12 @@ export function registerWorkflowTools(
     "flex_workflow_list_templates",
     {
       title: "Munkafolyamat sablonok listázása",
-      description: `Lekéri az összes elindítható munkafolyamat-sablont (GET /dms/workflow/availableTemplates).
+      description: `Az elindítható munkafolyamat-sablonok listája
+(GET /dms/workflow/availableTemplates).
 
-Csak azokat adja vissza, amelyeket a bejelentkezett felhasználó elindíthat.
-A flex_workflow_start ezekből a sablonokból indít új folyamatot.
+Csak azokat adja, amelyeket a bejelentkezett felhasználó indíthat el.
 
-Visszatérés: { success, result: [{ id, code, name, description }] }`,
+Visszatérés: sablonok id, code, name és description mezőkkel.`,
       inputSchema: {},
       annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true },
     },
@@ -215,42 +216,27 @@ Visszatérés: { success, result: [{ id, code, name, description }] }`,
     "flex_workflow_get_template_details",
     {
       title: "Sablon részletek lekérése",
-      description: `Lekéri egy sablon metaadat mezőit és indítási adatait
+      description: `Egy sablon metaadat-mezői és indítási adatai
 (GET /dms/workflow/startDetails/{templateId}).
 
-A flex_workflow_start előtt ezzel nézd meg, milyen mezők tartoznak a sablonhoz.
+Mikor használd: a flex_workflow_start előtt. A "fields" elemek "code" mezője az,
+amit a start "metadata" objektumában kell megadni.
 
-A válasz "fields" tömbje már normalizált, közvetlenül használható:
-  - code: ezt a kulcsot kell használni a start "metadata" objektumában
-  - type: a mező típusa (Text, Option, Date, Number, Money, Partner, stb.)
-  - required: a mező kötelezősége, AHOGY AZ API JELÖLI — lásd a "validation" mezőt
-  - options: Option típusnál a választható értékek listája
-  - default: alapértelmezett érték (ha van)
-
-A "validation" mező mondja meg, mennyit érnek a "required" értékek:
-  - "api-flag": az API jelöli a kötelezőséget, a required értékek érdemiek
-  - "none": a sablon mezői NEM hordoznak kötelezőség-jelölést, így a required: false
-    azt jelenti, hogy nem tudjuk — a kötelezőséget csak a Flex szerver érvényesíti
-    indításkor. Ilyenkor a válasz "note" mezője is jelzi ezt.
-
-A "linkedItemRequired" jelzi, kell-e kapcsolt elemet (irat) megadni, az
-"allowedLinkedItemTypes" pedig a megengedett típusokat.
-
-Bemenet:
-  - templateId (number, kötelező): a sablon azonosítója
-  - includeRaw (boolean, alapértelmezett false): tegye-e bele a startDetails nyers
-    válaszát is. A "fields" ennek a normalizált kivonata, ezért a nyers válasz
-    alapból kimarad; csak akkor kérd, ha a normalizálás elfed valamit.
-
-Visszatérés: { templateId, fields: [...], allowedLinkedItemTypes, linkedItemRequired,
-validation, note?, raw? }`,
+A "validation" mondja meg, mennyit érnek a "required" értékek: "api-flag" esetén
+az API jelöli a kötelezőséget, "none" esetén nem: a required: false csak annyit
+tesz, hogy nem tudjuk, a kötelezőséget egyedül a Flex érvényesíti.`,
       inputSchema: {
         templateId: z.number().int().describe("A sablon azonosítója"),
         includeRaw: z
           .boolean()
           .default(false)
-          .describe("Tegye-e bele a startDetails nyers válaszát is (alapértelmezetten nem)"),
+          .describe(
+            'Tegye-e bele a startDetails nyers válaszát is a "raw" mezőben. A "fields" ennek ' +
+              "a normalizált kivonata, ezért alapból kimarad; csak akkor kérd, ha a " +
+              "normalizálás elfed valamit.",
+          ),
       },
+      outputSchema: templateDetailsOutput,
       annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true },
     },
     async (args) => {
@@ -267,54 +253,47 @@ validation, note?, raw? }`,
     "flex_workflow_start",
     {
       title: "Munkafolyamat indítása",
-      description: `Új munkafolyamat-példányt indít egy sablon alapján (POST /dms/workflow/start).
+      description: `Új munkafolyamat-példányt indít egy sablonból (POST /dms/workflow/start).
 
-A sablonhoz tartozó metaadat mezőket meg kell adni. A kötelező mezőket a Flex
-szerver érvényesíti; ez a tool előtte egy best-effort ellenőrzést végez: lekéri a
-sablon mezőit (startDetails), és ha az API jelöli a kötelezőséget
-(validation: "api-flag"), a hiányzó mezőkről előre szól. Ha a sablon nem jelöl
-kötelezőséget (validation: "none"), ez az ellenőrzés kimarad, és a hiányzó mezőt
-csak a Flex hibaválasza mutatja meg. Ezért előbb hívd meg a
-flex_workflow_get_template_details-t, és add meg az összes mezőt, amit a sablon
-felsorol.
+Mikor használd: előtte hívd meg a flex_workflow_get_template_details-t, és add
+meg a "metadata"-ban a sablon összes mezőjét.
 
-Bemenet:
-  - templateId (number, kötelező): a sablon azonosítója (flex_workflow_list_templates)
-  - title (string, kötelező): a folyamat-példány címe
-  - description (string): leírás
-  - deadline (string): határidő ISO 8601 formátumban
-  - responsibleUserId (number, kötelező): a felelős felhasználó ID-ja (flex_user_get_by_username)
-  - responsibleOrgId (number): a felelős szervezeti egység ID-ja (alapértelmezett 1)
-  - linkedItemType (string): a kapcsolt elem típusa (pl. "alszam"/"foszam") — csak ha a sablon kéri
-  - linkedItemId (number): a kapcsolt elem ID-ja (flex_search_linked_items) — csak ha a sablon kéri
-  - metadata (objektum): { "mezoKod": "ertek", ... } a sablon mezőkódjaival.
-    Add meg legalább az összes required mezőt a get_template_details alapján.
-  - files (tömb): [{ fileName, contentBase64 }] csatolmányok
+A kötelező mezőket a Flex szerver érvényesíti; ez a tool előtte csak best-effort
+ellenőrzést végez, jelöletlen sablonnál pedig egyáltalán nem.
 
-A "deadline" a Flex helyi faliórája szerint értendő: offset nélkül megadott érték
-(pl. "2026-08-18T23:59:59") változatlanul megy be, offsettel megadott ("...Z",
-"...+02:00") a szerver zónájára (FLEX_TIMEZONE) átszámítva.
+A deadline helyi falióra: offsettel megadott érték a FLEX_TIMEZONE zónájára
+átszámítva megy be.
 
-Visszatérés: { id, referenceNumber } az új folyamatról`,
+Visszatérés: az új folyamat id és referenceNumber mezője.`,
       inputSchema: {
-        templateId: z.number().int().describe("A sablon azonosítója"),
+        templateId: z.number().int().describe("A sablon azonosítója (a flex_workflow_list_templates adja)"),
         title: z.string().min(1).describe("A folyamat-példány címe"),
         description: z.string().optional().describe("Leírás"),
         deadline: z
           .string()
           .optional()
           .describe("Határidő; offset nélkül helyi faliórának számít (pl. 2026-08-18T23:59:59)"),
-        responsibleUserId: z.number().int().describe("A felelős felhasználó ID-ja"),
+        responsibleUserId: z
+          .number()
+          .int()
+          .describe("A felelős felhasználó ID-ja (a flex_user_get_by_username adja meg)"),
         responsibleOrgId: z.number().int().default(1).describe("A felelős szervezeti egység ID-ja"),
         linkedItemType: z
           .string()
           .optional()
           .describe("A kapcsolt elem típusa (alszam/foszam/...), csak ha a sablon kéri"),
-        linkedItemId: z.number().int().optional().describe("A kapcsolt elem ID-ja, csak ha a sablon kéri"),
+        linkedItemId: z
+          .number()
+          .int()
+          .optional()
+          .describe("A kapcsolt elem ID-ja (a flex_search_linked_items adja), csak ha a sablon kéri"),
         metadata: z
           .record(z.string(), z.union([z.string(), z.number(), z.boolean()]))
           .default({})
-          .describe('Metaadatok mezőkód → érték formában, pl. { "nettoOsszeg": "400" }'),
+          .describe(
+            'Metaadatok mezőkód → érték formában, pl. { "nettoOsszeg": "400" }. Add meg a ' +
+              "sablon összes mezőjét a get_template_details alapján.",
+          ),
         files: z
           .array(
             z.object({
@@ -323,7 +302,7 @@ Visszatérés: { id, referenceNumber } az új folyamatról`,
             }),
           )
           .optional()
-          .describe("Csatolmányok"),
+          .describe("Csatolmányok: fájlnév + base64 tartalom"),
       },
       // Destruktív: új, iktatott folyamat-példány jön létre a DMS-ben, amit ez a szerver
       // nem tud visszavonni — az MCP-kliens kérjen rá megerősítést.
@@ -367,22 +346,13 @@ Visszatérés: { id, referenceNumber } az új folyamatról`,
     "flex_workflow_get_my_tasks",
     {
       title: "Saját munkafolyamat-feladatok",
-      description: `Lekéri a bejelentkezett felhasználóhoz rendelt munkafolyamat-feladatokat
+      description: `A bejelentkezett felhasználóhoz rendelt munkafolyamat-feladatok
 (GET /dms/wfTasks/my).
 
-Lapozva ad vissza: alapértelmezés szerint 20 elemet. Szűrő nélkül a lista több
-száz elem is lehet (a lezárt és megszüntetett feladatokkal együtt), ezért ha az
-aktuális teendők kellenek, add meg a statusFilter: "FA_U" értéket.
+Lapozva ad vissza, alapból 20 elemet. Szűrő nélkül a lista több száz elem is
+lehet, ezért az aktuális teendőkhöz add meg a statusFilter: "FA_U" értéket.
 
-Bemenet:
-  - statusFilter ("" | "FA_U" | "FA_K" | "FA_A" | "FA_M"): állapotszűrő.
-    "" = mind, FA_U = új, FA_K = lezárt, FA_A = áthelyezett, FA_M = megszüntetett.
-  - limit (1-100, alapértelmezett 20), offset (alapértelmezett 0): lapozás
-  - fields ("summary" | "full", alapértelmezett "summary"). Ezen a végponton a
-    két mód ma ugyanazokat a mezőket adja — a lista már eleve összefoglaló alakú.
-
-Visszatérés: { total, offset, returned, hasMore, fields,
-items: [{ wfTaskId, wfSubject, wfTaskName, status, type, template, templateVersion }] }`,
+Visszatérés: lapozó boríték (total, offset, returned, hasMore, fields, items).`,
       inputSchema: {
         statusFilter: z
           .enum(["", "FA_U", "FA_K", "FA_A", "FA_M"])
@@ -399,8 +369,12 @@ items: [{ wfTaskId, wfSubject, wfTaskName, status, type, template, templateVersi
         fields: z
           .enum(["summary", "full"])
           .default("summary")
-          .describe('"summary" a hét ismert mező, "full" a nyers elem'),
+          .describe(
+            '"summary" a hét ismert mező, "full" a nyers elem — ezen a végponton ma a kettő ' +
+              "ugyanazt adja, mert a Flex válasza már eleve összefoglaló alakú.",
+          ),
       },
+      outputSchema: wfTaskListOutput,
       annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true },
     },
     async (args) => {
@@ -423,15 +397,10 @@ items: [{ wfTaskId, wfSubject, wfTaskName, status, type, template, templateVersi
     "flex_workflow_get_task_details",
     {
       title: "Munkafolyamat-feladat részletei",
-      description: `Lekéri egy munkafolyamat-feladat részletes adatait (GET /dms/wfTask/{wfTaskId}).
+      description: `Egy munkafolyamat-feladat részletes adatai (GET /dms/wfTask/{wfTaskId}).
 
-A válaszban szerepel a "possibleWfTaskResults" — ezekből az értékekből kell egyet
-megadni a flex_workflow_complete_task hívásnál (wfTaskResult).
-
-Bemenet:
-  - wfTaskId (number, kötelező): a munkafolyamat-feladat azonosítója
-
-Visszatérés: { success, result: { wfDetails, metadata, possibleWfTaskResults, comments, attachments, ... } }`,
+Mikor használd: lezárás előtt — a válasz "possibleWfTaskResults" mezőjéből kell
+a flex_workflow_complete_task wfTaskResult értéke.`,
       inputSchema: {
         wfTaskId: z.number().int().describe("A munkafolyamat-feladat azonosítója"),
       },
@@ -450,27 +419,21 @@ Visszatérés: { success, result: { wfDetails, metadata, possibleWfTaskResults, 
     "flex_workflow_complete_task",
     {
       title: "Munkafolyamat-feladat lezárása",
-      description: `Lezár egy munkafolyamat-feladatot eredménnyel és opcionális megjegyzéssel
-(POST /dms/wfTask/{wfTaskId}/complete).
-
-A wfTaskResult a feladat egy érvényes eredménykódja — ezt a
-flex_workflow_get_task_details "possibleWfTaskResults" mezőjéből vedd.
-
-Bemenet:
-  - wfTaskId (number, kötelező): a feladat azonosítója
-  - wfTaskResult (string, kötelező): eredménykód (pl. "0", "1", vagy a sablon által várt érték)
-  - comment (string): megjegyzés
-  - metadata (objektum): { "mezoNev": "ertek" } frissítendő metaadatok, ha a sablon megköveteli
-
-Visszatérés: { success, result: boolean }`,
+      description: `Lezár egy munkafolyamat-feladatot eredménnyel: a folyamat továbblép, és
+ez innen nem vonható vissza (POST /dms/wfTask/{wfTaskId}/complete).`,
       inputSchema: {
         wfTaskId: z.number().int().describe("A munkafolyamat-feladat azonosítója"),
-        wfTaskResult: z.string().min(1).describe("A feladat eredménykódja"),
+        wfTaskResult: z
+          .string()
+          .min(1)
+          .describe(
+            'Eredménykód a flex_workflow_get_task_details "possibleWfTaskResults" mezőjéből',
+          ),
         comment: z.string().optional().describe("Megjegyzés"),
         metadata: z
           .record(z.string(), z.union([z.string(), z.number(), z.boolean()]))
           .optional()
-          .describe("Frissítendő metaadatok mezőnév → érték formában"),
+          .describe("Frissítendő metaadatok mezőnév → érték formában, ha a sablon megköveteli"),
       },
       // Destruktív: a lezárás továbblépteti a munkafolyamatot, visszavonni nem lehet innen.
       annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: true },
@@ -491,13 +454,8 @@ Visszatérés: { success, result: boolean }`,
     "flex_workflow_get_task_comments",
     {
       title: "Munkafolyamat-feladat megjegyzései",
-      description: `Lekéri egy munkafolyamat-feladat összes megjegyzését
-(GET /dms/comments/wfTask/{wfTaskId}).
-
-Bemenet:
-  - wfTaskId (number, kötelező): a feladat azonosítója
-
-Visszatérés: { success, result: { wfTaskId, wfDetails, comments: [...] } }`,
+      description: `Egy munkafolyamat-feladat összes megjegyzése
+(GET /dms/comments/wfTask/{wfTaskId}).`,
       inputSchema: {
         wfTaskId: z.number().int().describe("A munkafolyamat-feladat azonosítója"),
       },
@@ -519,11 +477,7 @@ Visszatérés: { success, result: { wfTaskId, wfDetails, comments: [...] } }`,
       description: `Új megjegyzést fűz egy munkafolyamat-feladathoz
 (POST /dms/comments/wfTask/{wfTaskId}).
 
-Bemenet:
-  - wfTaskId (number, kötelező): a feladat azonosítója
-  - comment (string, kötelező): a megjegyzés szövege
-
-Visszatérés: { success, result: { wfTaskId, wfDetails, comments } } (az összes megjegyzéssel)`,
+Visszatérés: a feladat összes megjegyzése, az újjal együtt.`,
       inputSchema: {
         wfTaskId: z.number().int().describe("A munkafolyamat-feladat azonosítója"),
         comment: z.string().min(1).describe("A megjegyzés szövege"),
@@ -547,16 +501,11 @@ Visszatérés: { success, result: { wfTaskId, wfDetails, comments } } (az össze
     "flex_workflow_get_task_attachments",
     {
       title: "Feladat csatolmányai",
-      description: `Lekéri egy munkafolyamat-feladathoz közvetlenül csatolt fájlokat
+      description: `Egy munkafolyamat-feladathoz közvetlenül csatolt fájlok
 (GET /dms/attachments/wfTask/{wfTaskId}).
 
-A válaszban szereplő "attachmentGuid" értékkel lehet letölteni egy fájlt a
-flex_workflow_download_attachment tool-lal.
-
-Bemenet:
-  - wfTaskId (number, kötelező): a feladat azonosítója
-
-Visszatérés: { success, result: [{ name, creator, createDate, version, attachmentGuid, attachmentType }] }`,
+Visszatérés: csatolmányok listája; az attachmentGuid-dal tölthető le a fájl a
+flex_workflow_download_attachment tool-lal.`,
       inputSchema: {
         wfTaskId: z.number().int().describe("A munkafolyamat-feladat azonosítója"),
       },
@@ -575,13 +524,8 @@ Visszatérés: { success, result: [{ name, creator, createDate, version, attachm
     "flex_workflow_get_task_related_attachments",
     {
       title: "Feladathoz kapcsolódó csatolmányok",
-      description: `Lekéri a munkafolyamat-feladathoz kapcsolódó (nem közvetlenül csatolt) fájlokat
-(GET /dms/attachments/wfTask/{wfTaskId}/related).
-
-Bemenet:
-  - wfTaskId (number, kötelező): a feladat azonosítója
-
-Visszatérés: { success, result: [{ attachmentId, fileName, relatedDocumentId, relatedDocumentType }] }`,
+      description: `A feladathoz kapcsolódó, de nem közvetlenül csatolt fájlok
+(GET /dms/attachments/wfTask/{wfTaskId}/related).`,
       inputSchema: {
         wfTaskId: z.number().int().describe("A munkafolyamat-feladat azonosítója"),
       },
@@ -600,31 +544,25 @@ Visszatérés: { success, result: [{ attachmentId, fileName, relatedDocumentId, 
     "flex_workflow_download_attachment",
     {
       title: "Csatolmány letöltése",
-      description: `Letölt egy csatolmányt GUID alapján és a letöltési könyvtárba menti
+      description: `Letölt egy csatolmányt GUID alapján és lemezre menti
 (GET /dms/attachment/{attachmentGuid}/download).
 
-A fájl MINDIG a letöltési könyvtárba (FLEX_DOWNLOAD_DIR, alapértelmezetten az OS
-temp könyvtárának "dmsone-flex" almappája) vagy annak egy alkönyvtárába kerül.
-A könyvtáron kívülre mutató savePath (abszolút út, meghajtó-betű, UNC-út, "..")
-hibát ad. Meglévő fájlt nem ír felül: ütközésnél a név -1, -2… utótagot kap.
-A GUID-ot a flex_workflow_get_task_attachments adja vissza.
-
-Bemenet:
-  - attachmentGuid (string, kötelező): a csatolmány GUID-ja
-  - savePath (string): fájlnév vagy a letöltési könyvtár alatti relatív út,
-    pl. "szamla.pdf" vagy "2026/szamla.pdf". "/"-re végződve könyvtárnak számít,
-    és a szerver által adott fájlnév kerül alá. Üresen a szerver által adott
-    fájlnevet használja a letöltési könyvtárban.
-
-Visszatérés: { success, filePath (abszolút, a letöltési könyvtár alatt), fileName,
-downloadDir, bytes, contentType }`,
+A fájl mindig a letöltési könyvtárba (FLEX_DOWNLOAD_DIR) vagy annak
+alkönyvtárába kerül; az azon kívülre mutató savePath hibát ad.
+Meglévő fájlt nem ír felül: ütközésnél a név -1, -2… utótagot kap.`,
       inputSchema: {
         attachmentGuid: z.string().min(1).describe("A csatolmány GUID-ja"),
         savePath: z
           .string()
           .optional()
-          .describe("Fájlnév vagy a letöltési könyvtár alatti relatív út (opcionális)"),
+          .describe(
+            'Fájlnév vagy a letöltési könyvtár alatti relatív út, pl. "szamla.pdf" vagy ' +
+              '"2026/szamla.pdf". "/"-re végződve könyvtárnak számít, és a szerver által adott ' +
+              "fájlnév kerül alá. Üresen a szerver által adott fájlnevet használja. A letöltési " +
+              'könyvtár alapértelmezetten az ideiglenes könyvtár "dmsone-flex" almappája.',
+          ),
       },
+      outputSchema: downloadOutput,
       // Fájlt hoz létre a lemezen → nem read-only; ütközésnél új nevet ad → nem idempotens.
       // Nem destruktív: meglévő fájlt sosem ír felül (`wx` flag).
       annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: true },
@@ -660,20 +598,21 @@ downloadDir, bytes, contentType }`,
     "flex_search_linked_items",
     {
       title: "Kapcsolt elem keresése",
-      description: `Kapcsolt elemet (iratot) keres azonosító alapján (GET /dms/id/linkedItem).
+      description: `Kapcsolt elemet (iratot) keres azonosító alapján, pl. "DMS/13/2023"
+(GET /dms/id/linkedItem).
 
-A flex_workflow_start "linkedItemId" mezőjéhez ad ID-t. Adj meg legalább 3 karaktert.
+Mikor használd: a flex_workflow_start "linkedItemId" mezőjéhez kell ID.
 
-Bemenet:
-  - linkedItemType (string, kötelező): a kapcsolt elem típusa. Ismert értékek:
-    "alszam", "foszam", "dmsszamla", "dmsszerz", "sopver", "vvszerz",
-    "szamlatar", "szamlatar_utalasi_lista".
-  - identifier (string, kötelező, min. 3 karakter): keresett azonosító, pl. "DMS/13/2023"
-
-Visszatérés: { success, result: { id, identifier } }`,
+Visszatérés: a talált elem id és identifier mezője.`,
       inputSchema: {
-        linkedItemType: z.string().min(1).describe("A kapcsolt elem típusa (alszam, foszam, ...)"),
-        identifier: z.string().min(3, "A kereséshez legalább 3 karakter kell").describe("Keresett azonosító"),
+        linkedItemType: z
+          .string()
+          .min(1)
+          .describe(
+            "A kapcsolt elem típusa. Ismert értékek: alszam, foszam, dmsszamla, dmsszerz, " +
+              "sopver, vvszerz, szamlatar, szamlatar_utalasi_lista.",
+          ),
+        identifier: z.string().min(3, "A kereséshez legalább 3 karakter kell").describe('Keresett azonosító, legalább 3 karakter (pl. "DMS/13/2023")'),
       },
       annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true },
     },

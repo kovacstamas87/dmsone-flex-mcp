@@ -22,14 +22,17 @@ type Annotations = {
   openWorldHint?: boolean;
 };
 /** Csak az a rész, amit itt ellenőrzünk — a JSON Schema teljes alakja nem kell. */
-type InputSchema = {
-  properties?: Record<string, { default?: unknown; enum?: unknown[] }>;
+type JsonSchema = {
+  properties?: Record<string, { default?: unknown; enum?: unknown[]; description?: string }>;
+  additionalProperties?: unknown;
+  required?: string[];
 };
 type Tool = {
   name: string;
   description?: string;
   annotations?: Annotations;
-  inputSchema?: InputSchema;
+  inputSchema?: JsonSchema;
+  outputSchema?: JsonSchema;
 };
 
 let client: Client;
@@ -61,7 +64,7 @@ const annotationsOf = (name: string): Annotations => {
 };
 
 /** A `tools/list`-ben látszó JSON Schema — a modell ebből olvassa ki az alapértelmezéseket. */
-const schemaOf = (name: string): InputSchema => {
+const schemaOf = (name: string): JsonSchema => {
   const tool = tools.get(name);
   assert.ok(tool, `hiányzik az eszköz: ${name}`);
   assert.ok(tool.inputSchema, `${name}: nincs inputSchema`);
@@ -180,12 +183,20 @@ test("a feladatlista leírása megmondja, mi marad ki az összefoglalóból", ()
   assert.ok(description.includes("WfTask"), "nem jelzi, hogy a lista vegyes");
 });
 
-test("a sablon-részletek leírása jelzi, hogy a nyers válasz opcionális", () => {
-  const description = tools.get("flex_workflow_get_template_details")?.description ?? "";
+/**
+ * WF10: a paraméter-magyarázatok a leírásból a séma `.describe()`-jába kerültek.
+ * Az őr tehát ott néz, ahol az ígéret most áll — a `tools/list` inputSchema-jában.
+ */
+test("a sablon-részletek nyers válasza opcionális, és ez a paraméternél is látszik", () => {
   const schema = schemaOf("flex_workflow_get_template_details");
+  const includeRaw = schema.properties?.includeRaw;
 
-  assert.ok(description.includes("includeRaw"), "az includeRaw nincs a leírásban");
-  assert.equal(schema.properties?.includeRaw?.default, false, "az includeRaw alapból hamis");
+  assert.equal(includeRaw?.default, false, "az includeRaw alapból hamis");
+  assert.ok(includeRaw?.description, "az includeRaw-nak nincs magyarázata");
+  assert.ok(
+    /normaliz/.test(includeRaw.description),
+    "a magyarázat nem mondja meg, miért marad ki alapból a nyers válasz",
+  );
 });
 
 test("a dátumot fogadó eszközök leírása a falióra-szemantikát mondja", () => {
@@ -194,5 +205,57 @@ test("a dátumot fogadó eszközök leírása a falióra-szemantikát mondja", (
     // A szótő az invariáns: „faliórát" / „faliórája" / „faliórának".
     assert.ok(/faliór/.test(description), `${name}: hiányzik a falióra-szemantika`);
     assert.ok(description.includes("FLEX_TIMEZONE"), `${name}: nincs megnevezve a zóna forrása`);
+  }
+});
+
+/**
+ * WF10 — leírás-költségvetés. A `tools/list` minden munkamenet elején bekerül a
+ * modell kontextusába, tehát a leírások hossza állandó, fizetett teher. A felső
+ * határ azért teszt, mert egy „csak még egy mondat" itt észrevétlenül visszahízik.
+ *
+ * A paraméter-magyarázatok helye a séma `.describe()`-ja, a válasz alakjának
+ * helye az `outputSchema` — a leírásban „Mikor használd" + egy mondat a
+ * visszatérésről marad.
+ */
+test("az összleírás a költségvetésen belül van", () => {
+  const total = [...tools.values()].reduce((sum, tool) => sum + (tool.description?.length ?? 0), 0);
+  const perTool = [...tools.values()]
+    .map((tool) => `${tool.name}: ${tool.description?.length ?? 0}`)
+    .join(", ");
+
+  assert.ok(total < 4500, `az összleírás ${total} karakter (< 4500 kell) — ${perTool}`);
+  assert.ok(total > 2000, `az összleírás ${total} karakter: ennyiből valami kiesett`);
+});
+
+/**
+ * WF10 — `outputSchema` csak ott, ahol a szerver maga építi a választ. A
+ * passthrough eszközök a Flex nyers válaszát adják: az ő alakjukra nincs
+ * szerződésünk, és egy hibás séma az SDK validációján **elszállasztaná** a
+ * hívást (lásd `src/schema.ts`).
+ */
+test("outputSchema pontosan a szerver által épített válaszokon van", () => {
+  const expected = [
+    "flex_diag",
+    "flex_task_list",
+    "flex_workflow_get_my_tasks",
+    "flex_workflow_get_template_details",
+    "flex_workflow_download_attachment",
+  ].sort();
+
+  const actual = [...tools.values()]
+    .filter((tool) => tool.outputSchema)
+    .map((tool) => tool.name)
+    .sort();
+
+  assert.deepEqual(actual, expected);
+});
+
+test("az outputSchema laza: nincs kötelező mező, és átengedi az ismeretlen kulcsokat", () => {
+  for (const tool of tools.values()) {
+    if (!tool.outputSchema) continue;
+    // Miért: a csonkolás-ág és a listázók fallbackje más alakot ad — kötelező
+    // mezővel vagy zárt objektummal ezek élesben protokollhibát okoznának.
+    assert.equal(tool.outputSchema.additionalProperties, true, `${tool.name}: nem passthrough`);
+    assert.equal(tool.outputSchema.required, undefined, `${tool.name}: kötelező mezőt ír elő`);
   }
 });

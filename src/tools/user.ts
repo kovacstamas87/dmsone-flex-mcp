@@ -9,15 +9,12 @@ export function registerUserTools(server: McpServer, client: FlexClient): void {
     "flex_user_get_by_username",
     {
       title: "Felhasználó keresése név alapján",
-      description: `Felhasználó(ka)t keres felhasználónév alapján (GET /dms/ac/user).
+      description: `Felhasználó keresése felhasználónév (töredék) alapján (GET /dms/ac/user).
 
-Hasznos, ha egy művelethez userId / orgId kell (pl. feladat végrehajtó vagy
-munkafolyamat felelős megadásához). Részleges egyezést is talál.
+Mikor használd: ha egy művelethez userId + orgId kell — feladat végrehajtójához
+vagy munkafolyamat felelőséhez.
 
-Bemenet:
-  - username (string, kötelező, min. 2 karakter): keresett felhasználónév vagy töredéke
-
-Visszatérés: { success, result: [{ userId, orgId, userName, orgName }] }`,
+Visszatérés: találatok userId, orgId, userName és orgName mezőkkel.`,
       inputSchema: {
         username: z
           .string()

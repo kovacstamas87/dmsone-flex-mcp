@@ -2,7 +2,7 @@
 
 Erőforrásonként egy fájl. Mindegyik egyetlen `register*Tools(server, client, config?)` függvényt
 exportál, amit az [`../index.ts`](../index.ts) hív. Egy eszköz = egy `server.registerTool(name,
-{ title, description, inputSchema, annotations }, handler)` hívás.
+{ title, description, inputSchema, outputSchema?, annotations }, handler)` hívás.
 
 ## Fájl-leltár
 
@@ -12,6 +12,10 @@ exportál, amit az [`../index.ts`](../index.ts) hív. Egy eszköz = egy `server.
 | `workflow.ts` | **WfTask** — egy futó munkafolyamat egy lépése, `wfTaskId` | 12 eszköz: sablonok, indítás, feladatok, megjegyzések, csatolmányok, `flex_search_linked_items` | a legnagyobb fájl; a sablon-feldolgozás (`parseTemplateFields` → `describeTemplate` / `missingRequiredMessage`) itt exportált, hogy tesztelhető legyen. A letöltés a [`../paths.ts`](../paths.ts)-re épül, a `downloadBaseDir(config)` adja a sandbox gyökerét |
 | `user.ts` | Felhasználó | `flex_user_get_by_username` | `userId` + `orgId` párt ad vissza — a Flexben **együtt** azonosít egy felhasználót |
 | `diagnostic.ts` | Diagnosztika | `flex_diag` | kapcsolat- és token-ellenőrzés; a `pickDiagFields()` a `/diag` válaszából csak `ok`/`method`/`uri`/`qs`-t engedi tovább |
+
+**`outputSchema` (WF10-től) öt eszközön van:** `flex_diag`, `flex_task_list`,
+`flex_workflow_get_my_tasks`, `flex_workflow_get_template_details`,
+`flex_workflow_download_attachment` — a sémák a [`../schema.ts`](../schema.ts)-ben, a szabály lent.
 
 **Ne keverd:** Task ≠ WfTask — a Flex API-ban is külön végpont-család, és a `SERVER_INSTRUCTIONS`
 (`../index.ts`) ezt explicit módon a modell tudtára adja. Ha egy új eszköz kerül ide, döntsd el
@@ -42,6 +46,9 @@ kell.
   (WF4). WF9-ben három továbbival: a listázók leírása kimondja a lapozást és az összefoglaló
   alapértelmezést (a séma `limit`/`offset`/`fields` mezőjével együtt), a feladatlista megnevezi,
   mi marad ki és hogy a lista vegyes, a sablon-részletek pedig az `includeRaw` alapértelmezését.
+  **WF10-től az `includeRaw`-őr a paraméter `.describe()`-jét nézi**, nem a tool-leírást — mert az
+  ígéret oda került. Ha egy ígéret helyet változtat, az őr költözzön vele; a rossz helyen álló őr
+  zöld marad, miközben az ígéret eltűnt.
 - **A leírás-őszinteség a *szerveroldali* hibákra is vonatkozik.** A `flex_task_list` leírása
   kimondja, hogy a `status: "all"` ma HTTP 500-ba fut (a Flex elhasal a hiányzó `status`
   paraméteren), és hogy a `pending` és a `completed` ugyanazt a listát adja vissza. Miért van ez a
@@ -73,6 +80,31 @@ kell.
   érdemi ellenőrzés a Flex szerveré. A `validation: "api-flag" | "none"` mező ezt a modellnek is
   megmondja. Miért: a 66-os sablon mezőin nincs jelölés, csak `visibility: MT_K`/`MT_M`, és a régi
   kód ezt `required: false`-ra fordítva „ellenőrzött"-nek látszott, miközben mindent átengedett.
+
+
+- **A leírásnak költségvetése van: az összleírás < 4 500 karakter** (`tools-list.test.ts`).
+  A `tools/list` minden munkamenet elején bekerül a modell kontextusába, tehát a leírások hossza
+  állandó, fizetett teher — a WF10 előtt 11 936 karakter volt, ma 4 365. A hármas munkamegosztás:
+  **paraméter-magyarázat** → a Zod `.describe()`-ba (a modell ugyanúgy látja, a `tools/list`
+  `inputSchema`-jában), **a válasz alakja** → `outputSchema`, **a leírásban** csak „mi ez",
+  „mikor használd" és egy mondat a visszatérésről marad. Ami *nem* kerülhet ki: az őszinteség-
+  mondatok (sandbox, best-effort, falióra, ismert Flex-hibák) — azok nem díszítés, hanem a
+  kész-kritérium.
+- **`outputSchema` csak akkor, ha a választ mi építjük — és akkor is lazán.** A szabály:
+  `z.object({...}).partial().passthrough()` a [`../schema.ts`](../schema.ts) `looseOutput()`-ján
+  keresztül, a csonkolás-ág mezőivel együtt. Miért nem szigorúbb: az SDK a `structuredContent`-et
+  **validálja**, és bukásra a hívás `InvalidParams`-szal elszáll — egy túl szigorú séma tehát nem
+  hibát *jelez*, hanem hibát *okoz* élesben. Három valós ág ad a tool saját alakjától eltérő
+  választ: a `toolJson` méretkorlátja (`{ truncated, originalChars, note }`), a listázók
+  fallbackje nem-tömb `result` esetén, és a Flex maga. A Flex nyers válaszát továbbadó
+  (passthrough) eszközökön ezért **nincs** séma: az ő alakjukra nincs szerződésünk. A
+  `test/schema.test.ts` fixture-alakú válaszokon őrzi, hogy a séma ne bukjon.
+- **A `flex_user_get_by_username` szándékosan séma nélküli.** A WF10 terve felajánlotta a
+  normalizálást (`{ userId, orgId, username, displayName }`), de a végpont **listát** ad — a
+  részleges egyezés több találatot is hozhat —, egyetlen objektumra normalizálva pedig találatok
+  esnének ki. Élő minta nélkül a mezőnevek átkeresztelése (`userName` → `username`) is találgatás
+  lenne, ezért a tool passthrough maradt: a `userId` + `orgId` pár a nyers válaszból is
+  közvetlenül olvasható.
 
 ## Kapcsolódó
 

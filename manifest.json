@@ -82,79 +82,79 @@
   "tools": [
     {
       "name": "flex_task_create",
-      "description": "Új DMS feladat létrehozása"
+      "description": "Új DMS feladatot oszt ki (POST /dms/task/start)."
     },
     {
       "name": "flex_task_comment",
-      "description": "Megjegyzés feladathoz"
+      "description": "Megjegyzést fűz egy meglévő feladathoz (POST /dms/comments/task/{taskId})."
     },
     {
       "name": "flex_task_accept",
-      "description": "Feladat elfogadása"
+      "description": "Elfogad egy feladatot: a végrehajtó elvállalja (POST /dms/task/{taskId}/accept)."
     },
     {
       "name": "flex_task_complete",
-      "description": "Feladat lezárása"
+      "description": "Lezár egy feladatot; innen nem vonható vissza (POST /dms/task/{taskId}/complete)."
     },
     {
       "name": "flex_task_list",
-      "description": "Feladatok listázása állapot szerint"
+      "description": "A bejelentkezett felhasználó feladatai (GET /dms/news)."
     },
     {
       "name": "flex_user_get_by_username",
-      "description": "Felhasználó keresése név alapján"
+      "description": "Felhasználó keresése felhasználónév (töredék) alapján (GET /dms/ac/user)."
     },
     {
       "name": "flex_workflow_list_templates",
-      "description": "Munkafolyamat sablonok listázása"
+      "description": "Az elindítható munkafolyamat-sablonok listája (GET /dms/workflow/availableTemplates)."
     },
     {
       "name": "flex_workflow_get_template_details",
-      "description": "Sablon kitöltendő mezőinek lekérése"
+      "description": "Egy sablon metaadat-mezői és indítási adatai (GET /dms/workflow/startDetails/{templateId})."
     },
     {
       "name": "flex_workflow_start",
-      "description": "Munkafolyamat indítása custom mezőkkel"
+      "description": "Új munkafolyamat-példányt indít egy sablonból (POST /dms/workflow/start)."
     },
     {
       "name": "flex_workflow_get_my_tasks",
-      "description": "Saját munkafolyamat-feladatok"
+      "description": "A bejelentkezett felhasználóhoz rendelt munkafolyamat-feladatok (GET /dms/wfTasks/my)."
     },
     {
       "name": "flex_workflow_get_task_details",
-      "description": "Munkafolyamat-feladat részletei"
+      "description": "Egy munkafolyamat-feladat részletes adatai (GET /dms/wfTask/{wfTaskId})."
     },
     {
       "name": "flex_workflow_complete_task",
-      "description": "Munkafolyamat-feladat lezárása eredménnyel"
+      "description": "Lezár egy munkafolyamat-feladatot eredménnyel: a folyamat továbblép, és ez innen nem vonható vissza (POST /dms/wfTask/{wfTaskId}/complete)."
     },
     {
       "name": "flex_workflow_get_task_comments",
-      "description": "Feladat megjegyzései"
+      "description": "Egy munkafolyamat-feladat összes megjegyzése (GET /dms/comments/wfTask/{wfTaskId})."
     },
     {
       "name": "flex_workflow_add_task_comment",
-      "description": "Megjegyzés munkafolyamat-feladathoz"
+      "description": "Új megjegyzést fűz egy munkafolyamat-feladathoz (POST /dms/comments/wfTask/{wfTaskId})."
     },
     {
       "name": "flex_workflow_get_task_attachments",
-      "description": "Feladat csatolmányai"
+      "description": "Egy munkafolyamat-feladathoz közvetlenül csatolt fájlok (GET /dms/attachments/wfTask/{wfTaskId})."
     },
     {
       "name": "flex_workflow_get_task_related_attachments",
-      "description": "Kapcsolódó csatolmányok"
+      "description": "A feladathoz kapcsolódó, de nem közvetlenül csatolt fájlok (GET /dms/attachments/wfTask/{wfTaskId}/related)."
     },
     {
       "name": "flex_workflow_download_attachment",
-      "description": "Csatolmány letöltése lemezre"
+      "description": "Letölt egy csatolmányt GUID alapján és lemezre menti (GET /dms/attachment/{attachmentGuid}/download)."
     },
     {
       "name": "flex_search_linked_items",
-      "description": "Kapcsolt elem keresése azonosító alapján"
+      "description": "Kapcsolt elemet (iratot) keres azonosító alapján, pl. \"DMS/13/2023\" (GET /dms/id/linkedItem)."
     },
     {
       "name": "flex_diag",
-      "description": "Kapcsolat- és token-ellenőrzés"
+      "description": "Diagnosztikai hívás a Flex API felé (GET /diag): a kapcsolatot és a token érvényességét ellenőrzi."
     }
   ],
   "keywords": [

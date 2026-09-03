@@ -4,6 +4,7 @@ import type { FlexClient } from "../client.js";
 import type { FlexConfig } from "../config.js";
 import { formatDateTime, toolError, toolJson } from "../format.js";
 import { envelope, summarizeTask } from "../projection.js";
+import { taskListOutput } from "../schema.js";
 
 /**
  * Task resource — simple DMS tasks (not full workflow processes).
@@ -15,28 +16,15 @@ export function registerTaskTools(server: McpServer, client: FlexClient, config:
     "flex_task_create",
     {
       title: "Feladat létrehozása",
-      description: `Új DMS feladatot hoz létre a Flex rendszerben (POST /dms/task/start).
+      description: `Új DMS feladatot oszt ki (POST /dms/task/start).
 
-Mikor használd: amikor egy egyszerű feladatot kell kiosztani egy felhasználónak (nem teljes munkafolyamatot — arra a flex_workflow_start való).
+Mikor használd: egyszerű, kézzel kiosztott teendőhöz; teljes munkafolyamathoz a
+flex_workflow_start való.
 
-Bemenet:
-  - taskTitle (string, kötelező): a feladat címe
-  - taskDescription (string): leírás
-  - taskPartner (string): partner megnevezése, üresen null lesz
-  - taskPriority (number): prioritás (alapértelmezett 2)
-  - taskScheduledStart (string): tervezett kezdés (lásd a dátumokról szóló megjegyzést)
-  - taskDeadline (string): határidő (lásd a dátumokról szóló megjegyzést)
-  - needsApprovalFromCreator (boolean): kell-e a létrehozó jóváhagyása
-  - executorType ("4_elso_elfogado" | "4_mindenki"): ki hajthatja végre
-  - performerUserId (number): a végrehajtó felhasználó ID-ja (flex_user_get_by_username adja vissza)
-  - performerOrgId (number): a végrehajtó szervezeti egység ID-ja
+Dátumok: a Flex helyi faliórát tárol — offsettel megadott érték a FLEX_TIMEZONE
+zónájára átszámítva megy be.
 
-Dátumok: a Flex helyi faliórát tárol. Offset nélkül megadott érték (pl.
-"2026-08-18T23:59:59" vagy "2026-08-18") változatlanul, faliórának számít;
-offsettel megadott érték (pl. "...Z" vagy "...+02:00") a szerver zónájára
-(FLEX_TIMEZONE, alapértelmezés Europe/Budapest) átszámítva megy be.
-
-Visszatérés: { success, result: { id, referenceNumber } }`,
+Visszatérés: az új feladat id és referenceNumber mezője.`,
       inputSchema: {
         taskTitle: z.string().min(1).describe("A feladat címe (kötelező)"),
         taskDescription: z.string().optional().describe("A feladat leírása"),
@@ -55,8 +43,16 @@ Visszatérés: { success, result: { id, referenceNumber } }`,
           .enum(["4_elso_elfogado", "4_mindenki"])
           .default("4_elso_elfogado")
           .describe("Végrehajtó típusa: első elfogadó vagy mindenki"),
-        performerUserId: z.number().int().optional().describe("Végrehajtó felhasználó ID-ja"),
-        performerOrgId: z.number().int().optional().describe("Végrehajtó szervezeti egység ID-ja"),
+        performerUserId: z
+          .number()
+          .int()
+          .optional()
+          .describe("A végrehajtó felhasználó ID-ja (a flex_user_get_by_username adja meg)"),
+        performerOrgId: z
+          .number()
+          .int()
+          .optional()
+          .describe("A végrehajtó szervezeti egység ID-ja (alapértelmezetten 1)"),
       },
       annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: true },
     },
@@ -91,13 +87,7 @@ Visszatérés: { success, result: { id, referenceNumber } }`,
     "flex_task_comment",
     {
       title: "Megjegyzés feladathoz",
-      description: `Megjegyzést fűz egy meglévő feladathoz (POST /dms/comments/task/{taskId}).
-
-Bemenet:
-  - taskId (string, kötelező): a feladat azonosítója
-  - comment (string, kötelező): a megjegyzés szövege
-
-Visszatérés: { success, result }`,
+      description: `Megjegyzést fűz egy meglévő feladathoz (POST /dms/comments/task/{taskId}).`,
       inputSchema: {
         taskId: z.string().min(1).describe("A feladat azonosítója"),
         comment: z.string().min(1).describe("A megjegyzés szövege"),
@@ -119,21 +109,20 @@ Visszatérés: { success, result }`,
 
   // A két művelet csak a `destructiveHint`-ben tér el: az elfogadás visszafordítható
   // állapotváltás, a lezárás viszont befejezi a feladatot, amit innen nem lehet visszavonni.
-  const acceptComplete = (operation: "accept" | "complete", title: string, verb: string, destructive: boolean) =>
+  const acceptComplete = (
+    operation: "accept" | "complete",
+    title: string,
+    summary: string,
+    destructive: boolean,
+  ) =>
     server.registerTool(
       `flex_task_${operation}`,
       {
         title,
-        description: `${verb} egy feladatot (POST /dms/task/{taskId}/${operation}).
-
-Bemenet:
-  - taskId (string, kötelező): a feladat azonosítója
-  - comment (string): opcionális megjegyzés
-
-Visszatérés: { success, result: boolean }`,
+        description: `${summary} (POST /dms/task/{taskId}/${operation}).`,
         inputSchema: {
           taskId: z.string().min(1).describe("A feladat azonosítója"),
-          comment: z.string().optional().describe("Opcionális megjegyzés"),
+          comment: z.string().optional().describe("Opcionális megjegyzés a művelethez"),
         },
         annotations: { readOnlyHint: false, destructiveHint: destructive, idempotentHint: true, openWorldHint: true },
       },
@@ -149,39 +138,29 @@ Visszatérés: { success, result: boolean }`,
       },
     );
 
-  acceptComplete("accept", "Feladat elfogadása", "Elfogad", false);
-  acceptComplete("complete", "Feladat lezárása", "Lezár", true);
+  acceptComplete("accept", "Feladat elfogadása", "Elfogad egy feladatot: a végrehajtó elvállalja", false);
+  acceptComplete("complete", "Feladat lezárása", "Lezár egy feladatot; innen nem vonható vissza", true);
 
   server.registerTool(
     "flex_task_list",
     {
       title: "Feladatok listázása",
-      description: `Listázza a bejelentkezett felhasználó feladatait állapot szerint (GET /dms/news).
+      description: `A bejelentkezett felhasználó feladatai (GET /dms/news). Vegyes lista: a
+"type" választja el a Task és a WfTask elemeket.
 
-A lista vegyesen tartalmaz egyszerű Task és munkafolyamat-feladat (WfTask)
-elemeket — a "type" mező ("Task" / "WfTask") különíti el őket.
+Alapból lapozott összefoglaló, 20 elem — a leírás, a metaadatok és a
+megjegyzések szövege NEM szerepel benne, azokhoz a
+flex_workflow_get_task_details / _comments / _attachments való.
 
-Alapértelmezésben összefoglalót ad, lapozva: 20 elem, elemenként az azonosító,
-a tárgy, az állapot, a határidő, a sablon és a megjegyzések/csatolmányok darabszáma.
-A leírás, a metaadatok, a megjegyzések és a csatolmányok szövege NEM szerepel benne
-— azokhoz a flex_workflow_get_task_details / _comments / _attachments való.
-A fields: "full" a nyers elemeket adja: csak kis limittel (1-2 elem) használd,
-mert egyetlen elem is több ezer karakter lehet.
+Flex-hiba: a status "all" HTTP 500-at ad; a "pending" és a "completed" ugyanazt
+a listát adja.
 
-Bemenet:
-  - status ("in-progress" | "completed" | "pending" | "all"): szűrő (alapértelmezett "in-progress").
-    Az "all" esetén nem küld status szűrőt — FIGYELEM: a Flex jelenleg erre HTTP 500-at ad
-    (szerveroldali hiba, bejelentve). Amíg nem javítják, a három konkrét értéket használd.
-    A "pending" és a "completed" a mérés szerint ugyanazt a listát adja vissza.
-  - limit (1-100, alapértelmezett 20), offset (alapértelmezett 0): lapozás
-  - fields ("summary" | "full", alapértelmezett "summary")
-
-Visszatérés: { total, offset, returned, hasMore, fields, items }`,
+Visszatérés: lapozó boríték (total, offset, returned, hasMore, fields, items).`,
       inputSchema: {
         status: z
           .enum(["in-progress", "completed", "pending", "all"])
           .default("in-progress")
-          .describe("Feladatok szűrése állapot szerint"),
+          .describe('Állapotszűrő; az "all" nem küld szűrőt — a Flex jelenleg 500-at ad rá'),
         limit: z
           .number()
           .int()
@@ -195,6 +174,7 @@ Visszatérés: { total, offset, returned, hasMore, fields, items }`,
           .default("summary")
           .describe('"summary" a lapos összefoglaló, "full" a nyers elem — a "full" csak 1-2 elemre'),
       },
+      outputSchema: taskListOutput,
       annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true },
     },
     async (args) => {
