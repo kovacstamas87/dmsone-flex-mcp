@@ -53,7 +53,7 @@ ellenőrzésekor is még tükrözi a Bearer tokent — jelentve), és a teljes C
 | Szerver kódja | `src/` — lásd [`src/CLAUDE.md`](src/CLAUDE.md) |
 | Tesztek | `test/*.test.ts`, futtatás: `npm test` (`node --import tsx --test`) |
 | A `.mcpb` **tartalma** | `scripts/bundle.mjs` `COPIED` listája + az esbuild bundle; a `build/pkg/` staging mappa minden futásnál nulláról készül |
-| CI | `.github/workflows/ci.yml` — Node 20/22 mátrix: `npm ci`, `lint`, `format:check`, `build`, `test`, `npm audit --audit-level=moderate` |
+| CI | `.github/workflows/ci.yml` — Node 20/22 mátrix: `npm ci`, `lint`, `format:check`, `build`, `test`, `npm audit --audit-level=moderate`. A **20-as leg marad**, amíg az `engines` és a `manifest.json` `compatibility` `>=20`-at ígér — az ígéretet tesztelni kell. Az action-ök `@v5`-en vannak (2026-09-04), mert a `@v4` futtatókörnyezete Node 20-as, amit a GitHub elavultnak jelöl. Ha a záró `npm audit` **503**-cal esik el (registry-kiesés — 2026-09-04-én megtörtént), az nem kódhiba: a step újrafuttatása a javítás |
 | Resource-ok és promptok | `src/resources.ts`, `src/prompts.ts`; a felületet a `test/resources-prompts.test.ts` rögzíti (protokollon át) |
 | Egy tool tesztelhető válasza fake klienssel | `test/handlers.test.ts` — a `FlexHttp` interfész (`src/client.ts`) mögé tett fake, lásd „Kulcsdöntések" |
 
