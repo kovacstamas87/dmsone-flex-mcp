@@ -3,6 +3,16 @@
 A jelölés a [Keep a Changelog](https://keepachangelog.com/) és a
 [SemVer](https://semver.org/) ajánlásait követi.
 
+## [1.0.4] – 2026-09-04
+
+### Fixed
+- **Az Option mezők első címkéjébe beszivárgott a kódprefix.** A `startDetails` `params` alakja
+  `<kiválasztott kód>|<címke1>;<címke2>;…` — a `|` előtti rész a pillanatnyilag kiválasztott
+  érték kódja. A parser eddig csak a *vezető* `|`-t vágta le, így egy előre kitöltött sablonon
+  az első lehetőség `"1|hétfő"` címkével jött vissza (élőben megfigyelve az 59-es sablon
+  `9Option` mezőjén), és a címke szerinti feloldás éppen arra az egy értékre nem talált rá.
+  Most a `|` előtti minden eldobásra kerül. A kódok (1-alapú sorszám) nem változtak.
+
 ## [1.0.3] – 2026-09-04
 
 ### Fixed

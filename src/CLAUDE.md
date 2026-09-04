@@ -66,7 +66,10 @@ annotációk, dátumkezelés) a saját mappa-doksijában: [`tools/CLAUDE.md`](to
   payloadja (2026-09-04-i minták); ha új mellékhatásos eszköz kerül ide, a törzsét ugyanígy a
   felületi payloadhoz kell mérni, és a `FLEX_DEBUG` naplója pont ehhez van.
 - **Az Option mezők kódját a `params` lista sorrendje adja, mert a Flex nem küldi.** A
-  `startDetails` csak címkéket ad (`params: "|első;második"`), a `POST /dms/workflow/start`
+  `params` alakja `<kiválasztott kód>|<címke1>;<címke2>;…` — a `|` **előtti** rész a
+  pillanatnyilag kiválasztott érték kódja (üres, ha még nincs), nem az első címke része; ezért a
+  parser a `|` előtti mindent eldobja (v1.0.4 javítása: korábban `"1|hétfő"` lett az első címke).
+  A `startDetails` tehát csak címkéket ad, a `POST /dms/workflow/start`
   viszont kódot vár (`"2"`) — a kód a lista **1-alapú sorszáma**, felületi payloadokkal igazolva
   (2026-09-04). A `describeTemplate` ezért `{ code, label }` párokat ad, a `resolveOptionValues`
   pedig a kódot és a címkét is elfogadja. A **kód-ág elsőbbsége** szándékos: van sablon, ahol a

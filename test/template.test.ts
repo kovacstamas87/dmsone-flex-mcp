@@ -78,6 +78,20 @@ describe("parseTemplateFields", () => {
     assert.equal(parsed.fields[0].visibility, "MT_K");
   });
 
+  test("az Option params kódprefixe nem kerül az első címkébe", () => {
+    // Élő megfigyelés (2026-09-04, 59-es sablon `9Option`): a kitöltött sablon
+    // params-a a kiválasztott kóddal kezdődik. A régi parse "1|hétfő"-t adott.
+    const parsed = parseTemplateFields({
+      result: { metadata: [{ code: "9Option", type: "Option", params: "1|hétfő;kedd;szerda" }] },
+    });
+
+    assert.deepEqual(parsed.fields[0].options, [
+      { code: "1", label: "hétfő" },
+      { code: "2", label: "kedd" },
+      { code: "3", label: "szerda" },
+    ]);
+  });
+
   test("sem required/mandatory, sem visibility kulcs nélkül nem állítunk kötelezőséget", () => {
     const parsed = parseTemplateFields({
       result: { metadata: [{ code: "MEGJEGYZES", type: "Text" }] },

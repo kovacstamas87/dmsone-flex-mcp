@@ -5,7 +5,10 @@ DMS One Flex REST API-t teszi elérhetővé feladatok, munkafolyamatok és felha
 minden hívás a beállított token tulajdonosának a nevében fut. Ugyanazokat a végpontokat fedi, mint
 a közösségi `n8n-nodes-dmsone-flex` node.
 
-**Állapot (2026-09-04):** **v1.0.3** kiadva és **élesben ellenőrizve** (`CHANGELOG.md` `[1.0.3]`) — a hiányzó `deadline`
+**Állapot (2026-09-04):** **v1.0.4** kiadva — az Option-címkékből kimarad a `params` kódprefixe
+(`"1|hétfő"` → `"hétfő"`); a hiba az 59-es sablonon derült ki az 1.0.3 élő ellenőrzésekor, és
+egyben megerősítette a `params` alakját: `<kiválasztott kód>|<címkék>`. Előtte **v1.0.3** kiadva és
+**élesben ellenőrizve** (`CHANGELOG.md` `[1.0.3]`) — a hiányzó `deadline`
 előre jelzése a sablon javaslatával (a Flex 500-cal utasítja el a határidő nélküli indítást,
 élőben mérve), `suggestedDeadline` a sablon-részletekben, és a `typescript` / `@types/node`
 major frissítés kikapcsolása a Dependabotban. A határidő-hiba előre jelzése és a javaslattal induló folyamat (188) a csatlakoztatott

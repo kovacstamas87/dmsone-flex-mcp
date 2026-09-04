@@ -53,10 +53,22 @@ export interface TemplateOption {
   label: string;
 }
 
-/** Option fields encode their choices as "|opt1;opt2;opt3" — split into code/label pairs. */
+/**
+ * Option fields encode their choices as `<kiválasztott kód>|opt1;opt2;opt3` —
+ * split into code/label pairs.
+ *
+ * A `|` **előtti** rész a pillanatnyilag kiválasztott érték kódja, nem az első
+ * címke része: indítás előtt üres (`"|hétfő;kedd"`), kitöltött sablonon viszont
+ * ott áll a kód (`"4|Egyéb projekt jóváhagyás;…"` — élőben megfigyelve
+ * 2026-09-04-én a 66-os sablon visszaolvasásán és az 59-es `9Option` mezőjén).
+ * Ezért **a `|` előtti mindent** eldobunk: korábban csak a vezető `|`-t vágtuk
+ * le, így egy előre kiválasztott sablonon az első címke `"1|hétfő"`-ként jött
+ * vissza, és a címke szerinti keresés éppen arra az egy értékre nem talált rá.
+ */
 function parseOptionParams(params: unknown): TemplateOption[] | undefined {
   if (typeof params !== "string" || params.trim() === "") return undefined;
-  const clean = params.startsWith("|") ? params.slice(1) : params;
+  const separator = params.indexOf("|");
+  const clean = separator >= 0 ? params.slice(separator + 1) : params;
   const options = clean
     .split(";")
     .map((option) => option.trim())
