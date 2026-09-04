@@ -148,6 +148,7 @@ fájlszerkesztésre. A **manuális (Node.js) mód** lépéseit és a pontos
 | `FLEX_TIMEZONE` | – | `Europe/Budapest` | IANA zónanév. A Flex helyi faliórát tárol, ezért a szerver ebben a zónában értelmezi az offsettel megadott dátumokat |
 | `FLEX_MAX_DOWNLOAD_MB` | – | `50` | A csatolmány-letöltés felső határa MB-ban. A válasz teljes egészében memóriába kerül, ezért ez a korlát védi a szerverfolyamatot; a határ fölött a letöltés **hibát ad, nem csonkol** |
 | `FLEX_CHECK_ON_START` | – | `false` | Induláskor egy `GET /diag` hívás a token ellenőrzésére; lejárt/érvénytelen tokenre stderr-figyelmeztetést ad, de a szerver ekkor sem lép ki |
+| `FLEX_DEBUG` | – | `false` | **Fejlesztői kapcsoló** (nincs a `manifest.json` `user_config`-jában): a kimenő `POST` kérés-törzseket stderr-re naplózza, hogy a felület saját payloadjával összevethetők legyenek. A csatolmányok base64 tartalma nem kerül a naplóba, és a törzs átmegy a redakción |
 
 ---
 

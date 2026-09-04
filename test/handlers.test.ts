@@ -424,3 +424,153 @@ describe("untrusted keret a protokollon át (WF17)", () => {
     }
   });
 });
+
+/**
+ * A kimenő kérés-törzs alakja. Ez nem stílus-kérdés: a Flex a hiányzó kulcsokat
+ * (`linkedItem`, `files`, `description`, `deadline`) PHP notice-szal, HTTP
+ * 500-zal bünteti — nem 400-as validációval —, ezért a törzs **kulcskészletét**
+ * teszt őrzi, nem csak a jelenlévő értékeket.
+ */
+describe("flex_workflow_start — a kimenő törzs", () => {
+  const TEMPLATE = {
+    success: true,
+    result: {
+      allowedLinkedItemTypes: ["alszam"],
+      metadata: [
+        { code: "leir", name: "Leírás", type: "Textarea", visibility: "MT_O" },
+        {
+          code: "projtip",
+          name: "Projekt típus",
+          type: "Option",
+          visibility: "MT_K",
+          params: "|Egyéb;Közigazgatási;Vállalati fejlesztési projekt",
+        },
+      ],
+    },
+  };
+
+  /** Elindít egy folyamatot, és visszaadja a Flex felé ténylegesen küldött törzset. */
+  async function startWith(args: Record<string, unknown>): Promise<{
+    body?: Record<string, unknown>;
+    result: Awaited<ReturnType<Client["callTool"]>>;
+  }> {
+    let body: Record<string, unknown> | undefined;
+    const client = fakeHttp({
+      request: (method, url, opts) => {
+        if (method === "GET") return TEMPLATE;
+        assert.equal(url, "/dms/workflow/start");
+        body = opts?.body as Record<string, unknown>;
+        return { success: true, result: { id: 1, referenceNumber: "WF/1/2026" } };
+      },
+    });
+    const mcp = await connect((server) => registerWorkflowTools(server, client, BASE_CONFIG));
+    try {
+      const result = await mcp.callTool({
+        name: "flex_workflow_start",
+        arguments: {
+          templateId: 50,
+          title: "Teszt tárgy",
+          responsibleUserId: 31,
+          responsibleOrgId: 13,
+          metadata: { projtip: "Vállalati fejlesztési projekt" },
+          ...args,
+        },
+      });
+      return { body, result };
+    } finally {
+      await mcp.close();
+    }
+  }
+
+  test("minimális paraméterek: a négy kulcs üres értékkel is kimegy", async () => {
+    const { body, result } = await startWith({});
+
+    assert.notEqual(result.isError, true);
+    assert.equal(body?.linkedItem, null);
+    assert.deepEqual(body?.files, []);
+    assert.equal(body?.description, "");
+    assert.equal(body?.deadline, null);
+  });
+
+  test("kapcsolt elemmel: linkedItem { id, type } megy ki", async () => {
+    const { body } = await startWith({ linkedItemType: "alszam", linkedItemId: 4711 });
+    assert.deepEqual(body?.linkedItem, { id: 4711, type: "alszam" });
+  });
+
+  test("fél kapcsolt elem: validációs hiba, nem megy ki kérés", async () => {
+    const { body, result } = await startWith({ linkedItemId: 4711 });
+    assert.equal(result.isError, true);
+    assert.equal(body, undefined, "hiányos kapcsolt elemmel nem indítunk folyamatot");
+  });
+
+  test("Option mező címkével: kódra fordítva megy ki", async () => {
+    const { body } = await startWith({});
+    assert.deepEqual(body?.metadata, { projtip: "3" });
+  });
+
+  test("Option mező érvénytelen értékkel: hiba az érvényes lehetőségekkel", async () => {
+    const { body, result } = await startWith({ metadata: { projtip: "Nincs ilyen" } });
+    const text = (result.content as { type: string; text: string }[])[0].text;
+
+    assert.equal(result.isError, true);
+    assert.equal(body, undefined);
+    assert.ok(text.includes('1 = "Egyéb"'), "a hibaüzenet listázza az érvényes lehetőségeket");
+  });
+
+  test("deadline ISO datetime-mal: YYYY-MM-DD megy ki", async () => {
+    const { body } = await startWith({ deadline: "2026-09-25T23:59:59+02:00" });
+    assert.equal(body?.deadline, "2026-09-25");
+  });
+
+  test("csatolmány: a típuskód átmegy, típus nélkül null", async () => {
+    const { body } = await startWith({
+      files: [
+        { fileName: "a.pdf", contentBase64: "AAA=", attachmentTypeCode: "TELJESITESIGAZOLAS" },
+        { fileName: "b.pdf", contentBase64: "BBB=" },
+      ],
+    });
+    assert.deepEqual(body?.files, [
+      { content: "AAA=", attachmentTypeCode: "TELJESITESIGAZOLAS", fileName: "a.pdf" },
+      { content: "BBB=", attachmentTypeCode: null, fileName: "b.pdf" },
+    ]);
+  });
+});
+
+describe("flex_task_create — a kimenő törzs", () => {
+  async function createWith(args: Record<string, unknown>): Promise<Record<string, unknown> | undefined> {
+    let body: Record<string, unknown> | undefined;
+    const client = fakeHttp({
+      request: (_method, url, opts) => {
+        assert.equal(url, "/dms/task/start");
+        body = opts?.body as Record<string, unknown>;
+        return { success: true, result: { id: 1 } };
+      },
+    });
+    const mcp = await connect((server) => registerTaskTools(server, client, BASE_CONFIG));
+    try {
+      await mcp.callTool({ name: "flex_task_create", arguments: { taskTitle: "Tárgy", ...args } });
+      return body;
+    } finally {
+      await mcp.close();
+    }
+  }
+
+  test("a felület payloadjának kulcsai üres értékkel is kimennek", async () => {
+    const body = await createWith({});
+
+    assert.equal(body?.taskDescription, "");
+    assert.equal(body?.taskPartner, null);
+    assert.deepEqual(body?.files, []);
+    assert.deepEqual(body?.relatedDocIds, []);
+    assert.deepEqual(body?.relatedFolderIds, []);
+    assert.deepEqual(body?.taskPerformers, { users: [], organizationCodes: [] });
+  });
+
+  test("szervezeti egység kóddal is kiosztható", async () => {
+    const body = await createWith({ performerOrgCodes: ["GAZD"], performerUserId: 31, performerOrgId: 13 });
+    assert.deepEqual(body?.taskPerformers, {
+      users: [{ userId: 31, orgId: 13 }],
+      organizationCodes: ["GAZD"],
+    });
+  });
+});

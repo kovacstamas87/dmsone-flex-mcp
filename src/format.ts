@@ -243,3 +243,20 @@ export function formatDateTime(value: string | undefined, timeZone: string): str
 
   return `${year}-${month}-${day} ${hour}:${minute}:${second}`;
 }
+
+/**
+ * A **csak dátum** alakú (`YYYY-MM-DD`) mezők formázása.
+ *
+ * A `POST /dms/workflow/start` `deadline` mezőjét a Flex felülete dátumként
+ * küldi (`2026-09-25`), idő nélkül — ezt követjük, hogy a tool payloadja a
+ * felületivel egyezzen. A falióra-átszámítás előbb lefut (offsettel megadott
+ * érték a `FLEX_TIMEZONE` zónájára), és csak utána vágunk: így egy
+ * `2026-09-25T23:30:00+05:00` a budapesti nap szerinti dátumot adja, nem a
+ * bemeneti zónáét. Értelmezhetetlen bemenetet a `formatDateTime` változatlanul
+ * ad vissza — azt itt sem csonkoljuk, hogy a Flex saját hibaüzenete jusson el
+ * a felhasználóhoz.
+ */
+export function formatDate(value: string | undefined, timeZone: string): string {
+  const formatted = formatDateTime(value, timeZone);
+  return /^\d{4}-\d{2}-\d{2}/.test(formatted) ? formatted.slice(0, 10) : formatted;
+}

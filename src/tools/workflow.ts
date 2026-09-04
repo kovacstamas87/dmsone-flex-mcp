@@ -5,7 +5,8 @@ import { tmpdir } from "node:os";
 import { basename, join, resolve } from "node:path";
 import type { FlexHttp } from "../client.js";
 import type { FlexConfig } from "../config.js";
-import { formatDateTime, toolError, toolJson } from "../format.js";
+import { debugRequestBody } from "../debug.js";
+import { formatDate, toolError, toolJson } from "../format.js";
 import { ensureDirInside, resolveDownloadPath, sanitizeFileName, uniquePath } from "../paths.js";
 import { envelope, summarizeWfTask } from "../projection.js";
 import { downloadOutput, templateDetailsOutput, wfTaskListOutput } from "../schema.js";
@@ -30,17 +31,37 @@ interface ParsedField {
   required: boolean;
   default?: unknown;
   visibility?: string;
-  options?: string[];
+  options?: TemplateOption[];
 }
 
-/** Option fields encode their choices as "|opt1;opt2;opt3" — split into an array. */
-function parseOptionParams(params: unknown): string[] | undefined {
+/**
+ * Egy Option mező egy választható értéke: a Flexnek küldendő **kód** és az
+ * ember által látott **címke**.
+ *
+ * A kód nincs benne a `startDetails` válaszában: a Flex ott csak a címkéket
+ * adja, `params: "|első;második;…"` alakban. A küldendő kód a lista **1-alapú
+ * sorszáma** — ezt élő felületi payloadok igazolják (2026-09-04: a 66-os
+ * sablon `ceg` mezője `"1"` = "DMS One Zrt.", a `kolt` `"1"` = "Operatív", az
+ * 50-es sablon `projtip` `"4"` = "Vállalati fejlesztési projekt"). Írott
+ * Flex-dokumentáció erre nincs, ezért ha a Flex egyszer kódot is ad a
+ * válaszban, azt kell előnyben részesíteni ezzel a származtatással szemben.
+ */
+export interface TemplateOption {
+  /** Amit a start `metadata`-jában küldeni kell (a `params` lista 1-alapú sorszáma). */
+  code: string;
+  /** Amit a felület mutat. */
+  label: string;
+}
+
+/** Option fields encode their choices as "|opt1;opt2;opt3" — split into code/label pairs. */
+function parseOptionParams(params: unknown): TemplateOption[] | undefined {
   if (typeof params !== "string" || params.trim() === "") return undefined;
   const clean = params.startsWith("|") ? params.slice(1) : params;
   const options = clean
     .split(";")
     .map((option) => option.trim())
-    .filter((option) => option.length > 0);
+    .filter((option) => option.length > 0)
+    .map((label, index) => ({ code: String(index + 1), label }));
   return options.length > 0 ? options : undefined;
 }
 
@@ -204,7 +225,7 @@ export function missingRequiredMessage(
 
   const details = missing
     .map((field) => {
-      const opts = field.options ? ` — lehetséges értékek: ${field.options.join(", ")}` : "";
+      const opts = field.options ? ` — lehetséges értékek: ${describeOptions(field.options)}` : "";
       const label = field.label || field.name ? ` (${field.label || field.name})` : "";
       return `- ${field.code} [${field.type ?? "Text"}]${label}${opts}`;
     })
@@ -215,6 +236,71 @@ export function missingRequiredMessage(
     `Add meg ezeket a "metadata" objektumban a code kulccsal. ` +
     `A teljes mezőlistát a flex_workflow_get_template_details adja.`
   );
+}
+
+/** Az Option lehetőségek olvasható felsorolása hibaüzenetben: `kód = címke`. */
+function describeOptions(options: TemplateOption[]): string {
+  return options.map((option) => `${option.code} = "${option.label}"`).join("; ");
+}
+
+/**
+ * Az Option típusú metaadat-mezők értékének kódra fordítása.
+ *
+ * A Flex a **kódot** várja (`"2"`), a modell viszont természetes módon a
+ * címkével dolgozik, mert a sablon-részletek is azt mutatják. Ezért mindkettőt
+ * elfogadjuk, és kódot küldünk.
+ *
+ * A sorrend nem véletlen: **előbb a kód**, csak utána a címke. Van olyan
+ * sablon, ahol a címkék maguk is számok (a 66-os `beruh` mezője:
+ * "Nem beruházási", "1", "2", "3", "4") — ott a `"4"` bemenet kétértelmű. A
+ * kód-ág elsőbbsége teszi az értelmezést kiszámíthatóvá: egy sorszám mindig
+ * sorszám, és a hibaüzenet `kód = "címke"` párokat listáz, hogy a hívó lássa a
+ * különbséget.
+ *
+ * Ismeretlen értéknél nem küldünk félkész payloadot: hibát adunk az érvényes
+ * lehetőségekkel. Az üres / hiányzó értéket érintetlenül hagyjuk — arról a
+ * `missingRequiredMessage` mond ítéletet.
+ */
+export function resolveOptionValues(
+  template: ParsedTemplate,
+  provided: Record<string, unknown>,
+): { metadata: Record<string, unknown> } | { error: string } {
+  const metadata: Record<string, unknown> = { ...provided };
+
+  for (const field of template.fields) {
+    const options = field.options;
+    if (!options || options.length === 0) continue;
+
+    const value = metadata[field.code];
+    if (value === undefined || value === null || value === "") continue;
+
+    const text = String(value).trim();
+    const byCode = options.find((option) => option.code === text);
+    if (byCode) {
+      metadata[field.code] = byCode.code;
+      continue;
+    }
+
+    const byLabel = options.filter((option) => option.label.toLowerCase() === text.toLowerCase());
+    if (byLabel.length === 1) {
+      metadata[field.code] = byLabel[0].code;
+      continue;
+    }
+
+    const label = field.label || field.name;
+    const reason =
+      byLabel.length > 1
+        ? `több lehetőség címkéje is "${text}"`
+        : `a(z) "${text}" érték nem szerepel a lehetőségek között`;
+    return {
+      error:
+        `Érvénytelen érték a(z) ${field.code}${label ? ` (${label})` : ""} Option mezőn: ${reason}.\n` +
+        `Érvényes lehetőségek (kód = címke): ${describeOptions(options)}.\n` +
+        `A "metadata"-ban a kód és a címke is megadható; a tool kódra fordítja.`,
+    };
+  }
+
+  return { metadata };
 }
 
 export function registerWorkflowTools(server: McpServer, client: FlexHttp, config: FlexConfig): void {
@@ -300,7 +386,10 @@ Visszatérés: az új folyamat id és referenceNumber mezője.`,
         deadline: z
           .string()
           .optional()
-          .describe("Határidő; offset nélkül helyi faliórának számít (pl. 2026-08-18T23:59:59)"),
+          .describe(
+            "Határidő. A Flexbe dátumként megy ki (YYYY-MM-DD): az időrészt levágjuk, " +
+              "offsettel megadott értéket előbb a FLEX_TIMEZONE zónájára számolunk át",
+          ),
         responsibleUserId: z
           .number()
           .int()
@@ -322,17 +411,25 @@ Visszatérés: az új folyamat id és referenceNumber mezője.`,
           .optional()
           .describe("A kapcsolt elem ID-ja (a flex_search_linked_items adja), csak ha a sablon kéri"),
         metadata: z
-          .record(z.string(), z.union([z.string(), z.number(), z.boolean()]))
+          .record(z.string(), z.union([z.string(), z.number(), z.boolean()]).nullable())
           .default({})
           .describe(
             'Metaadatok mezőkód → érték formában, pl. { "nettoOsszeg": "400" }. Add meg a ' +
-              "sablon összes mezőjét a get_template_details alapján.",
+              "sablon összes mezőjét a get_template_details alapján. Option mezőn a kód és a " +
+              "címke is jó — a tool kódra fordítja, ismeretlen értéknél hibát ad.",
           ),
         files: z
           .array(
             z.object({
               fileName: z.string().describe("A fájl neve"),
               contentBase64: z.string().describe("A fájl tartalma base64 kódolva"),
+              attachmentTypeCode: z
+                .string()
+                .optional()
+                .describe(
+                  "A csatolmány típuskódja a sablon szerint (pl. TELJESITESIGAZOLAS); " +
+                    "üresen null megy ki, ahogy a felület is küldi típus nélkül",
+                ),
             }),
           )
           .optional()
@@ -346,28 +443,46 @@ Visszatérés: az új folyamat id és referenceNumber mezője.`,
       try {
         // Best-effort: csak akkor szólunk előre hiányzó mezőről, ha a sablon
         // egyáltalán jelöl kötelezőséget. Az érdemi ellenőrzés a Flex szerveré.
+        const hasLinkedType = args.linkedItemType !== undefined && args.linkedItemType !== "";
+        const hasLinkedId = args.linkedItemId !== undefined;
+        // Fél kapcsolt elemet nem küldünk: a hiányzó felét a Flex nem tudja kitalálni,
+        // és a hibája (`Undefined property`) nem mondaná meg a hívónak, mi maradt le.
+        if (hasLinkedType !== hasLinkedId) {
+          return toolError(
+            new Error(
+              "A kapcsolt elemhez mindkét paraméter kell: linkedItemType és linkedItemId " +
+                "(vagy egyik sem, ha a sablon nem kér kapcsolt elemet).",
+            ),
+          );
+        }
+
         const startDetails = await client.request("GET", `/dms/workflow/startDetails/${args.templateId}`);
         const template = parseTemplateFields(startDetails);
-        const provided = args.metadata as Record<string, unknown>;
-        const missing = missingRequiredMessage(args.templateId, template, provided);
+        const resolved = resolveOptionValues(template, args.metadata as Record<string, unknown>);
+        if ("error" in resolved) return toolError(new Error(resolved.error));
+
+        const missing = missingRequiredMessage(args.templateId, template, resolved.metadata);
         if (missing) return toolError(new Error(missing));
 
+        // A kulcsok **feltétel nélkül** kimennek, akkor is, ha nincs értékük: a Flex
+        // olvassa őket (`$body->linkedItem`, `$body->files`, …), és a hiányzó kulcstól
+        // PHP notice-szal 500-at ad — nem 400-as validációs hibát. A felület payloadja
+        // ugyanígy küld `linkedItem: null`-t és `files: []`-t.
         const body: Record<string, unknown> = {
           templateId: args.templateId,
           title: args.title,
+          deadline: args.deadline ? formatDate(args.deadline, config.timeZone) : null,
+          description: args.description ?? "",
           responsibleUser: { userId: args.responsibleUserId, orgId: args.responsibleOrgId },
-          metadata: provided,
+          linkedItem: hasLinkedType ? { id: args.linkedItemId, type: args.linkedItemType } : null,
+          metadata: resolved.metadata,
           files: (args.files ?? []).map((file) => ({
-            attachmentTypeCode: null,
-            fileName: file.fileName,
             content: file.contentBase64,
+            attachmentTypeCode: file.attachmentTypeCode ?? null,
+            fileName: file.fileName,
           })),
         };
-        if (args.linkedItemType && args.linkedItemId !== undefined) {
-          body.linkedItem = { linkedItemType: args.linkedItemType, id: args.linkedItemId };
-        }
-        if (args.description) body.description = args.description;
-        if (args.deadline) body.deadline = formatDateTime(args.deadline, config.timeZone);
+        debugRequestBody("POST /dms/workflow/start", body);
 
         return toolJson(await client.request("POST", "/dms/workflow/start", { body }));
       } catch (error) {

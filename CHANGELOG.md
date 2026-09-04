@@ -3,6 +3,45 @@
 A jelölés a [Keep a Changelog](https://keepachangelog.com/) és a
 [SemVer](https://semver.org/) ajánlásait követi.
 
+## [1.0.2] – 2026-09-04
+
+### Fixed
+- **`flex_workflow_start`: hiányzó kulcsok a kérés törzsében.** A `linkedItem`, `files`,
+  `description` és `deadline` mostantól **feltétel nélkül** kimegy (`null` / `[]` / `""` / `null`
+  alapértékkel), ahogy a Flex felülete is küldi. A Flex ezeket a kulcsokat olvassa, és a
+  hiányzótól PHP notice-szal HTTP 500-at ad (`Undefined property: stdClass::$linkedItem`) — nem
+  400-as validációs hibát —, így kapcsolt elem és csatolmány nélküli indítás eddig elszállt.
+- **Az Option típusú metaadat-mezők kódolása.** A Flex a lehetőség **kódját** várja (`"2"`), nem a
+  címkéjét; a kód a `startDetails` `params` listájának 1-alapú sorszáma (a válasz magát a kódot nem
+  adja). A `flex_workflow_get_template_details` `options` tömbje ezért `{ code, label }` párokat ad
+  (**áttörő változás a hívó modellnek**, korábban puszta címke-lista volt), a `flex_workflow_start`
+  pedig a kódot és a címkét is elfogadja, és kódra fordít. Ismeretlen értéknél nem küld félkész
+  payloadot, hanem hibát ad az érvényes `kód = "címke"` párokkal. Ha a címkék maguk is számok
+  (66-os sablon, `beruh`), a **kód-értelmezés győz** — a hibaüzenet mutatja a különbséget.
+- **A `deadline` a felülettel egyezően `YYYY-MM-DD`** alakban megy ki (`formatDate`,
+  `src/format.ts`): az időrész levágása a falióra-átszámítás **után** történik, így egy más zónában
+  megadott időpont a `FLEX_TIMEZONE` szerinti napra esik.
+- **Fél kapcsolt elem elutasítva.** Ha csak a `linkedItemType` vagy csak a `linkedItemId` érkezik,
+  a tool validációs hibát ad, és nem indít folyamatot. A `linkedItem` alakja `{ id, type }`.
+- **`flex_task_create`: a `taskPerformers.organizationCodes` is mindig kimegy** (üresen `[]`),
+  ugyanezért, mint fent. A többi kulcs (`files`, `relatedDocIds`, `relatedFolderIds`,
+  `taskPartner`, `taskDescription`) eddig is feltétel nélkül ment.
+
+### Added
+- **`flex_workflow_start`: csatolmány-típuskód.** A `files[]` elemein új, opcionális
+  `attachmentTypeCode` (pl. `TELJESITESIGAZOLAS`); üresen `null` megy ki. Eddig a tool minden
+  csatolmányt típus nélkül küldött.
+- **`flex_task_create`: `performerOrgCodes`** — végrehajtó szervezeti egységek kódja
+  (`taskPerformers.organizationCodes`), a felület payloadjával egyezően.
+- **`FLEX_DEBUG` fejlesztői nyomkövetés** (`src/debug.ts`): a kimenő `POST` kérés-törzsek stderr-re,
+  hogy a felület payloadjával egy lépésben összevethetők legyenek. A csatolmányok base64 tartalma
+  méret-jelzésre cserélve, a törzs átmegy a `redactSecrets`-en. Alapból kikapcsolva; szándékosan
+  env-kapcsoló, nem `user_config` mező.
+
+### Megjegyzés
+A `metadata` értékei mostantól `null`-t is felvehetnek (a felület is küld `null`-t a kitöltetlen,
+nem kötelező mezőkre).
+
 ## [1.0.1] – 2026-09-03
 
 ### Fixed

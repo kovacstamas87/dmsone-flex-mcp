@@ -90,7 +90,20 @@ hogy a modellnek ne kelljen a `type` stringet eszköznévre fordítania.
   felhasználói mező oda kerül, nem ide. A `flex_workflow_get_task_details` és a
   `_get_task_comments` leírása megnevezi a keretet — őr a `tools-list.test.ts`-ben.
 - **A dátumokat a `formatDateTime(value, config.timeZone)` írja át**, sose kézzel. A Flex
-  falióra-időt tárol; a részleteket és a „miért"-et lásd [`../CLAUDE.md`](../CLAUDE.md).
+  falióra-időt tárol; a részleteket és a „miért"-et lásd [`../CLAUDE.md`](../CLAUDE.md). A
+  `flex_workflow_start` `deadline`-ja a `formatDate`-en megy át (`YYYY-MM-DD`), mert a felület is
+  dátumot küld — ha egy mezőnél kiderül, hogy a felület más alakot használ, a felületi payload
+  dönt, nem a mi kényelmünk.
+- **A mellékhatásos eszközök törzse a felületi payload kulcskészletét viszi, üres értékkel is**
+  (`linkedItem: null`, `files: []`, `description: ""`, `deadline: null`, `organizationCodes: []`).
+  A hiányzó kulcstól a Flex 500-at ad, nem 400-at — a „csak amit megadtak" törzs tehát hibás kérés.
+  Az őr a `test/handlers.test.ts` „a kimenő törzs" blokkja, ami a **kulcsokat** nézi, nem csak az
+  értékeket. Félkész objektumot sem küldünk: fél kapcsolt elemre (`linkedItemType` `linkedItemId`
+  nélkül vagy fordítva) a tool validációs hibát ad.
+- **Option mezőnél a tool kódra fordít, és ismeretlen értéket nem továbbít.** A Flex a kódot
+  várja, a modell a címkét látja — `resolveOptionValues` mindkettőt elfogadja (előbb kód, aztán
+  címke), ismeretlen értéknél pedig hibát ad az érvényes `kód = "címke"` párokkal, hogy a modell
+  ne a Flex 500-ából próbáljon következtetni. Lásd [`../CLAUDE.md`](../CLAUDE.md) „Kulcsdöntések".
 - **Az `orgId` mezőknek nincs néma alapértelmezésük** (WF11). A `flex_task_create`
   `performerOrgId`-ja és a `flex_workflow_start` `responsibleOrgId`-ja korábban csendben `1`-re
   esett vissza, ha nem adták meg — ez rossz szervezeti egységhez rendelt feladatot okozhatott

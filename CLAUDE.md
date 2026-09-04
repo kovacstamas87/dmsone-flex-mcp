@@ -5,6 +5,11 @@ DMS One Flex REST API-t teszi elérhetővé feladatok, munkafolyamatok és felha
 minden hívás a beállított token tulajdonosának a nevében fut. Ugyanazokat a végpontokat fedi, mint
 a közösségi `n8n-nodes-dmsone-flex` node.
 
+**Állapot (2026-09-04):** **v1.0.2** kiadva (`CHANGELOG.md` `[1.0.2]`) — az indítás és a
+feladat-létrehozás kérés-törzsének javítása: teljes kulcskészlet üres értékkel is, Option
+kód/címke-feloldás, `deadline` `YYYY-MM-DD`, `attachmentTypeCode`, `performerOrgCodes`,
+`FLEX_DEBUG` nyomkövetés. 234 teszt zöld.
+
 **Állapot (2026-09-03):** **v1.0.1** kiadva (P0-6 javítása, `CHANGELOG.md` `[1.0.1]`) — korábban
 **v1.0.0** (WF21) — a `../flex-mcp-p1-p2-megvalositasi-terv.md`
 **P0, P1 és P2 üteme MCP-oldalon kész**: P0/P1 a `[0.2.0]`-ban (WF1–WF15 — benne a kötelező
@@ -23,7 +28,7 @@ ellenőrzésekor is még tükrözi a Bearer tokent — jelentve), és a teljes C
 
 | Fájl / mappa | Mi ez | Állapot |
 |---|---|---|
-| [`src/`](src/) | A szerver forráskódja — lásd [`src/CLAUDE.md`](src/CLAUDE.md) | WF10 után (`paths.ts` új WF3-ban, `validateConfig` új WF5-ben, `projection.ts` új WF9-ben, `schema.ts` új WF10-ben, `untrusted.ts` új WF17-ben, **`resources.ts` + `prompts.ts` új WF18-ban**) |
+| [`src/`](src/) | A szerver forráskódja — lásd [`src/CLAUDE.md`](src/CLAUDE.md) | **`debug.ts` új 2026-09-04-én**; WF10 után (`paths.ts` új WF3-ban, `validateConfig` új WF5-ben, `projection.ts` új WF9-ben, `schema.ts` új WF10-ben, `untrusted.ts` új WF17-ben, **`resources.ts` + `prompts.ts` új WF18-ban**) |
 | [`test/`](test/) | `node:test` alapú tesztek, `tsx`-szel futtatva (`npm test`) — lásd [`test/CLAUDE.md`](test/CLAUDE.md) | WF1–WF5, WF9–WF14, WF17–WF19-ben bővítve (214 teszt); a `test/fixtures/` élő, **anonimizált** minta |
 | [`scripts/bundle.mjs`](scripts/bundle.mjs) | A `.mcpb` előállítása **esbuild egyfájlos bundle-ből**: `dist/index.js` → `build/pkg/dist/index.js`, minimális `package.json`, majd `@anthropic-ai/mcpb pack`. Ellenőrzi, hogy a csomagban nincs `node_modules`, és kiírja a méretet | **új WF13-ban** |
 | [`scripts/sync-manifest.mjs`](scripts/sync-manifest.mjs) | A `manifest.json`-t a kódhoz igazítja, idempotens: a `version` a `package.json`-ból, a `tools[]` a **lefordított** `dist/index.js` `tools/list` válaszából. `dist/` hiányában a `tools`-t érintetlenül hagyja és figyelmeztet | **új WF1-ben**; WF10: `tools[]`-generálás |

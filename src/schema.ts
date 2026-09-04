@@ -77,7 +77,10 @@ const templateFieldSchema = z
       .describe('Kötelező-e — validation: "api-flag" vagy "visibility-flag" esetén érdemi'),
     default: z.unknown().optional().describe("Alapértelmezett érték, ha van"),
     visibility: z.string().optional().describe("A mező láthatósági kódja (MT_K / MT_M)"),
-    options: z.array(z.string()).optional().describe("Option típusnál a választható értékek"),
+    options: z
+      .array(z.object({ code: z.string(), label: z.string() }).loose())
+      .optional()
+      .describe('Option típusnál a lehetőségek: a Flexnek küldendő "code" és a felületi "label"'),
   })
   .loose();
 

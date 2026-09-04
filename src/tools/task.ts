@@ -2,6 +2,7 @@ import { McpServer } from "@modelcontextprotocol/server";
 import { z } from "zod";
 import type { FlexHttp } from "../client.js";
 import type { FlexConfig } from "../config.js";
+import { debugRequestBody } from "../debug.js";
 import { formatDateTime, toolError, toolJson } from "../format.js";
 import { envelope, summarizeTask } from "../projection.js";
 import { taskListOutput } from "../schema.js";
@@ -57,6 +58,10 @@ Visszatérés: az új feladat id és referenceNumber mezője.`,
             "A végrehajtó szervezeti egység ID-ja — performerUserId megadása esetén kötelező, " +
               "nincs alapértelmezés; forrása a flex_user_get_by_username leírásában",
           ),
+        performerOrgCodes: z
+          .array(z.string())
+          .optional()
+          .describe('Végrehajtó szervezeti egységek kódja (pl. ["GAZD"]), ha nem (csak) személyre osztod ki'),
       }),
       annotations: {
         readOnlyHint: false,
@@ -88,10 +93,13 @@ Visszatérés: az új feladat id és referenceNumber mezője.`,
           needsApprovalFromCreator: args.needsApprovalFromCreator,
           executorType: args.executorType,
           files: [],
-          taskPerformers: { users },
+          // A `users` és az `organizationCodes` mindig kimegy, üresen is: a Flex
+          // mindkét kulcsot olvassa, és a hiányzótól PHP notice-szal 500-at ad.
+          taskPerformers: { users, organizationCodes: args.performerOrgCodes ?? [] },
           relatedDocIds: [],
           relatedFolderIds: [],
         };
+        debugRequestBody("POST /dms/task/start", body);
         return toolJson(await client.request("POST", "/dms/task/start", { body }));
       } catch (error) {
         return toolError(error);

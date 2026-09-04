@@ -7,6 +7,7 @@ import {
   describeTemplate,
   missingRequiredMessage,
   parseTemplateFields,
+  resolveOptionValues,
 } from "../src/tools/workflow.js";
 
 /**
@@ -67,7 +68,12 @@ describe("parseTemplateFields", () => {
     );
     assert.deepEqual(parsed.allowedLinkedItemTypes, ["alszam", "foszam"]);
     // A meglévő feldolgozás nem sérült: az Option értékei és a visibility megmarad.
-    assert.deepEqual(parsed.fields[2].options, ["atutalas", "keszpenz", "kartya"]);
+    // A kód a `params` lista 1-alapú sorszáma — ezt kell a start "metadata"-jában küldeni.
+    assert.deepEqual(parsed.fields[2].options, [
+      { code: "1", label: "atutalas" },
+      { code: "2", label: "keszpenz" },
+      { code: "3", label: "kartya" },
+    ]);
     assert.equal(parsed.fields[0].visibility, "MT_K");
   });
 
@@ -180,7 +186,7 @@ describe("missingRequiredMessage", () => {
 
     assert.ok(message, "kellene hibaszöveg");
     assert.ok(message.includes("- fizetesiMod [Option] (Fizetési mód)"));
-    assert.ok(message.includes("lehetséges értékek: atutalas, keszpenz, kartya"));
+    assert.ok(message.includes('lehetséges értékek: 1 = "atutalas"; 2 = "keszpenz"; 3 = "kartya"'));
     assert.ok(message.includes("a(z) 12 sablonhoz"));
     assert.ok(!message.includes("nettoOsszeg"), "a kitöltött mező nem hiányzik");
   });
@@ -199,5 +205,57 @@ describe("missingRequiredMessage", () => {
       fizetesiMod: "atutalas",
     });
     assert.equal(message, undefined);
+  });
+});
+
+/**
+ * Option-mezők kód/címke feloldása. A Flex a kódot várja, a modell a címkét
+ * látja — a tool mindkettőt elfogadja, és kódot küld.
+ */
+describe("resolveOptionValues", () => {
+  const template = parseTemplateFields(TEMPLATE_WITH_FLAGS);
+
+  test("a címke kódra fordul", () => {
+    const resolved = resolveOptionValues(template, { fizetesiMod: "keszpenz", nettoOsszeg: "400" });
+    assert.ok("metadata" in resolved);
+    assert.equal(resolved.metadata.fizetesiMod, "2");
+    assert.equal(resolved.metadata.nettoOsszeg, "400", "a nem-Option mezőt nem bántjuk");
+  });
+
+  test("a kód változatlanul megy tovább — a kód és a címke ugyanazt adja", () => {
+    const byCode = resolveOptionValues(template, { fizetesiMod: "2" });
+    const byLabel = resolveOptionValues(template, { fizetesiMod: "keszpenz" });
+    assert.deepEqual(byCode, byLabel);
+  });
+
+  test("a címke illesztése kis/nagybetűre és térközre nem érzékeny", () => {
+    const resolved = resolveOptionValues(template, { fizetesiMod: "  KARTYA " });
+    assert.ok("metadata" in resolved);
+    assert.equal(resolved.metadata.fizetesiMod, "3");
+  });
+
+  test("ismeretlen érték: hiba az érvényes lehetőségek listájával", () => {
+    const resolved = resolveOptionValues(template, { fizetesiMod: "csekk" });
+    assert.ok("error" in resolved);
+    assert.ok(resolved.error.includes("fizetesiMod"));
+    assert.ok(resolved.error.includes('1 = "atutalas"; 2 = "keszpenz"; 3 = "kartya"'));
+  });
+
+  test("számot ábrázoló címkénél a kód-értelmezés győz", () => {
+    // A 66-os sablon `beruh` mezője valós példa: a címkék maguk is számok.
+    const numeric = parseTemplateFields({
+      result: {
+        metadata: [{ code: "beruh", type: "Option", required: true, params: "|Nem beruházási;1;2;3;4" }],
+      },
+    });
+    const resolved = resolveOptionValues(numeric, { beruh: "4" });
+    assert.ok("metadata" in resolved);
+    assert.equal(resolved.metadata.beruh, "4", 'a "4" a 4. lehetőség kódja, nem a "4" címkéé (az 5)');
+  });
+
+  test("üres és hiányzó érték érintetlen marad — arról a kötelezőség-ellenőrzés dönt", () => {
+    const resolved = resolveOptionValues(template, { fizetesiMod: "" });
+    assert.ok("metadata" in resolved);
+    assert.equal(resolved.metadata.fizetesiMod, "");
   });
 });
