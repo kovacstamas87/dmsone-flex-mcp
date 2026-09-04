@@ -3,6 +3,27 @@
 A jelölés a [Keep a Changelog](https://keepachangelog.com/) és a
 [SemVer](https://semver.org/) ajánlásait követi.
 
+## [1.0.3] – 2026-09-04
+
+### Fixed
+- **A `flex_workflow_start` előre szól a hiányzó határidőről.** A Flex a `deadline` nélküli
+  indítást HTTP **500**-cal utasítja el (`{"success":false,"message":"Határidő megadása
+  kötelező!"}`, élőben mérve a v1.0.2 tesztelésekor) — a hívó ezt szerverhibának látja, nem
+  sajátjának. A tool ezért a Flex hívása előtt magyar hibát ad, és felajánlja a sablon javasolt
+  határidejét (`startDetails` `result.deadline`, dátumra vágva); a `deadline` `.describe()`-je
+  kimondja, hogy a mező kötelező. **Szándékosan nem** töltjük ki magunktól, ahogy a felület teszi:
+  a határidő a DMS-rekordba kerül, a művelet pedig visszavonhatatlan.
+
+### Added
+- **`flex_workflow_get_template_details`: `suggestedDeadline`** — a sablon javasolt határideje
+  `YYYY-MM-DD` alakban, hogy az indítás egy lépésben megkapja.
+
+### Changed
+- **Dependabot**: a `typescript` és a `@types/node` **major** frissítése kikapcsolva
+  (`.github/dependabot.yml`). Az előbbit a `typescript-eslint` peer-függősége blokkolja
+  (ERESOLVE), az utóbbi pedig a támogatott minimumnál (`engines: >=20`) újabb Node API-kat
+  engedne át típushelyesként. A minor/patch frissítés mindkettőn megy tovább.
+
 ## [1.0.2] – 2026-09-04
 
 ### Fixed

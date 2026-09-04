@@ -91,6 +91,15 @@ export interface ParsedTemplate {
   requiredMarkerPresent: boolean;
   /** Volt-e **bármely** mezőn `visibility` kulcs — lásd `TemplateValidation` "visibility-flag" ága. */
   visibilityMarkerPresent: boolean;
+  /**
+   * A sablon által javasolt határidő (`startDetails` `result.deadline`), ha van.
+   *
+   * A Flex felülete ezzel tölti ki előre a "Létrehozás" dialógus határidő-mezőjét.
+   * Nálunk nem alapértelmezés, hanem **javaslat**: a `deadline` hiányát hibaként
+   * jelezzük, és ezt az értéket ajánljuk fel — a határidő a DMS-rekordba kerül,
+   * ezért nem a tool választja meg. Lásd `missingDeadlineMessage`.
+   */
+  defaultDeadline?: string;
 }
 
 /** A `metadata` egy mezőjének nyers alakja jelöl-e egyáltalán kötelezőséget. */
@@ -151,11 +160,13 @@ export function parseTemplateFields(startDetails: unknown): ParsedTemplate {
   }
 
   const allowed = (result as { allowedLinkedItemTypes?: unknown }).allowedLinkedItemTypes;
+  const deadline = (result as { deadline?: unknown }).deadline;
   return {
     fields,
     allowedLinkedItemTypes: Array.isArray(allowed) ? (allowed as string[]) : [],
     requiredMarkerPresent,
     visibilityMarkerPresent,
+    ...(typeof deadline === "string" && deadline.trim() !== "" ? { defaultDeadline: deadline } : {}),
   };
 }
 
@@ -169,6 +180,44 @@ export const VISIBILITY_MARKER_NOTE =
   '"required"/"mandatory" kulcs nincs a sablonon; a kötelezőség a visibility: "MT_K" mezőkből ' +
   "származik, élő UI-egyeztetés alapján (2026-09-03), nem hivatalos Flex-dokumentációból.";
 
+/** A `YYYY-MM-DD HH:mm:ss` alakú Flex-dátum dátum-része. */
+function toDateOnly(value: string): string {
+  return /^\d{4}-\d{2}-\d{2}/.test(value) ? value.slice(0, 10) : value;
+}
+
+/**
+ * A hiányzó `deadline` hibaszövege — `undefined`, ha van határidő.
+ *
+ * Miért ellenőrizzük mi is, ha a Flex is ellenőrzi: a Flex a hiányzó határidőt
+ * **HTTP 500**-cal utasítja el (`{"success":false,"message":"Határidő megadása
+ * kötelező!"}`, élőben mérve 2026-09-04-én), amit a hívó „a szerver elszállt"
+ * hibának lát, nem sajátjának. Előre szólunk, és a sablon javasolt határidejét
+ * ajánljuk fel, hogy egy lépésben pótolható legyen.
+ *
+ * Miért nem töltjük ki magunktól a sablon értékével, ahogy a felület: a határidő
+ * bekerül a DMS-rekordba, és a `destructiveHint: true` művelet visszavonhatatlan
+ * — ezt nem a tool dönti el a felhasználó helyett. A séma ezért is hagyja
+ * `optional`-nak a paramétert: így ez a beszédes hiba jut el a hívóhoz, nem egy
+ * séma-szintű protokollhiba.
+ */
+export function missingDeadlineMessage(
+  templateId: number,
+  template: ParsedTemplate,
+  deadline: string | undefined,
+): string | undefined {
+  if (deadline) return undefined;
+
+  const suggestion = template.defaultDeadline
+    ? `A(z) ${templateId} sablon javasolt határideje: ${toDateOnly(template.defaultDeadline)} ` +
+      `(ezzel tölti ki a Flex felülete is) — ha megfelel, add meg ezt.`
+    : `A sablon nem javasol határidőt, ezért adj meg egyet (YYYY-MM-DD).`;
+
+  return (
+    `A Flex kötelezőnek tekinti a határidőt: a "deadline" nélküli indítást ` +
+    `"Határidő megadása kötelező!" hibával utasítja el. ${suggestion}`
+  );
+}
+
 /**
  * A `flex_workflow_get_template_details` válasza. Külön függvény, hogy a
  * `validation` / `note` logikát teszt tudja fogni élő Flex nélkül.
@@ -178,8 +227,9 @@ export function describeTemplate(
   raw: unknown,
   includeRaw = false,
 ): Record<string, unknown> {
-  const { fields, allowedLinkedItemTypes, requiredMarkerPresent, visibilityMarkerPresent } =
+  const { fields, allowedLinkedItemTypes, requiredMarkerPresent, visibilityMarkerPresent, defaultDeadline } =
     parseTemplateFields(raw);
+  const suggestedDeadline = defaultDeadline ? toDateOnly(defaultDeadline) : undefined;
   const validation: TemplateValidation = requiredMarkerPresent
     ? "api-flag"
     : visibilityMarkerPresent
@@ -191,6 +241,7 @@ export function describeTemplate(
     fields,
     allowedLinkedItemTypes,
     linkedItemRequired: allowedLinkedItemTypes.length > 0,
+    ...(suggestedDeadline ? { suggestedDeadline } : {}),
     validation,
     ...(validation === "none" ? { note: NO_REQUIRED_MARKER_NOTE } : {}),
     ...(validation === "visibility-flag" ? { note: VISIBILITY_MARKER_NOTE } : {}),
@@ -387,8 +438,9 @@ Visszatérés: az új folyamat id és referenceNumber mezője.`,
           .string()
           .optional()
           .describe(
-            "Határidő. A Flexbe dátumként megy ki (YYYY-MM-DD): az időrészt levágjuk, " +
-              "offsettel megadott értéket előbb a FLEX_TIMEZONE zónájára számolunk át",
+            "Határidő — a Flex kötelezőnek tekinti (nélküle hibát ad, a sablon javasolt " +
+              "értékével). Dátumként megy ki (YYYY-MM-DD): az időrészt levágjuk, offsettel " +
+              "megadott értéket előbb a FLEX_TIMEZONE zónájára számolunk át",
           ),
         responsibleUserId: z
           .number()
@@ -458,6 +510,9 @@ Visszatérés: az új folyamat id és referenceNumber mezője.`,
 
         const startDetails = await client.request("GET", `/dms/workflow/startDetails/${args.templateId}`);
         const template = parseTemplateFields(startDetails);
+        const missingDeadline = missingDeadlineMessage(args.templateId, template, args.deadline);
+        if (missingDeadline) return toolError(new Error(missingDeadline));
+
         const resolved = resolveOptionValues(template, args.metadata as Record<string, unknown>);
         if ("error" in resolved) return toolError(new Error(resolved.error));
 

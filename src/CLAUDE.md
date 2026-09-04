@@ -49,6 +49,14 @@ annotációk, dátumkezelés) a saját mappa-doksijában: [`tools/CLAUDE.md`](to
   esetén egy `note`-ban) mondja ki, a `flex_workflow_start` pedig a `visibility-flag` ágon is
   előre jelez hiányzó mezőt, nem csak `api-flag`-nél.
 
+- **A határidő kötelező, de nem mi választjuk meg.** A Flex a `deadline` nélküli indítást
+  HTTP 500-cal dobja vissza (`"Határidő megadása kötelező!"`), ezért a `missingDeadlineMessage`
+  előre szól, és felajánlja a sablon javaslatát (`startDetails` `result.deadline` →
+  `ParsedTemplate.defaultDeadline`, `describeTemplate` `suggestedDeadline`). A felület magától
+  kitölti ezt az értéket; mi **nem**: a határidő a DMS-rekordba kerül, a művelet
+  visszavonhatatlan (`destructiveHint: true`), tehát a döntés a hívóé. A paraméter a sémában
+  ezért marad `optional` — így a beszédes, javaslatot adó hibaüzenet jut el a modellhez, nem egy
+  séma-szintű protokollhiba.
 - **A Flexnek küldött törzs kulcskészlete teljes, akkor is, ha üres.** A `flex_workflow_start`
   mindig küld `linkedItem`-et (`null`), `files`-t (`[]`), `description`-t (`""`) és `deadline`-t
   (`null`), a `flex_task_create` pedig `taskPerformers.organizationCodes`-ot is (`[]`). Miért nem

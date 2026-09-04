@@ -90,6 +90,9 @@ export const templateDetailsOutput = looseOutput({
   fields: z.array(templateFieldSchema).describe("A sablon normalizált metaadat-mezői"),
   allowedLinkedItemTypes: z.array(z.string()).describe("Megengedett kapcsolt elem típusok"),
   linkedItemRequired: z.boolean().describe("Kell-e kapcsolt elemet (iratot) megadni"),
+  suggestedDeadline: z
+    .string()
+    .describe("A sablon javasolt határideje (YYYY-MM-DD); a start deadline paramétere kötelező"),
   validation: z
     .enum(["api-flag", "visibility-flag", "none"])
     .describe(

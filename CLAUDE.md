@@ -5,7 +5,15 @@ DMS One Flex REST API-t teszi elérhetővé feladatok, munkafolyamatok és felha
 minden hívás a beállított token tulajdonosának a nevében fut. Ugyanazokat a végpontokat fedi, mint
 a közösségi `n8n-nodes-dmsone-flex` node.
 
-**Állapot (2026-09-04):** **v1.0.2** kiadva (`CHANGELOG.md` `[1.0.2]`) — az indítás és a
+**Állapot (2026-09-04):** **v1.0.3** kiadva (`CHANGELOG.md` `[1.0.3]`) — a hiányzó `deadline`
+előre jelzése a sablon javaslatával (a Flex 500-cal utasítja el a határidő nélküli indítást,
+élőben mérve), `suggestedDeadline` a sablon-részletekben, és a `typescript` / `@types/node`
+major frissítés kikapcsolása a Dependabotban. Az **1.0.2 élesben ellenőrizve**: a folyamat 196
+(`wfTaskId` 5166) létrejött, a címkével megadott Option `value: "4"`-ként, az
+`…T01:30+05:00` határidő `2026-09-24`-ként tárolódott — vagyis a kód-származtatás és a
+zóna-átszámítás utáni dátumvágás is igazolt.
+
+**Előző (2026-09-04):** **v1.0.2** kiadva (`CHANGELOG.md` `[1.0.2]`) — az indítás és a
 feladat-létrehozás kérés-törzsének javítása: teljes kulcskészlet üres értékkel is, Option
 kód/címke-feloldás, `deadline` `YYYY-MM-DD`, `attachmentTypeCode`, `performerOrgCodes`,
 `FLEX_DEBUG` nyomkövetés. 234 teszt zöld.

@@ -4,6 +4,19 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
+    # A két kivétel oka a #4 és #5 PR (2026-09-04-én zárva, indoklással):
+    #   - typescript major: a typescript-eslint peer-függősége blokkolja (ERESOLVE),
+    #     ezért a TS 7 csak a typescript-eslint bumpjával együtt mehet — egyetlen
+    #     PR-ként, kézzel, nem heti automata próbálkozásként.
+    #   - @types/node major: a típusdefiníciók a **támogatott minimumhoz** tartoznak
+    #     (engines / manifest compatibility: >=20), nem a legfrissebb Node-hoz;
+    #     különben olyan API is típushelyesnek látszana, ami 20-on nem létezik.
+    # A minor/patch frissítés mindkettőn megy tovább.
+    ignore:
+      - dependency-name: "typescript"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "@types/node"
+        update-types: ["version-update:semver-major"]
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:

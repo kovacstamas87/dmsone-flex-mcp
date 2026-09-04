@@ -5,6 +5,7 @@ import {
   NO_REQUIRED_MARKER_NOTE,
   VISIBILITY_MARKER_NOTE,
   describeTemplate,
+  missingDeadlineMessage,
   missingRequiredMessage,
   parseTemplateFields,
   resolveOptionValues,
@@ -257,5 +258,38 @@ describe("resolveOptionValues", () => {
     const resolved = resolveOptionValues(template, { fizetesiMod: "" });
     assert.ok("metadata" in resolved);
     assert.equal(resolved.metadata.fizetesiMod, "");
+  });
+});
+
+/**
+ * A hiányzó határidő. A Flex ezt HTTP 500-cal utasítja el ("Határidő megadása
+ * kötelező!", élőben mérve 2026-09-04-én), amit a hívó szerverhibának néz —
+ * ezért előre szólunk, a sablon javaslatával.
+ */
+describe("missingDeadlineMessage", () => {
+  const withDeadline = parseTemplateFields({
+    result: { deadline: "2026-09-18 23:59:59", metadata: [] },
+  });
+
+  test("megadott határidővel nincs kifogás", () => {
+    assert.equal(missingDeadlineMessage(50, withDeadline, "2026-09-25"), undefined);
+  });
+
+  test("hiányzó határidőnél a sablon javaslata dátumként jelenik meg", () => {
+    const message = missingDeadlineMessage(50, withDeadline, undefined);
+    assert.ok(message);
+    assert.ok(message.includes("Határidő megadása kötelező!"), "a Flex saját üzenetét idézi");
+    assert.ok(message.includes("2026-09-18"), "a javaslat benne van");
+    assert.ok(!message.includes("23:59:59"), "a javaslat dátum, nem időpont");
+  });
+
+  test("javaslat nélküli sablonnál is használható hibaszöveg jön", () => {
+    const message = missingDeadlineMessage(7, parseTemplateFields({ result: { metadata: [] } }), undefined);
+    assert.ok(message?.includes("YYYY-MM-DD"));
+  });
+
+  test("a sablon javasolt határideje a részletekben is megjelenik, dátumként", () => {
+    const described = describeTemplate(50, { result: { deadline: "2026-09-18 23:59:59", metadata: [] } });
+    assert.equal(described.suggestedDeadline, "2026-09-18");
   });
 });

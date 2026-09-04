@@ -435,6 +435,7 @@ describe("flex_workflow_start — a kimenő törzs", () => {
   const TEMPLATE = {
     success: true,
     result: {
+      deadline: "2026-09-18 23:59:59",
       allowedLinkedItemTypes: ["alszam"],
       metadata: [
         { code: "leir", name: "Leírás", type: "Textarea", visibility: "MT_O" },
@@ -472,6 +473,7 @@ describe("flex_workflow_start — a kimenő törzs", () => {
           title: "Teszt tárgy",
           responsibleUserId: 31,
           responsibleOrgId: 13,
+          deadline: "2026-09-25",
           metadata: { projtip: "Vállalati fejlesztési projekt" },
           ...args,
         },
@@ -482,6 +484,15 @@ describe("flex_workflow_start — a kimenő törzs", () => {
     }
   }
 
+  test("határidő nélkül nem indítunk: a hiba a sablon javaslatát adja", async () => {
+    const { body, result } = await startWith({ deadline: undefined });
+    const text = (result.content as { type: string; text: string }[])[0].text;
+
+    assert.equal(result.isError, true);
+    assert.equal(body, undefined, "a Flexet meg sem hívjuk");
+    assert.ok(text.includes("Határidő megadása kötelező!"));
+  });
+
   test("minimális paraméterek: a négy kulcs üres értékkel is kimegy", async () => {
     const { body, result } = await startWith({});
 
@@ -489,7 +500,7 @@ describe("flex_workflow_start — a kimenő törzs", () => {
     assert.equal(body?.linkedItem, null);
     assert.deepEqual(body?.files, []);
     assert.equal(body?.description, "");
-    assert.equal(body?.deadline, null);
+    assert.equal(body?.deadline, "2026-09-25", "a megadott határidő dátumként megy ki");
   });
 
   test("kapcsolt elemmel: linkedItem { id, type } megy ki", async () => {
