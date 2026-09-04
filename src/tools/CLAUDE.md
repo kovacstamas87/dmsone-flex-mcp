@@ -94,6 +94,14 @@ hogy a modellnek ne kelljen a `type` stringet eszköznévre fordítania.
   `flex_workflow_start` `deadline`-ja a `formatDate`-en megy át (`YYYY-MM-DD`), mert a felület is
   dátumot küld — ha egy mezőnél kiderül, hogy a felület más alakot használ, a felületi payload
   dönt, nem a mi kényelmünk.
+- **A határidő kötelező, de a tool nem választ helyettünk** (2026-09-04, v1.0.3). A Flex a
+  `deadline` nélküli `workflow/start`-ot HTTP 500-cal utasítja el
+  (`"Határidő megadása kötelező!"`) — a hívó ezt szerverhibának látja, nem sajátjának. A
+  `missingDeadlineMessage` ezért a Flex hívása előtt szól, és a sablon javaslatát ajánlja fel
+  (`ParsedTemplate.defaultDeadline`, a részletekben `suggestedDeadline`). Kitölteni magától
+  **nem** szabad, ahogy a felület teszi: a határidő a DMS-rekordba kerül, a művelet
+  `destructiveHint: true`. A paraméter a sémában ezért `optional` — kötelezővé téve a modell
+  séma-szintű protokollhibát kapna a javaslatot adó üzenet helyett.
 - **A mellékhatásos eszközök törzse a felületi payload kulcskészletét viszi, üres értékkel is**
   (`linkedItem: null`, `files: []`, `description: ""`, `deadline: null`, `organizationCodes: []`).
   A hiányzó kulcstól a Flex 500-at ad, nem 400-at — a „csak amit megadtak" törzs tehát hibás kérés.
