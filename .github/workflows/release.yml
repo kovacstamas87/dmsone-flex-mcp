@@ -21,7 +21,7 @@ jobs:
       - run: npm ci
       - run: npm run bundle
       - name: Create release with .mcpb asset
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           files: dmsone-flex-*.mcpb
           generate_release_notes: true
