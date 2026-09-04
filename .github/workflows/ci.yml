@@ -9,6 +9,9 @@ jobs:
   build:
     runs-on: ubuntu-latest
     strategy:
+      # Egy Node-verzió bukása ne lője ki a másik legjét: a canceled leg semmit nem
+      # mond arról, hogy ott átment-e volna, és a hibakeresést félrevezeti.
+      fail-fast: false
       matrix:
         node-version: ["20", "22"]
     steps:
@@ -22,4 +25,6 @@ jobs:
       - run: npm run format:check
       - run: npm run build
       - run: npm test
-      - run: npm audit --audit-level=moderate
+      # Az npm audit az advisory API-t hívja; a végpont kiesését nem tekintjük
+      # kódhibának, valódi találatra viszont bukunk — lásd scripts/audit.sh.
+      - run: ./scripts/audit.sh
